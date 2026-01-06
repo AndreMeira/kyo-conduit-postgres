@@ -2,9 +2,37 @@ package conduit.domain.model
 
 import java.util.UUID
 
+/**
+ * Represents user authentication credentials in different states.
+ *
+ * Credentials can be in cleartext form (as received from user input) or in
+ * hashed form (as stored securely in the database). This enum ensures type-safe
+ * handling of sensitive authentication data throughout the application.
+ */
 enum Credentials:
+  /**
+   * Represents cleartext credentials as received from user input.
+   *
+   * This form is used temporarily during authentication and registration processes
+   * before passwords are hashed for secure storage.
+   *
+   * @param email the user's email address
+   * @param password the user's password in plaintext
+   */
   case Clear(email: String, password: String)
+
+  /**
+   * Represents hashed credentials as stored in the database.
+   *
+   * This form contains the user ID, email, and securely hashed password.
+   * It's used for authentication verification and secure storage.
+   *
+   * @param userId the unique identifier of the user
+   * @param email the user's email address
+   * @param password the user's password after secure hashing
+   */
   case Hashed(userId: UUID, email: String, password: String)
-  
+
 object Credentials:
+  /** Type alias for email addresses */
   type Email = String
