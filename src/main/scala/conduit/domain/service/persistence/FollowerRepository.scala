@@ -2,6 +2,7 @@ package conduit.domain.service.persistence
 
 import conduit.domain.error.ApplicationError
 import conduit.domain.model.UserProfile
+import conduit.domain.service.persistence.Database.Transaction
 import kyo.*
 
 /**
@@ -16,7 +17,7 @@ import kyo.*
  *
  * @tparam Tx the transaction type used for database operations
  */
-trait FollowerRepository[Tx] {
+trait FollowerRepository[Tx <: Transaction] {
   type Effect = Async & Env[Tx] & Abort[ApplicationError]
 
   /**
@@ -29,6 +30,18 @@ trait FollowerRepository[Tx] {
    * @return true if the follower relationship exists, false otherwise
    */
   def exists(followed: UserProfile.FollowedBy): Boolean < Effect
+  
+  /**
+   * Finds follower relationships for a user across multiple followed users.
+   *
+   * Retrieves all follower relationships where a specific user is following
+   * any of the users in the provided list of followed user IDs.
+   *
+   * @param followerId the ID of the follower user
+   * @param followedIds the list of followed user IDs to check
+   * @return List of follower relationships found
+   */
+  def followedBy(followerId: UserProfile.Id, followedIds: List[UserProfile.Id]): List[UserProfile.Id] < Effect
 
   /**
    * Adds a new follower relationship.

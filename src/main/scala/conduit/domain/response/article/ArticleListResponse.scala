@@ -1,13 +1,35 @@
 package conduit.domain.response.article
 
-import conduit.domain.model.{Article, UserProfile}
+import conduit.domain.model.{ Article, UserProfile }
 import conduit.domain.response.user.GetProfileResponse
 
 import java.util.UUID
 
-case class ArticleListResponse(articles: List[ArticleListResponse.Payload], articlesCount: Int)
+/**
+ * Response model for retrieving a list of articles.
+ *
+ * @param articles List of article payloads with author information
+ * @param articlesCount Total number of articles matching the query (for pagination)
+ */
+case class ArticleListResponse(
+  articles: List[ArticleListResponse.Payload],
+  articlesCount: Int,
+)
 
 object ArticleListResponse:
+  /**
+   * Article payload structure for JSON serialization in list responses.
+   *
+   * @param slug URL-friendly identifier for the article
+   * @param title The article title
+   * @param description Brief description of the article
+   * @param tagList List of tags associated with the article
+   * @param createdAt Timestamp when the article was created
+   * @param updatedAt Timestamp when the article was last updated
+   * @param favorited Whether the current user has favorited this article
+   * @param favoritesCount Number of users who have favorited this article
+   * @param author Profile information of the article author
+   */
   case class Payload(
     slug: String,
     title: String,
@@ -20,6 +42,16 @@ object ArticleListResponse:
     author: GetProfileResponse.Payload,
   )
 
+  /**
+   * Creates an ArticleListResponse from domain objects.
+   *
+   * @param count Total number of articles matching the query
+   * @param articles List of article domain objects
+   * @param profiles List of user profiles for article authors
+   * @param favorites Set of article IDs that the current user has favorited
+   * @param followed Set of user IDs that the current user follows
+   * @return ArticleListResponse with transformed article payloads and metadata
+   */
   def make(
     count: Int,
     articles: List[Article],

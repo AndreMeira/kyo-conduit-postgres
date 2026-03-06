@@ -2,6 +2,8 @@ package conduit.domain.model
 
 import java.time.Instant
 import java.util.UUID
+import conduit.domain.error.ValidationError
+
 
 /**
  * Represents an article in the Conduit blogging platform.

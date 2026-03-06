@@ -1,6 +1,7 @@
 package conduit.domain.model
 
 import conduit.domain.syntax.*
+import kyo.Maybe
 
 import java.util.UUID
 
@@ -20,7 +21,17 @@ enum User:
    *
    * @param userId the unique identifier for the authenticated user
    */
-  case Authenticated(userId: UUID)
+  case Authenticated(userId: User.Id)
+
+  /**
+   * Extract the user id if authenticated
+   * 
+   * @return the Present(user id) if authenticated, Absent otherwise
+   */
+  def option: Maybe[User.Id] = this match {
+    case Anonymous         => Maybe.Absent
+    case Authenticated(id) => Maybe.Present(id)
+  }
 
 object User:
   /** Type alias for user identifiers using UUID */

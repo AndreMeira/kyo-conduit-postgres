@@ -2,6 +2,8 @@ package conduit.infrastructure.inmemory
 
 import conduit.domain.model.UserProfile
 import conduit.domain.service.persistence.FollowerRepository
+import conduit.infrastructure.inmemory.InMemoryState.Changed.{Deleted, Inserted, Updated}
+import conduit.infrastructure.inmemory.InMemoryState.RowReference.FollowerRow
 import kyo.*
 
 /**
@@ -12,6 +14,7 @@ import kyo.*
  * to ensure consistent access to the shared followers state.
  */
 class InMemoryFollowerRepository extends FollowerRepository[InMemoryTransaction] {
+
   /**
    * Checks if a follower relationship exists.
    *
@@ -27,6 +30,14 @@ class InMemoryFollowerRepository extends FollowerRepository[InMemoryTransaction]
         followers.getOrElse(followed.followerId, Nil).contains(followed.profileId)
       }
     }
+    
+  override def followedBy(profileId: UserProfile.Id, followerIds: List[UserProfile.Id]): List[UserProfile.Id] < Effect =
+    InMemoryTransaction { state =>
+      state.followers.get.map { followers =>
+        val followerSet = followers.getOrElse(profileId, Nil).toSet
+        followerIds.filter(followerSet.contains)
+      }
+    }
 
   /**
    * Adds a new follower relationship.
@@ -39,11 +50,21 @@ class InMemoryFollowerRepository extends FollowerRepository[InMemoryTransaction]
    */
   override def add(followed: UserProfile.FollowedBy): Unit < Effect =
     InMemoryTransaction { state =>
-      state.followers.updateAndGet { followers =>
-        val currentFollowers = followers.getOrElse(followed.followerId, Nil)
-        followers + (followed.followerId -> (currentFollowers :+ followed.profileId))
-      }.unit
-    }
+      state
+        .followers
+        .updateAndGet { followers =>
+          val currentFollowers = followers.getOrElse(followed.followerId, Nil)
+          followers + (followed.followerId -> (currentFollowers :+ followed.profileId))
+        }
+        .flatMap { followers =>
+          state.addChange(
+            if followers.get(followed.followerId).exists(_.size == 1)
+            then Inserted(FollowerRow(followed.followerId))
+            else Updated(FollowerRow(followed.followerId))
+          )
+
+        }
+    }.unit
 
   /**
    * Removes a follower relationship.
@@ -59,7 +80,12 @@ class InMemoryFollowerRepository extends FollowerRepository[InMemoryTransaction]
       state.followers.updateAndGet { followers =>
         val currentFollowers = followers.getOrElse(followed.followerId, Nil)
         followers + (followed.followerId -> currentFollowers.filterNot(_ == followed.profileId))
-      }.unit
-    }
+      }.flatMap { followers =>
+        state.addChange(
+          if !followers.contains(followed.followerId)
+          then Deleted(FollowerRow(followed.followerId))
+          else Updated(FollowerRow(followed.followerId))
+        )
+      }
+    }.unit
 }
-

@@ -2,6 +2,7 @@ package conduit.domain.service.persistence
 
 import conduit.domain.model.*
 import conduit.domain.error.ApplicationError
+import conduit.domain.service.persistence.Database.Transaction
 import kyo.*
 
 /**
@@ -13,7 +14,7 @@ import kyo.*
  *
  * @tparam Tx the transaction type used for database operations
  */
-trait FavoriteRepository[Tx] {
+trait FavoriteRepository[Tx <: Transaction] {
   type Effect = Async & Abort[ApplicationError] & Env[Tx]
   
   /**
@@ -23,6 +24,15 @@ trait FavoriteRepository[Tx] {
    * @return true if the favorite entry exists, false otherwise
    */
   def exists(favorite: Article.FavoriteBy): Boolean < Effect
+  
+  /**
+   * Finds favorite entries for a user across multiple articles.
+   *
+   * @param userId the ID of the user
+   * @param articleIds the list of article IDs to check
+   * @return List of favorite entries found
+   */
+  def favoriteOf(userId: User.Id, articleIds: List[Article.Id]): List[Article.Id] < Effect
 
   /**
    * Adds a favorite entry for an article by a user.

@@ -2,6 +2,8 @@ package conduit.infrastructure.inmemory
 
 import conduit.domain.model.*
 import conduit.domain.service.persistence.CredentialsRepository
+import conduit.infrastructure.inmemory.InMemoryState.Changed.{ Deleted, Inserted, Updated }
+import conduit.infrastructure.inmemory.InMemoryState.RowReference.CredentialsRow
 import kyo.*
 
 /**
@@ -55,7 +57,8 @@ class InMemoryCredentialsRepository extends CredentialsRepository[InMemoryTransa
    */
   override def save(userId: User.Id, credentials: Credentials.Hashed): Unit < Effect =
     InMemoryTransaction { state =>
-      state.credentials.updateAndGet(_ + (userId -> credentials)).unit
+      state.credentials.updateAndGet(_ + (userId -> credentials))
+        *> state.addChange(Inserted(CredentialsRow(userId)))
     }
 
   /**
@@ -68,6 +71,7 @@ class InMemoryCredentialsRepository extends CredentialsRepository[InMemoryTransa
   override def update(userId: User.Id, credentials: Credentials.Hashed): Unit < Effect =
     InMemoryTransaction { state =>
       state.credentials.updateAndGet(_ + (userId -> credentials)).unit
+        *> state.addChange(Updated(CredentialsRow(userId)))
     }
 
   /**
@@ -79,5 +83,6 @@ class InMemoryCredentialsRepository extends CredentialsRepository[InMemoryTransa
   override def delete(userId: User.Id): Unit < Effect =
     InMemoryTransaction { state =>
       state.credentials.updateAndGet(_ - userId).unit
+        *> state.addChange(Deleted(CredentialsRow(userId)))
     }
 }

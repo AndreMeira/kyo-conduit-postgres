@@ -1,7 +1,9 @@
 package conduit.infrastructure.inmemory
 
-import conduit.domain.model.{Article, Comment}
+import conduit.domain.model.{ Article, Comment }
 import conduit.domain.service.persistence.CommentRepository
+import conduit.infrastructure.inmemory.InMemoryState.Changed.{ Deleted, Inserted, Updated }
+import conduit.infrastructure.inmemory.InMemoryState.RowReference.CommentRow
 import kyo.*
 
 /**
@@ -12,6 +14,7 @@ import kyo.*
  * to ensure consistent access to the shared comment state.
  */
 class InMemoryCommentRepository extends CommentRepository[InMemoryTransaction] {
+
   /**
    * Finds a comment by its ID.
    *
@@ -42,7 +45,8 @@ class InMemoryCommentRepository extends CommentRepository[InMemoryTransaction] {
    */
   override def save(comment: Comment): Unit < Effect =
     InMemoryTransaction { state =>
-      state.comments.updateAndGet(_ + (comment.id -> comment)).unit
+      state.addChange(Inserted(CommentRow(comment.id)))
+        *> state.comments.updateAndGet(_ + (comment.id -> comment)).unit
     }
 
   /**
@@ -53,7 +57,8 @@ class InMemoryCommentRepository extends CommentRepository[InMemoryTransaction] {
    */
   override def update(comment: Comment): Unit < Effect =
     InMemoryTransaction { state =>
-      state.comments.updateAndGet(_ + (comment.id -> comment)).unit
+      state.addChange(Updated(CommentRow(comment.id)))
+        *> state.comments.updateAndGet(_ + (comment.id -> comment)).unit
     }
 
   /**
@@ -77,7 +82,7 @@ class InMemoryCommentRepository extends CommentRepository[InMemoryTransaction] {
    */
   override def delete(id: Comment.Id): Unit < Effect =
     InMemoryTransaction { state =>
-      state.comments.updateAndGet(_ - id).unit
+      state.addChange(Deleted(CommentRow(id)))
+        *> state.comments.updateAndGet(_ - id).unit
     }
 }
-

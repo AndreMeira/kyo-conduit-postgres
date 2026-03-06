@@ -1,6 +1,7 @@
 package conduit.domain.service.persistence
 
-import conduit.domain.service.persistence.Database.Transaction
+import conduit.domain.error.ApplicationError
+import Database.Transaction
 import kyo.*
 
 /**
@@ -14,6 +15,15 @@ import kyo.*
  * @tparam Tx the transaction type used for database operations
  */
 trait Database[Tx <: Transaction] {
+  
+  /** 
+   * Type alias representing the combined effect requirements for pending operations.
+   *
+   * This alias combines the Async effect with the Abort effect for ApplicationError,
+   * indicating that operations may be asynchronous and can fail with application-level errors.
+   */
+  type Pending = Async & Abort[ApplicationError]
+  
   /**
    * Executes an effect within a database transaction context.
    *
@@ -30,7 +40,7 @@ trait Database[Tx <: Transaction] {
    * @param effect the effect to execute within the transaction context
    * @return the result of executing the effect wrapped in an Async effect
    */
-  def transaction[A, Effect <: Async](effect: A < (Effect & Env[Tx])): A < Effect
+  def transaction[A, Effect <: Pending](effect: A < (Effect & Env[Tx])): A < Effect
 }
 
 object Database:

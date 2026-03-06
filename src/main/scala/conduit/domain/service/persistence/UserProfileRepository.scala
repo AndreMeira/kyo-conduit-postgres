@@ -2,7 +2,7 @@ package conduit.domain.service.persistence
 
 import conduit.domain.error.ApplicationError
 import conduit.domain.model.*
-import conduit.domain.service.persistence.Database.Transaction
+import Database.Transaction
 import kyo.*
 
 /**
@@ -59,10 +59,42 @@ trait UserProfileRepository[Tx <: Transaction] {
   def findByUser(id: User.Id): Maybe[UserProfile] < Effect
 
   /**
+   * Finds a user profile by the associated user ID.
+   *
+   * @param ids the user IDs to search for
+   * @return a Maybe containing the user profile if found, or None otherwise
+   */
+  def findByUsers(ids: List[User.Id]): List[UserProfile] < Effect
+
+  /**
+   * Finds a user profile by the username.
+   *
+   * @param username the username to search for
+   * @return a Maybe containing the user profile if found, or None otherwise
+   */
+  def findByUsername(username: String): Maybe[UserProfile] < Effect
+
+  /**
+   * Tells if the username exists
+   *
+   * @param username the username to search for
+   * @return true if the profile exists false otherwise
+   */
+  def exists(username: String): Boolean < Effect
+
+  /**
    * Finds a user profile by the associated article ID.
    *
    * @param id the article ID to search for
    * @return a Maybe containing the user profile if found, or None otherwise
    */
   def findByArticle(id: Article.Id): Maybe[UserProfile] < Effect
+
+  /**
+   * Finds user profiles for a set of article IDs.
+   *
+   * @param ids the set of article IDs to search for
+   * @return a map of article IDs to their corresponding user profiles
+   */
+  def findByArticles(ids: Set[Article.Id]): Map[Article.Id, UserProfile] < Effect
 }

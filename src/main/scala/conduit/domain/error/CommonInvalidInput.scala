@@ -40,13 +40,29 @@ enum CommonInvalidInput extends ValidationError.InvalidInput:
   case InvalidString(regex: Regex)
 
   /**
+   * Error indicating that a string's length is outside the allowed range.
+   *
+   * @param value the string whose length is invalid
+   * @param min the minimum allowed length
+   * @param max the maximum allowed length
+   */
+  case InvalidLength(value: String, min: Int, max: Int)
+
+  /**
+   * Error indicating that two values that were expected to be the same are different.
+   */
+  case DifferentValues
+
+  /**
    * Returns a human-readable message describing the validation error.
    *
    * @return the error message corresponding to this validation error case
    */
   override def message: String = this match {
-    case NotPositive(i)       => "Value shoud be positive, $i given"
-    case EmptyString          => "the given string is empty"
-    case InvalidUUID(id)      => s"The given UUID $id is invalid"
-    case InvalidString(regex) => s"The given string does not match with $regex"
+    case NotPositive(i)             => "Value shoud be positive, $i given"
+    case EmptyString                => "the given string is empty"
+    case InvalidUUID(id)            => s"The given UUID $id is invalid"
+    case InvalidString(regex)       => s"The given string does not match with $regex"
+    case DifferentValues            => "The given values should be the same"
+    case InvalidLength(_, min, max) => s"The given string should be between $min and $max characters long"
   }

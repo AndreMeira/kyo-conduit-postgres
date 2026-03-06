@@ -19,7 +19,7 @@ object IdGeneratorService {
    *
    * @return a new UUID wrapped in a Sync effect
    */
-  def generate: UUID < Sync =
+  def uuid: UUID < Sync =
     Sync.defer(UUID.randomUUID())
 
   /**
@@ -35,7 +35,7 @@ object IdGeneratorService {
   def slug(title: String): String < Sync =
     for {
       normalized <- normalize(title)
-      uuid       <- generate
+      uuid       <- uuid
     } yield s"$normalized-$uuid"
 
   /**

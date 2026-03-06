@@ -3,7 +3,9 @@ package conduit.infrastructure.inmemory
 import conduit.domain.model.{ Article, User, UserProfile }
 import conduit.domain.model.Article.Id
 import conduit.domain.service.persistence.ArticleRepository
-import conduit.domain.service.persistence.ArticleRepository.SearchParam
+import ArticleRepository.SearchParam
+import conduit.infrastructure.inmemory.InMemoryState.Changed.{ Inserted, Updated }
+import conduit.infrastructure.inmemory.InMemoryState.RowReference.ArticleRow
 import kyo.*
 
 /**
@@ -14,6 +16,7 @@ import kyo.*
  * to ensure consistent access to the shared article state.
  */
 class InMemoryArticleRepository extends ArticleRepository[InMemoryTransaction] {
+
   /**
    * Finds an article by its ID.
    *
@@ -44,7 +47,8 @@ class InMemoryArticleRepository extends ArticleRepository[InMemoryTransaction] {
    */
   override def save(article: Article): Unit < Effect =
     InMemoryTransaction { state =>
-      state.articles.updateAndGet(_ + (article.id -> article)).unit
+      state.articles.updateAndGet(_ + (article.id -> article))
+        *> state.addChange(Inserted(ArticleRow(article.id)))
     }
 
   /**
@@ -55,14 +59,15 @@ class InMemoryArticleRepository extends ArticleRepository[InMemoryTransaction] {
    */
   override def update(article: Article): Unit < Effect =
     InMemoryTransaction { state =>
-      state.articles.updateAndGet(_ + (article.id -> article)).unit
+      state.articles.updateAndGet(_ + (article.id -> article))
+        *> state.addChange(Updated(ArticleRow(article.id)))
     }
 
   /**
    * Searches for articles based on the provided search parameters.
    *
    * Supports filtering by tag, author, and favorite user. Multiple parameters
-   * are applied as cumulative filters.
+   * are applied as cumulative filters (intersection).
    *
    * @param params the search parameters to apply
    * @return a list of articles matching all search criteria
@@ -109,10 +114,10 @@ class InMemoryArticleRepository extends ArticleRepository[InMemoryTransaction] {
   private def filter(articles: List[Article], author: SearchParam.Author): List[Article] < Effect =
     InMemoryTransaction { state =>
       for {
-        byAuthorName <- state.articlesByAuthorName
-      } yield articles.filter { article =>
-        val articleIds = byAuthorName.getOrElse(author.username, Nil).map(_.id)
-        articleIds.contains(article.id)
+        profile <- state.profileByUsername
+      } yield profile.get(author.username) match {
+        case None                               => Nil
+        case Some(UserProfile(userId = userId)) => articles.filter(_.authorId == userId)
       }
     }
 
@@ -130,6 +135,62 @@ class InMemoryArticleRepository extends ArticleRepository[InMemoryTransaction] {
       } yield articles.filter { article =>
         val articleIds = favorites.getOrElse(user.username, Nil)
         articleIds.contains(article.id)
+      }
+    }
+
+  /**
+   * Finds an article by its slug.
+   *
+   * @param slug the article slug
+   * @return a Maybe containing the article if found, or None if not found
+   */
+  override def findBySlug(slug: String): Maybe[Article] < Effect =
+    InMemoryTransaction { state =>
+      for {
+        articles <- state.articleBySlug
+      } yield Maybe.fromOption(articles.get(slug))
+
+    }
+
+  /**
+   * Retrieves a feed of articles for a specific user.
+   *
+   * The feed consists of articles from authors that the user follows.
+   *
+   * @param userId the ID of the user for whom to retrieve the feed
+   * @param offset the starting index for pagination
+   * @param limit  the maximum number of articles to return
+   * @return a list of articles in the user's feed
+   */
+  override def feedOf(userId: Id, offset: Int, limit: Int): List[Article] < Effect =
+    InMemoryTransaction { state =>
+      for {
+        followed <- state.followers.get
+        profiles <- state.profiles.get
+        articles <- state.articlesByUserId
+      } yield {
+        val followedIds = followed.getOrElse(userId, Nil)
+        val authorIds   = followedIds.flatMap(profiles.get).map(_.userId)
+        authorIds.flatMap(authorId => articles.getOrElse(authorId, Nil))
+      }
+    }
+
+  /**
+   * Counts the total number of articles in a user's feed.
+   * 
+   * @param userId the ID of the user whose feed articles to count
+   * @return the total count of articles in the user's feed
+   */
+  override def countFeedOf(userId: Id): Int < Effect =
+    InMemoryTransaction { state =>
+      for {
+        followed <- state.followers.get
+        profiles <- state.profiles.get
+        articles <- state.articlesByUserId
+      } yield {
+        val followedIds = followed.getOrElse(userId, Nil)
+        val authorIds   = followedIds.flatMap(profiles.get).map(_.userId)
+        authorIds.flatMap(authorId => articles.getOrElse(authorId, Nil)).size
       }
     }
 }

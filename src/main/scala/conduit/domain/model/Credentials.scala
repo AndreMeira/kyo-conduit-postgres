@@ -27,12 +27,12 @@ enum Credentials:
    * This form contains the user ID, email, and securely hashed password.
    * It's used for authentication verification and secure storage.
    *
-   * @param userId the unique identifier of the user
    * @param email the user's email address
    * @param password the user's password after secure hashing
    */
-  case Hashed(userId: UUID, email: String, password: String)
+  case Hashed(email: String, password: String)
 
 object Credentials:
-  /** Type alias for email addresses */
+  /** Type alias for email addresses and password */
   type Email = String
+  type Password = String

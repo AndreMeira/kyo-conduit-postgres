@@ -1,6 +1,6 @@
 package conduit.domain.service.validation
 
-import conduit.domain.error.ArticleInvalidInput as Invalid
+import conduit.domain.request.article.InvalidInput as Invalid
 import conduit.domain.syntax.Validated
 import zio.prelude.Validation
 
@@ -8,14 +8,14 @@ import java.util.UUID
 import scala.util.chaining.scalaUtilChainingOps
 
 /**
- * Validation service for article-related input data.
+ * Validation for article-related input data.
  *
  * This object provides validation functions for all article fields, ensuring
  * that article data conforms to business rules before being processed by
  * domain services. Each validation function returns a Validated type that
  * can accumulate multiple validation errors.
  */
-object ArticleValidation {
+object ArticleInputValidation {
 
   /**
    * Validates an article ID string and converts it to UUID.
@@ -25,7 +25,7 @@ object ArticleValidation {
    */
   def id(value: String): Validated[UUID] =
     CommonValidation
-      .uuid(value)
+      .uuid(value.trim)
       .asError(Invalid.InvalidId)
 
   /**
@@ -36,7 +36,7 @@ object ArticleValidation {
    */
   def title(value: String): Validated[String] =
     CommonValidation
-      .nonEmptyString(value)
+      .nonEmptyString(value.trim)
       .asError(Invalid.EmptyTitle)
 
   /**
@@ -47,7 +47,7 @@ object ArticleValidation {
    */
   def description(value: String): Validated[String] =
     CommonValidation
-      .nonEmptyString(value)
+      .nonEmptyString(value.trim)
       .asError(Invalid.EmptyDescription)
 
   /**
@@ -58,7 +58,7 @@ object ArticleValidation {
    */
   def body(value: String): Validated[String] =
     CommonValidation
-      .nonEmptyString(value)
+      .nonEmptyString(value.trim)
       .asError(Invalid.EmptyBody)
 
   /**
@@ -69,7 +69,7 @@ object ArticleValidation {
    */
   def authorId(value: String): Validated[UUID] =
     CommonValidation
-      .uuid(value)
+      .uuid(value.trim)
       .asError(Invalid.InvalidId)
 
   /**

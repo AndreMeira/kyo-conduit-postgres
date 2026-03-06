@@ -89,3 +89,13 @@ object ApplicationError:
    * found in the system. Extends DomainError.
    */
   trait NotFoundError extends DomainError
+
+  /**
+   * Trait for vendor-specific errors.
+   *
+   * Vendor errors represent issues that arise from interactions with external
+   * systems or libraries, such as database errors, network errors, or third-party
+   * API failures. These errors may require special handling based on the vendor's
+   * error semantics.
+   */
+  trait VendorError extends ApplicationError

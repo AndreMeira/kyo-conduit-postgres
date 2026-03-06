@@ -3,7 +3,7 @@ package conduit.domain.service.persistence
 import conduit.domain.error.ApplicationError
 import conduit.domain.model
 import conduit.domain.model.{ Credentials, User }
-import conduit.domain.service.persistence.Database.Transaction
+import Database.Transaction
 import kyo.*
 
 /**

@@ -20,7 +20,14 @@ class InMemoryDatabase(state: InMemoryState) extends Database[InMemoryTransactio
    * @param effect the effect to be executed within the transaction
    * @return the result of the effect execution
    */
-  override def transaction[A, Effect <: Async](effect: A < (Effect & Env[InMemoryTransaction])): A < Effect =
-    state.duplicate.map(new InMemoryTransaction(_)).map(tx => Env.run(tx)(effect))
+  override def transaction[A, Effect <: Pending](
+    effect: A < (Effect & Env[InMemoryTransaction])
+  ): A < Effect =
+    for {
+      copied <- state.duplicate
+      tx      = new InMemoryTransaction(copied)
+      result <- Env.run(tx)(effect)
+      _      <- state.merge(tx.state)
+    } yield result
 
 }

@@ -1,4 +1,4 @@
-package conduit.domain.error
+package conduit.domain.request.article
 
 import conduit.domain.error.ValidationError
 
@@ -9,7 +9,8 @@ import conduit.domain.error.ValidationError
  * creating or updating articles in the Conduit application. Each case
  * represents a specific validation constraint violation related to article data.
  */
-enum ArticleInvalidInput extends ValidationError.InvalidInput {
+enum InvalidInput extends ValidationError.InvalidInput {
+
   /**
    * Error indicating that an article tag is empty.
    */
@@ -51,17 +52,23 @@ enum ArticleInvalidInput extends ValidationError.InvalidInput {
   case CountMustBePositive
 
   /**
+   * Error indicating that no article is matching this slug.
+   */
+  case ArticleDoesNotExists(slug: String)
+
+  /**
    * Returns a human-readable message describing the validation error.
    *
    * @return the error message corresponding to this validation error case
    */
   override def message: String = this match
-    case InvalidSlug         => "Slug is invalid"
-    case InvalidId           => "Article is invalid"
-    case InvalidAuthorId     => "Author id is invalid"
-    case EmtpyTag            => "Tag can not be empty"
-    case CountMustBePositive => "Favorite count must be positive"
-    case EmptyBody           => "The body of an article can not be empty"
-    case EmptyTitle          => "The title of an article can not be empty"
-    case EmptyDescription    => "The description of an article can not be empty"
+    case InvalidSlug                => "Slug is invalid"
+    case InvalidId                  => "Article id is invalid"
+    case InvalidAuthorId            => "Author id is invalid"
+    case EmtpyTag                   => "Tag can not be empty"
+    case CountMustBePositive        => "Favorite count must be positive"
+    case EmptyBody                  => "The body of an article can not be empty"
+    case EmptyTitle                 => "The title of an article can not be empty"
+    case EmptyDescription           => "The description of an article can not be empty"
+    case ArticleDoesNotExists(slug) => s"There is no article associated with $slug"
 }

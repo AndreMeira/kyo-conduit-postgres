@@ -1,7 +1,7 @@
 package conduit.domain.error
 
 import ApplicationError.InconsistentState
-import conduit.domain.model.{Article, UserProfile}
+import conduit.domain.model.{ Article, User, UserProfile }
 
 import java.util.UUID
 
@@ -12,7 +12,7 @@ import java.util.UUID
  * state where expected entities (such as user profiles or articles) cannot be found.
  * These errors typically indicate a bug or data corruption issue.
  */
-enum MissingEntityError extends InconsistentState:
+enum MissingEntity extends InconsistentState:
   /**
    * Error indicating that a user profile is missing for a given user ID.
    *
@@ -21,7 +21,7 @@ enum MissingEntityError extends InconsistentState:
    *
    * @param userId the ID of the user whose profile is missing
    */
-  case UserProfileMissing(userId: UserProfile.Id)
+  case UserProfileMissing(userId: User.Id | UserProfile.Id)
 
   /**
    * Error indicating that an article is missing for a given article ID.
@@ -34,6 +34,16 @@ enum MissingEntityError extends InconsistentState:
   case ArticleMissing(articleId: Article.Id)
 
   /**
+   * Error indicating that credentials are missing for a given user ID.
+   *
+   * This error occurs when a user ID exists but its associated credentials cannot be found,
+   * suggesting data inconsistency.
+   *
+   * @param userId the ID of the user whose credentials are missing
+   */
+  case CredentialsMissing(userId: User.Id | UserProfile.Id)
+
+  /**
    * Returns a human-readable message describing the missing entity error.
    *
    * @return the error message corresponding to this missing entity error case
@@ -41,3 +51,4 @@ enum MissingEntityError extends InconsistentState:
   override def message: String = this match
     case UserProfileMissing(id) => s"User profile of user $id is missing"
     case ArticleMissing(id)     => s"Article with id $id is missing"
+    case CredentialsMissing(id) => s"Credentials of user $id are missing"

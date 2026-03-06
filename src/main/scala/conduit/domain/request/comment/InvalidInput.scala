@@ -1,6 +1,7 @@
-package conduit.domain.error
+package conduit.domain.request.comment
 
 import conduit.domain.error.ValidationError
+import conduit.domain.model.Comment
 
 /**
  * Enum representing validation errors specific to comment operations.
@@ -9,7 +10,7 @@ import conduit.domain.error.ValidationError
  * creating or updating comments in the Conduit application. Each case
  * represents a specific validation constraint violation related to comment data.
  */
-enum CommentInvalidInput extends ValidationError.InvalidInput {
+enum InvalidInput extends ValidationError.InvalidInput {
   /**
    * Error indicating that a comment body is empty.
    */
@@ -25,7 +26,7 @@ enum CommentInvalidInput extends ValidationError.InvalidInput {
    *
    * @param value the non-positive ID value that was provided
    */
-  case IdIsNotPositive(value: Long)
+  case IdIsNotPositive(value: Comment.Id)
 
   /**
    * Returns a human-readable message describing the validation error.

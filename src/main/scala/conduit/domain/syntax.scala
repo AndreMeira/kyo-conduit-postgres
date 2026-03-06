@@ -22,12 +22,23 @@ object syntax:
   type Validated[A] = Validation[ValidationError.InvalidInput, A]
 
   /**
+   * Extension method to lift a value into a general effect type.
+   *
+   * This method allows any value to be treated as an effect that produces
+   * that value without any additional context or effects.
+   */
+  extension [A](value: A) {
+    def lift: A < Any = value
+  }
+
+  /**
    * Extension methods for validated effects that can abort with application errors.
    *
    * These methods provide convenient operations for working with validation results
    * in an effectful context, allowing composition and transformation of validated values.
    */
   extension [S, A](validated: Validated[A] < (S & Abort[ApplicationError])) {
+
     /**
      * Converts a validated effect to a pure effect, aborting on validation failure.
      *
@@ -72,6 +83,7 @@ object syntax:
    * effectful context, particularly for converting absent values to specific errors.
    */
   extension [S, A](effect: Maybe[A] < (S & Abort[ApplicationError])) {
+
     /**
      * Converts a Maybe effect to a pure effect, aborting with a specific error if absent.
      *
@@ -91,6 +103,7 @@ object syntax:
    * and panic recovery in the context of application errors.
    */
   extension [S, A](effect: A < (S & Abort[ApplicationError])) {
+
     /**
      * Transforms the effect result to a different value, discarding the original.
      *

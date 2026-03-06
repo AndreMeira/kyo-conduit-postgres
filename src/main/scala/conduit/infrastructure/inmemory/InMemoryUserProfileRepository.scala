@@ -1,7 +1,9 @@
 package conduit.infrastructure.inmemory
 
-import conduit.domain.model.{Article, User, UserProfile}
+import conduit.domain.model.{ Article, User, UserProfile }
 import conduit.domain.service.persistence.UserProfileRepository
+import conduit.infrastructure.inmemory.InMemoryState.Changed.{ Inserted, Updated }
+import conduit.infrastructure.inmemory.InMemoryState.RowReference.ProfileRow
 import kyo.*
 
 /**
@@ -12,6 +14,7 @@ import kyo.*
  * to ensure consistent access to the shared user profile state.
  */
 class InMemoryUserProfileRepository extends UserProfileRepository[InMemoryTransaction] {
+
   /**
    * Saves a new user profile to the repository.
    *
@@ -20,7 +23,8 @@ class InMemoryUserProfileRepository extends UserProfileRepository[InMemoryTransa
    */
   override def save(profile: UserProfile): Unit < Effect =
     InMemoryTransaction { state =>
-      state.profiles.updateAndGet(_ + (profile.id -> profile)).unit
+      state.profiles.updateAndGet(_ + (profile.id -> profile))
+        *> state.addChange(Inserted(ProfileRow(profile.id)))
     }
 
   /**
@@ -31,7 +35,8 @@ class InMemoryUserProfileRepository extends UserProfileRepository[InMemoryTransa
    */
   override def update(profile: UserProfile): Unit < Effect =
     InMemoryTransaction { state =>
-      state.profiles.updateAndGet(_ + (profile.id -> profile)).unit
+      state.profiles.updateAndGet(_ + (profile.id -> profile))
+        *> state.addChange(Updated(ProfileRow(profile.id)))
     }
 
   /**
@@ -70,6 +75,19 @@ class InMemoryUserProfileRepository extends UserProfileRepository[InMemoryTransa
     }
 
   /**
+   * Finds user profiles for a set of user IDs.
+   * 
+   * @param ids the list of user IDs to search for
+   * @return a list of user profiles corresponding to the provided user IDs
+   */
+  override def findByUsers(ids: List[User.Id]): List[UserProfile] < Effect =
+    InMemoryTransaction { state =>
+      for {
+        profileByUserId <- state.profileByUserId
+      } yield ids.flatMap(id => profileByUserId.get(id))
+    }
+
+  /**
    * Finds a user profile by the associated article ID.
    *
    * @param id the article ID to search for
@@ -85,5 +103,48 @@ class InMemoryUserProfileRepository extends UserProfileRepository[InMemoryTransa
         profile <- Maybe.fromOption(profileByUserId.get(article.authorId))
       } yield profile
     }
-}
 
+  /**
+   * Finds user profiles for a set of article IDs.
+   *
+   * @param ids the set of article IDs to search for
+   *  @return a map of article IDs to their corresponding user profiles
+   */
+  override def findByArticles(ids: Set[Article.Id]): Map[Article.Id, UserProfile] < Effect =
+    InMemoryTransaction { state =>
+      for {
+        articles        <- state.articles.get
+        profileByUserId <- state.profileByUserId
+      } yield {
+        for {
+          articleId <- ids
+          article   <- articles.get(articleId)
+          profile   <- profileByUserId.get(article.authorId)
+        } yield articleId -> profile
+      }.toMap
+    }
+
+  /**
+   * Tells if the username exists
+   *
+   * @param username the username to search for
+   * @return true if the profile exists false otherwise
+   */
+  override def exists(username: String): Boolean < Effect =
+    InMemoryTransaction { state =>
+      state.profiles.get.map(_.values.exists(_.name == username))
+    }
+
+  /**
+   * Finds a user profile by the username.
+   *
+   * @param username the username to search for
+   * @return a Maybe containing the user profile if found, or None otherwise
+   */
+  override def findByUsername(username: String): Maybe[UserProfile] < Effect =
+    InMemoryTransaction { state =>
+      state.profiles.get.map { profiles =>
+        Maybe.fromOption(profiles.values.find(_.name == username))
+      }
+    }
+}

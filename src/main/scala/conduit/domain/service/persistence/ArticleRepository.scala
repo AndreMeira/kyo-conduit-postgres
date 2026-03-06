@@ -2,8 +2,8 @@ package conduit.domain.service.persistence
 
 import conduit.domain.error.ApplicationError
 import conduit.domain.model.{Article, User}
-import conduit.domain.service.persistence.ArticleRepository.SearchParam
-import conduit.domain.service.persistence.Database.Transaction
+import ArticleRepository.SearchParam
+import Database.Transaction
 import kyo.*
 
 /**
@@ -25,6 +25,14 @@ trait ArticleRepository[Tx <: Transaction] {
    * @return a Maybe containing the article if found, or None if not found
    */
   def find(id: Article.Id): Maybe[Article] < Effect
+
+  /**
+   * Finds an article by its slug.
+   * 
+   * @param slug the article slug
+   * @return a Maybe containing the article if found, or None if not found
+   */
+  def findBySlug(slug: String): Maybe[Article] < Effect
 
   /**
    * Checks if an article with the given ID exists in the repository.
@@ -60,6 +68,26 @@ trait ArticleRepository[Tx <: Transaction] {
    * @return a list of articles matching all search criteria
    */
   def search(params: List[SearchParam]): List[Article] < Effect
+
+  /**
+   * Retrieves a feed of articles for a specific user.
+   *
+   * The feed consists of articles from authors that the user follows.
+   *
+   * @param userId the ID of the user for whom to retrieve the feed
+   * @param offset the starting index for pagination
+   * @param limit the maximum number of articles to return
+   * @return a list of articles in the user's feed
+   */
+  def feedOf(userId: User.Id, offset: Int, limit: Int): List[Article] < Effect
+
+  /**
+   * Counts the total number of articles in a user's feed.
+   *
+   * @param userId the ID of the user whose feed articles to count
+   * @return the total count of articles in the user's feed
+   */
+  def countFeedOf(userId: User.Id): Int < Effect
 }
 
 object ArticleRepository:

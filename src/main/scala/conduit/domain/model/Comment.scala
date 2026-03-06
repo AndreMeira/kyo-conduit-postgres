@@ -22,7 +22,7 @@ import java.util.UUID
  * @param updatedAt the timestamp when the comment was last modified
  */
 case class Comment(
-  id: Long,
+  id: Comment.Id,
   articleId: Article.Id,
   body: String,
   authorId: UUID,
