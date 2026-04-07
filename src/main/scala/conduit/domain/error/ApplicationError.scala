@@ -99,3 +99,14 @@ object ApplicationError:
    * error semantics.
    */
   trait VendorError extends ApplicationError
+
+  /**
+    * Trait for unrecoverable errors.
+    *
+    * Unrecoverable errors represent critical failures that cannot be handled or
+    * recovered from within the application. These errors typically indicate
+    * severe issues such as data corruption, critical bugs, or system failures
+    * that require immediate attention and may necessitate shutting down the
+    * application to prevent further damage.
+    */
+  trait UnrecoverableError extends ApplicationError

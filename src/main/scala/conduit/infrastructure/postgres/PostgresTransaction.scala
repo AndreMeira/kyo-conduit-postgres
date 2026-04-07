@@ -1,6 +1,6 @@
 package conduit.infrastructure.postgres
 
-import com.augustnagro.magnum.{ DbTx, MagnumInterop, SqlLogger }
+import com.augustnagro.magnum.{ DbTx, MagnumInterop, SqlLogger, transact }
 import conduit.domain.error.ApplicationError
 import conduit.domain.service.persistence.Database
 import kyo.*
@@ -23,37 +23,26 @@ class PostgresTransaction(connection: Connection) extends Database.Transaction {
   def dbTx: DbTx = MagnumInterop.makeDbTx(connection)
 
   /**
-   * Starts the transaction by disabling auto-commit and setting the isolation level.
-   *
-   * @return A computation that starts the transaction or aborts with a `ConnectionError`.
-   */
-  def start: Unit < (Sync & Abort[PostgresTransaction.Error]) =
-    Kyo
-      .attempt {
-        connection.setAutoCommit(false)
-        connection.setTransactionIsolation(Connection.TRANSACTION_READ_COMMITTED)
-      }
-      .mapAbort(error => PostgresTransaction.Error.ConnectionError(error))
-
-  /**
    * Commits the transaction.
    *
    * @return A computation that commits the transaction or aborts with a `TransactionError`.
    */
-  def commit: Unit < (Sync & Abort[PostgresTransaction.Error]) =
+  def commit: Unit < (Sync & Abort[PostgresTransaction.Error]) = Kyo.defer {
     Kyo
       .attempt(connection.commit())
       .mapAbort(error => PostgresTransaction.Error.TransactionError(error))
+  }
 
   /**
    * Rolls back the transaction.
    *
    * @return A computation that rolls back the transaction or aborts with a `TransactionError`.
    */
-  def rollback: Unit < (Sync & Abort[PostgresTransaction.Error]) =
+  def rollback: Unit < (Sync & Abort[PostgresTransaction.Error]) = Kyo.defer {
     Kyo
       .attempt(connection.rollback())
       .mapAbort(error => PostgresTransaction.Error.TransactionError(error))
+  }
 }
 
 object PostgresTransaction {
@@ -97,9 +86,10 @@ object PostgresTransaction {
      */
     def apply[A](action: DbTx ?=> A): A < (Sync & Abort[Error] & Env[PostgresTransaction]) =
       Env.get[PostgresTransaction].map { transaction =>
-        Kyo
-          .attempt(action(using transaction.dbTx))
-          .mapAbort(Error.TransactionError.apply)
+        Kyo.defer:
+          Kyo
+            .attempt(action(using transaction.dbTx))
+            .mapAbort(Error.TransactionError.apply)
       }
 
     /**

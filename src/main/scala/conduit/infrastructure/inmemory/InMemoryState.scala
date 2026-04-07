@@ -138,9 +138,19 @@ class InMemoryState(
     for changes <- changes.get
     yield changes.collect { case Updated(row) => row }
 
-  def phantomUpdate(stateToMerge: InMemoryState): List[RowReference] < Sync =
+  /**
+   * Identifies "phantom" updates in another state that reference rows deleted in the current state.
+   *
+   * This method checks for any updated rows in the other state that correspond to rows deleted
+   * in the current state. It returns a list of RowReference objects for any such phantom updates,
+   * which can be used to prevent conflicts during merges.
+   *
+   * @param other the other InMemoryState to compare against
+   * @return a list of RowReference objects representing phantom updates
+   */
+  private def phantomUpdate(other: InMemoryState): List[RowReference] < Sync =
     for {
-      updated     <- stateToMerge.updated
+      updated     <- other.updated
       articles    <- articles.get.map(_.keys.toSet)
       comments    <- comments.get.map(_.keys.toSet)
       profiles    <- profiles.get.map(_.keys.toSet)
@@ -189,18 +199,6 @@ class InMemoryState(
    */
   private def prepareMerge(other: InMemoryState): Unit < Sync =
     for {
-      deleted <- deleted
-      _       <- other.articles.updateAndGet(_ -- deleted.collect { case ArticleRow(id) => id })
-      _       <- other.comments.updateAndGet(_ -- deleted.collect { case CommentRow(id) => id })
-      _       <- other.profiles.updateAndGet(_ -- deleted.collect { case ProfileRow(id) => id })
-      _       <- other.favorites.updateAndGet(_ -- deleted.collect { case FavoriteRow(id) => id })
-      _       <- other.followers.updateAndGet(_ -- deleted.collect { case FollowerRow(id) => id })
-      _       <- other.credentials.updateAndGet(_ -- deleted.collect { case CredentialsRow(id) => id })
-      _       <- other.tags.updateAndGet(_ -- deleted.collect { case TagsRow(id) => id })
-    } yield ()
-
-  private def prepareMerge2(other: InMemoryState): Unit < Sync =
-    for {
       phantom <- phantomUpdate(other)
       _       <- other.articles.updateAndGet(_ -- phantom.collect { case ArticleRow(id) => id })
       _       <- other.comments.updateAndGet(_ -- phantom.collect { case CommentRow(id) => id })
@@ -209,21 +207,6 @@ class InMemoryState(
       _       <- other.followers.updateAndGet(_ -- phantom.collect { case FollowerRow(id) => id })
       _       <- other.credentials.updateAndGet(_ -- phantom.collect { case CredentialsRow(id) => id })
       _       <- other.tags.updateAndGet(_ -- phantom.collect { case TagsRow(id) => id })
-    } yield ()
-
-  /**
-   * Check for conflicts between deleted and updated rows in two states.
-   * 
-   * @param other another state to be merged
-   * @return Unit and fails if constraint is violated
-   */
-  private def checkConsistency(other: InMemoryState): Unit < (Sync & Abort[InMemoryState.Failure]) =
-    for {
-      deleted     <- this.changes.get.map(_.collect { case Deleted(row) => row })
-      updated     <- other.changes.get.map(_.collect { case Updated(row) => row })
-      intersection = deleted.toSet & updated.toSet
-      _           <- if intersection.isEmpty then Kyo.lift(())
-                     else Abort.fail(InMemoryState.Failure.ConstraintViolation)
     } yield ()
 
   /**
@@ -270,7 +253,6 @@ class InMemoryState(
    */
   private def beforeMerge(other: InMemoryState): Unit < (Async & Abort[InMemoryState.Failure]) =
     prepareMerge(other)
-      *> checkConsistency(other)
       *> checkEmailUnicity(other)
       *> checkUsernameUnicity(other)
 
@@ -288,6 +270,15 @@ class InMemoryState(
     lock
       .run {
         beforeMerge(other)
+        // remove deleted rows from the state to prevent them from reappearing in the merged state
+          *> other.deleted.flatMap(other => articles.updateAndGet(_ -- other.collect { case ArticleRow(id) => id }))
+          *> other.deleted.flatMap(other => comments.updateAndGet(_ -- other.collect { case CommentRow(id) => id }))
+          *> other.deleted.flatMap(other => profiles.updateAndGet(_ -- other.collect { case ProfileRow(id) => id }))
+          *> other.deleted.flatMap(other => favorites.updateAndGet(_ -- other.collect { case FavoriteRow(id) => id }))
+          *> other.deleted.flatMap(other => followers.updateAndGet(_ -- other.collect { case FollowerRow(id) => id }))
+          *> other.deleted.flatMap(other => credentials.updateAndGet(_ -- other.collect { case CredentialsRow(id) => id }))
+          *> other.deleted.flatMap(other => tags.updateAndGet(_ -- other.collect { case TagsRow(id) => id }))
+          // merge all data from the other state into the current state
           *> other.articles.get.flatMap(other => articles.updateAndGet(_ ++ other))
           *> other.comments.get.flatMap(other => comments.updateAndGet(_ ++ other))
           *> other.profiles.get.flatMap(other => profiles.updateAndGet(_ ++ other))
@@ -295,6 +286,7 @@ class InMemoryState(
           *> other.followers.get.flatMap(other => followers.updateAndGet(_ ++ other))
           *> other.credentials.get.flatMap(other => credentials.updateAndGet(_ ++ other))
           *> other.tags.get.flatMap(other => tags.updateAndGet(_ ++ other))
+          // merge changes from the other state into the current state, keeping only the last 10k changes to prevent unbounded growth
           *> other.changes.get.flatMap(other => changes.updateAndGet(_ ++ other))
           *> changes.get.flatMap(changes => changes.drop(changes.size - 10000)) // Keep only last 10k changes
       }

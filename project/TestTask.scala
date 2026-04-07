@@ -11,10 +11,10 @@ object TestTask {
     runTest / fullClasspath := (Test / fullClasspath).value,
     runTest                 := {
       val mainClass = spaceDelimited("<main class>").parsed.head
-      val cp        = (runTest / fullClasspath).value
-      val r         = (runTest / runner).value
+      val classpath = (runTest / fullClasspath).value
+      val run       = (runTest / runner).value
       val log       = streams.value.log
-      r.run(mainClass, cp.files, Seq.empty, log).get
+      run.run(mainClass, classpath.files, Seq.empty, log).get
     },
   )
 }

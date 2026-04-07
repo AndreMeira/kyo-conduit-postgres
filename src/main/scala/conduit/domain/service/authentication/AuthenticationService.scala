@@ -117,7 +117,7 @@ class AuthenticationService(clock: Clock, config: Config) {
    */
   def verifyExpiration(claim: JwtClaim): Unit < (Sync & Abort[Unauthorised]) =
     clock.now.map { now =>
-      claim.expiration.forall(_ > now.toJava.getEpochSecond) match
+      claim.expiration.exists(_ > now.toJava.getEpochSecond) match
         case true  => ()
         case false => Abort.fail(Unauthorised.TokenExpired)
     }
@@ -136,12 +136,13 @@ class AuthenticationService(clock: Clock, config: Config) {
     }
 }
 
-/**
- * Configuration for the AuthenticationService.
- *
- * @param passwordSalt Salt used for password hashing.
- * @param tokenSalt    Secret used for signing JWT tokens.
- * @param tokenTtl     Time-to-live for JWT tokens.
- */
 object AuthenticationService:
+
+  /**
+   * Configuration for the AuthenticationService.
+   *
+   * @param passwordSalt Salt used for password hashing.
+   * @param tokenSalt    Secret used for signing JWT tokens.
+   * @param tokenTtl     Time-to-live for JWT tokens.
+   */
   case class Config(passwordSalt: String, tokenSalt: String, tokenTtl: Duration)

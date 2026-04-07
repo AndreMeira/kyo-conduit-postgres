@@ -25,15 +25,13 @@ class PostgresDatabase(datasource: HikariDataSource) extends Database[PostgresTr
    * @param effect the effect to execute within the transaction context
    * @return the result of executing the effect wrapped in an Async effect
    */
-  override def transaction[A, Effect <: Pending](effect: A < (Effect & Env[PostgresTransaction])): A < Effect = {
+  override def transaction[A, Effect <: Pending](effect: A < (Effect & Env[PostgresTransaction])): A < Effect =
     Scope.run:
       for {
         transaction <- Scope.acquireRelease(acquireTransaction)(releaseTransaction)
-        _           <- transaction.start
         result      <- Abort.run(Env.run(transaction)(effect))
         value       <- handleResult(transaction, result)
       } yield value
-    }
 
   /**
    * Acquires a new database transaction by obtaining a connection from the datasource.
@@ -41,10 +39,14 @@ class PostgresDatabase(datasource: HikariDataSource) extends Database[PostgresTr
    * @return a PostgresTransaction wrapped in an effect that can fail with a connection error
    */
   private def acquireTransaction: PostgresTransaction < (Sync & Abort[PostgresTransaction.Error]) =
-    Kyo
-      .attempt(datasource.getConnection())
-      .map(PostgresTransaction(_))
-      .mapAbort(PostgresTransaction.Error.ConnectionError(_))
+    Kyo.defer(Abort.catching(datasource.getConnection)).map { connection =>
+      Abort
+        .catching:
+          connection.setAutoCommit(false)
+          connection.setTransactionIsolation(Connection.TRANSACTION_READ_COMMITTED)
+          PostgresTransaction(connection)
+        .mapAbort(PostgresTransaction.Error.ConnectionError.apply)
+    }
 
   /**
    * Releases a database transaction by closing the underlying connection.
@@ -70,8 +72,8 @@ class PostgresDatabase(datasource: HikariDataSource) extends Database[PostgresTr
     result: Result[ApplicationError, A],
   ): A < (Sync & Abort[ApplicationError]) =
     result match {
-      case Result.Failure(error) => transaction.rollback.map(_ => Abort.fail(error))
       case Result.Success(value) => transaction.commit.map(_ => value)
+      case Result.Failure(error) => transaction.rollback.map(_ => Abort.fail(error))
       case Result.Panic(reason)  => transaction.rollback.map(_ => Abort.panic(reason))
     }
 
