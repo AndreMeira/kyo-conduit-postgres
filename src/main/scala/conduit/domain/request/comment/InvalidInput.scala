@@ -35,6 +35,6 @@ enum InvalidInput extends ValidationError.InvalidInput {
    */
   override def message: String = this match
     case IdIsNotPositive(i) => s"Id must be positive, $i given"
-    case EmptyBody        => "Comment body can not be empty"
-    case InvalidAuthorId  => "Comment author id is invalid"
+    case EmptyBody          => "Comment body can not be empty"
+    case InvalidAuthorId    => "Comment author id is invalid"
 }
