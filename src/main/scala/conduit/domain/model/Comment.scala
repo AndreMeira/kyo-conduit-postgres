@@ -33,3 +33,22 @@ case class Comment(
 object Comment:
   /** Type alias for comment identifiers using Long */
   type Id = Long
+
+  case class Data(
+    articleId: Article.Id,
+    body: String,
+    authorId: UUID,
+    createdAt: Instant,
+    updatedAt: Instant,
+  ) {
+    def withId(id: Long): Comment =
+      Comment(
+        id = id,
+        articleId = comment.articleId,
+        body = comment.body,
+        authorId = comment.authorId,
+        createdAt = comment.createdAt,
+        updatedAt = comment.updatedAt
+      )
+
+  }

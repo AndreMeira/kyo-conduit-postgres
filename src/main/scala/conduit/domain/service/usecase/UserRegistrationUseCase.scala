@@ -55,8 +55,8 @@ class UserRegistrationUseCase[Tx <: Transaction](
         (name, creds) <- parse(request).validOrAbort
         hashedCreds   <- authentication.hashed(creds)
         profile       <- createProfile(name)
-        _             <- persistence.users.save(profile)
         _             <- persistence.credentials.save(profile.userId, hashedCreds)
+        _             <- persistence.users.save(profile)
       } yield GetProfileResponse.make(profile, false)
 
   /**

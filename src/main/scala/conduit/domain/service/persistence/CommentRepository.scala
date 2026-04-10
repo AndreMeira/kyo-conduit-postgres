@@ -39,7 +39,7 @@ trait CommentRepository[Tx <: Transaction] {
    * @param comment the comment to save
    * @return Unit on successful save
    */
-  def save(comment: Comment): Unit < Effect
+  def save(comment: Comment.Data): Comment < Effect
 
   /**
    * Updates an existing comment in the repository.

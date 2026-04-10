@@ -1,9 +1,12 @@
 package conduit.infrastructure.codecs.database
 
 import com.augustnagro.magnum.DbCodec
+import kyo.Maybe
 
+import java.net.URI
 import java.sql.{ PreparedStatement, ResultSet, Timestamp, Types }
 import java.time.Instant
+import java.util.UUID
 import scala.reflect.ClassTag
 
 object DatabaseCodecs:
@@ -52,7 +55,7 @@ object DatabaseCodecs:
                 case str: String => str
                 case other       => DecodeError.raise(s"Expected String but got ${other.getClass.getName}")
               }
-            case other             => DecodeError.raise(s"Expected Array but got ${other.getClass.getName}")
+            case other             => DecodeError.raise(s"Expected Array but got ${other}")
 
     /* Writes a List[String] to the PreparedStatement at the specified position.
      * It converts the Scala list to a SQL array that can be stored in the database. */
@@ -65,3 +68,44 @@ object DatabaseCodecs:
     timestamp => timestamp.toInstant,
     instant => Timestamp.from(instant),
   )
+
+  /** A codec for nullable TEXT columns mapped to Maybe[String]. */
+  given DbCodec[Maybe[String]] with {
+    val cols: IArray[Int] = IArray(Types.VARCHAR)
+    def queryRepr: String = "?"
+    def readSingle(rs: ResultSet, pos: Int): Maybe[String] =
+      val value = rs.getString(pos)
+      if rs.wasNull() then Maybe.Absent else Maybe.Present(value)
+    def writeSingle(entity: Maybe[String], ps: PreparedStatement, pos: Int): Unit =
+      entity match
+        case Maybe.Present(s) => ps.setString(pos, s)
+        case _                => ps.setNull(pos, Types.VARCHAR)
+  }
+
+  /** A codec for nullable TEXT columns mapped to Maybe[URI], storing URIs as strings. */
+  given DbCodec[Maybe[URI]] with {
+    val cols: IArray[Int] = IArray(Types.VARCHAR)
+    def queryRepr: String = "?"
+    def readSingle(rs: ResultSet, pos: Int): Maybe[URI] =
+      val value = rs.getString(pos)
+      if rs.wasNull() then Maybe.Absent else Maybe.Present(URI.create(value))
+    def writeSingle(entity: Maybe[URI], ps: PreparedStatement, pos: Int): Unit =
+      entity match
+        case Maybe.Present(uri) => ps.setString(pos, uri.toString)
+        case _                  => ps.setNull(pos, Types.VARCHAR)
+  }
+
+  /** A codec for PostgreSQL UUID array columns, used with = ANY(?) queries. */
+  given DbCodec[List[UUID]] with {
+    val cols: IArray[Int] = IArray(Types.ARRAY)
+    def queryRepr: String = "?"
+    def readSingle(rs: ResultSet, pos: Int): List[UUID] =
+      Option(rs.getArray(pos)).fold(Nil) { arr =>
+        arr.getArray.asInstanceOf[Array[Object]].map {
+          case u: UUID => u
+          case other   => DecodeError.raise(s"Expected UUID but got ${other.getClass.getName}")
+        }.toList
+      }
+    def writeSingle(entity: List[UUID], ps: PreparedStatement, pos: Int): Unit =
+      ps.setArray(pos, ps.getConnection.createArrayOf("uuid", entity.toArray))
+  }

@@ -1,8 +1,9 @@
 package conduit.infrastructure.inmemory
 
-import conduit.domain.model.{ Article, Comment }
+import conduit.domain.error.ApplicationError
+import conduit.domain.model.{Article, Comment}
 import conduit.domain.service.persistence.CommentRepository
-import conduit.infrastructure.inmemory.InMemoryState.Changed.{ Deleted, Inserted, Updated }
+import conduit.infrastructure.inmemory.InMemoryState.Changed.{Deleted, Inserted, Updated}
 import conduit.infrastructure.inmemory.InMemoryState.RowReference.CommentRow
 import kyo.*
 
@@ -13,7 +14,7 @@ import kyo.*
  * updating, and deleting comments. All operations are wrapped in InMemoryTransaction
  * to ensure consistent access to the shared comment state.
  */
-class InMemoryCommentRepository extends CommentRepository[InMemoryTransaction] {
+class InMemoryCommentRepository(lock: Meter) extends CommentRepository[InMemoryTransaction] {
 
   /**
    * Finds a comment by its ID.
@@ -21,10 +22,13 @@ class InMemoryCommentRepository extends CommentRepository[InMemoryTransaction] {
    * @param id the comment ID to search for
    * @return a Maybe containing the comment if found, or None otherwise
    */
-  override def find(id: Comment.Id): Maybe[Comment] < Effect =
-    InMemoryTransaction { state =>
-      state.comments.get.map(_.get(id)).map(Maybe.fromOption)
+  override def find(id: Comment.Id): Maybe[Comment] < Effect = {
+    lock.run {
+      InMemoryTransaction { state =>
+        state.comments.get.map(_.get(id)).map(Maybe.fromOption)
+      }
     }
+  }
 
   /**
    * Checks if a comment with the given ID exists.
@@ -38,16 +42,23 @@ class InMemoryCommentRepository extends CommentRepository[InMemoryTransaction] {
     }
 
   /**
-   * Saves a new comment to the repository.
+   * Saves a new comment to the repository and returns the persisted comment.
+   *
+   * The in-memory implementation uses comment.id as-is, mirroring the behaviour
+   * callers expect after a save (the returned comment carries the assigned ID).
    *
    * @param comment the comment to save
-   * @return Unit
+   * @return the saved comment
    */
-  override def save(comment: Comment): Unit < Effect =
-    InMemoryTransaction { state =>
-      state.addChange(Inserted(CommentRow(comment.id)))
-        *> state.comments.updateAndGet(_ + (comment.id -> comment)).unit
-    }
+  override def save(comment: Comment.Data): Comment < Effect = {
+    lock.run {
+      InMemoryTransaction { state =>
+        val id = nextCommentId(state)
+        state.addChange(Inserted(CommentRow(id)))
+          *> state.comments.updateAndGet(_ + (id -> comment.withId(id)))
+      }
+    }.mapAbort(_ => InMemoryCommentRepository.LockError)
+  }
 
   /**
    * Updates an existing comment in the repository.
@@ -85,4 +96,18 @@ class InMemoryCommentRepository extends CommentRepository[InMemoryTransaction] {
       state.addChange(Deleted(CommentRow(id)))
         *> state.comments.updateAndGet(_ - id).unit
     }
+
+  /**
+   * Give the next comment id
+   * This is concurrent safe, so it should be used inside a lock
+   * 
+   * @return Long
+   */
+  private def nextCommentId(state: InMemoryState): Long  =
+    state.comments.get.map: comments =>
+      comments.keySet.toList.sorted.lastOption.getOrElse(1)
+}
+
+object InMemoryCommentRepository {
+  case object LockError extends ApplicationError.TransientError
 }
