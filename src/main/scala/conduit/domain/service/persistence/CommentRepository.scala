@@ -1,7 +1,7 @@
 package conduit.domain.service.persistence
 
 import conduit.domain.error.ApplicationError
-import conduit.domain.model.{Article, Comment}
+import conduit.domain.model.{ Article, Comment }
 import Database.Transaction
 import kyo.*
 

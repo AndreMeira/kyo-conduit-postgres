@@ -22,7 +22,7 @@ case class ListArticlesRequest(
 )
 
 object ListArticlesRequest:
-  
+
   /**
    * Represents the different types of filters that can be applied when listing articles.
    */

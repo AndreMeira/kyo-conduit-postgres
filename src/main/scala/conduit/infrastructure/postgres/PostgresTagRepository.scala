@@ -63,7 +63,8 @@ class PostgresTagRepository extends TagRepository[PostgresTransaction]:
    * @return Unit on successful deletion
    */
   override def delete(articleId: Article.Id, tags: List[String]): Unit < Effect =
-    if tags.isEmpty then () else
+    if tags.isEmpty then ()
+    else
       Transactional {
         sql"""DELETE FROM tags
               WHERE article_id = $articleId

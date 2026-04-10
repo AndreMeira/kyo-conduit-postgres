@@ -1,6 +1,6 @@
 package conduit.domain.service.validation
 
-import conduit.domain.error.{ValidationError, CommonInvalidInput as Invalid}
+import conduit.domain.error.{ ValidationError, CommonInvalidInput as Invalid }
 import conduit.domain.syntax.Validated
 import zio.prelude.Validation
 
@@ -78,7 +78,7 @@ object CommonValidation {
       case str if regex.matches(str) => Validation.succeed(str)
       case _                         => Validation.fail(Invalid.InvalidString(regex))
     }
-    
+
   /**  
    * Validates that all provided values are the same.
    *

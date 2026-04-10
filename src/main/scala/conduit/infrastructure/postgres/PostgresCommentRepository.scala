@@ -36,7 +36,8 @@ class PostgresCommentRepository extends CommentRepository[PostgresTransaction]:
       sql"""SELECT EXISTS(SELECT 1 FROM comments WHERE id = $id)"""
         .query[Boolean]
         .run()
-        .headOption.contains(true)
+        .headOption
+        .contains(true)
 
   /**
    * Saves a new comment to the repository and returns the persisted comment with
@@ -108,4 +109,3 @@ class PostgresCommentRepository extends CommentRepository[PostgresTransaction]:
         .update
         .run()
     }.unit
-        

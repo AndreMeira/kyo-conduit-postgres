@@ -23,7 +23,7 @@ object AuthenticateRequest:
    *
    * @param user the actual user credentials for authentication
    */
-  case class Payload(user: Data)                   // wrapping due to api spec
+  case class Payload(user: Data) // wrapping due to api spec
 
   /**
    * Contains the user credentials for authentication.

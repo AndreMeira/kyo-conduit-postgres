@@ -57,4 +57,3 @@ class ProfileUnfollowingUseCase[Tx <: Database.Transaction](
       ?! ProfileNotFound(request.username)
 
 }
-

@@ -30,7 +30,7 @@ trait FollowerRepository[Tx <: Transaction] {
    * @return true if the follower relationship exists, false otherwise
    */
   def exists(followed: UserProfile.FollowedBy): Boolean < Effect
-  
+
   /**
    * Finds follower relationships for a user across multiple followed users.
    *

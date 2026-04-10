@@ -1,8 +1,8 @@
 package conduit.infrastructure.inmemory
 
-import conduit.domain.model.{Article, User}
+import conduit.domain.model.{ Article, User }
 import conduit.domain.service.persistence.FavoriteRepository
-import conduit.infrastructure.inmemory.InMemoryState.Changed.{Deleted, Inserted, Updated}
+import conduit.infrastructure.inmemory.InMemoryState.Changed.{ Deleted, Inserted, Updated }
 import conduit.infrastructure.inmemory.InMemoryState.RowReference.FavoriteRow
 import kyo.*
 

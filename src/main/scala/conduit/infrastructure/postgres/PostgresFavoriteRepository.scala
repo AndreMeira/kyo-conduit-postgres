@@ -26,7 +26,8 @@ class PostgresFavoriteRepository extends FavoriteRepository[PostgresTransaction]
             )"""
         .query[Boolean]
         .run()
-        .headOption.contains(true)
+        .headOption
+        .contains(true)
 
   /**
    * Finds which of the given article IDs have been favorited by the specified user.

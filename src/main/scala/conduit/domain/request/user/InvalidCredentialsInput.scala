@@ -10,6 +10,7 @@ import conduit.domain.model.Credentials
  * and invalid password format. Each case provides a descriptive error message.
  */
 enum InvalidCredentialsInput extends ValidationError.InvalidInput {
+
   /**
    * Indicates that the provided email does not match the expected format.
    * @param email The invalid email string.

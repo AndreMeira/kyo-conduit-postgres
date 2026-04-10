@@ -11,6 +11,7 @@ import conduit.domain.model.Comment
  * represents a specific validation constraint violation related to comment data.
  */
 enum InvalidInput extends ValidationError.InvalidInput {
+
   /**
    * Error indicating that a comment body is empty.
    */

@@ -71,9 +71,9 @@ object DatabaseCodecs:
 
   /** A codec for nullable TEXT columns mapped to Maybe[String]. */
   given maybeString: DbCodec[Maybe[String]] with {
-    val cols: IArray[Int] = IArray(Types.VARCHAR)
-    def queryRepr: String = "?"
-    def readSingle(rs: ResultSet, pos: Int): Maybe[String] =
+    val cols: IArray[Int]                                                         = IArray(Types.VARCHAR)
+    def queryRepr: String                                                         = "?"
+    def readSingle(rs: ResultSet, pos: Int): Maybe[String]                        =
       val value = rs.getString(pos)
       if rs.wasNull() then Maybe.Absent else Maybe.Present(value)
     def writeSingle(entity: Maybe[String], ps: PreparedStatement, pos: Int): Unit =
@@ -84,9 +84,9 @@ object DatabaseCodecs:
 
   /** A codec for nullable TEXT columns mapped to Maybe[URI], storing URIs as strings. */
   given maybeUri: DbCodec[Maybe[URI]] with {
-    val cols: IArray[Int] = IArray(Types.VARCHAR)
-    def queryRepr: String = "?"
-    def readSingle(rs: ResultSet, pos: Int): Maybe[URI] =
+    val cols: IArray[Int]                                                      = IArray(Types.VARCHAR)
+    def queryRepr: String                                                      = "?"
+    def readSingle(rs: ResultSet, pos: Int): Maybe[URI]                        =
       val value = rs.getString(pos)
       if rs.wasNull() then Maybe.Absent else Maybe.Present(URI.create(value))
     def writeSingle(entity: Maybe[URI], ps: PreparedStatement, pos: Int): Unit =
@@ -97,14 +97,18 @@ object DatabaseCodecs:
 
   /** A codec for PostgreSQL UUID array columns, used with = ANY(?) queries. */
   given listUUID: DbCodec[List[UUID]] with {
-    val cols: IArray[Int] = IArray(Types.ARRAY)
-    def queryRepr: String = "?"
-    def readSingle(rs: ResultSet, pos: Int): List[UUID] =
+    val cols: IArray[Int]                                                      = IArray(Types.ARRAY)
+    def queryRepr: String                                                      = "?"
+    def readSingle(rs: ResultSet, pos: Int): List[UUID]                        =
       Option(rs.getArray(pos)).fold(Nil) { arr =>
-        arr.getArray.asInstanceOf[Array[Object]].map {
-          case u: UUID => u
-          case other   => DecodeError.raise(s"Expected UUID but got ${other.getClass.getName}")
-        }.toList
+        arr
+          .getArray
+          .asInstanceOf[Array[Object]]
+          .map {
+            case u: UUID => u
+            case other   => DecodeError.raise(s"Expected UUID but got ${other.getClass.getName}")
+          }
+          .toList
       }
     def writeSingle(entity: List[UUID], ps: PreparedStatement, pos: Int): Unit =
       ps.setArray(pos, ps.getConnection.createArrayOf("uuid", entity.toArray))

@@ -1,7 +1,7 @@
 package conduit.domain.service.persistence
 
 import conduit.domain.error.ApplicationError
-import conduit.domain.model.{Article, User}
+import conduit.domain.model.{ Article, User }
 import ArticleRepository.SearchParam
 import Database.Transaction
 import kyo.*

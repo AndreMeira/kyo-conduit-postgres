@@ -29,7 +29,8 @@ class PostgresFollowerRepository extends FollowerRepository[PostgresTransaction]
             )"""
         .query[Boolean]
         .run()
-        .headOption.contains(true)
+        .headOption
+        .contains(true)
 
   /**
    * Finds which of the given followee IDs are followed by the specified follower.

@@ -7,7 +7,7 @@ import conduit.domain.request.user.AuthenticateRequest
 import conduit.domain.response.user.AuthenticationResponse
 import conduit.domain.service.authentication.AuthenticationService
 import conduit.domain.service.persistence.Database.Transaction
-import conduit.domain.service.persistence.{Database, Persistence}
+import conduit.domain.service.persistence.{ Database, Persistence }
 import conduit.domain.service.validation.{ CredentialsInputValidation, StateValidationService }
 import conduit.domain.syntax.*
 import kyo.*
@@ -15,7 +15,7 @@ import kyo.*
 class UserAuthenticationUseCase[Tx <: Transaction](
   database: Database[Tx],
   persistence: Persistence[Tx],
-  authentication: AuthenticationService
+  authentication: AuthenticationService,
 ) {
   type Effect = Async & Abort[ApplicationError]
 

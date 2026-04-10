@@ -1,6 +1,6 @@
 package conduit.domain.response.comment
 
-import conduit.domain.model.{Article, Comment, User, UserProfile}
+import conduit.domain.model.{ Article, Comment, User, UserProfile }
 
 import java.util.UUID
 import scala.util.chaining.scalaUtilChainingOps

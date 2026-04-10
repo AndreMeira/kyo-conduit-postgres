@@ -1,6 +1,6 @@
 package conduit.domain.response.user
 
-import conduit.domain.model.{User, UserProfile}
+import conduit.domain.model.{ User, UserProfile }
 
 /**
  * Represents the response returned after successful user authentication.

@@ -2,11 +2,11 @@ package conduit.infrastructure.configuration
 
 import conduit.domain.error.ApplicationError
 import kyo.*
-import pureconfig.{ConfigReader, ConfigSource}
+import pureconfig.{ ConfigReader, ConfigSource }
 
 /** Utility for loading configuration files using PureConfig and Kyo for error handling. */
 object ConfigurationLoader {
-  
+
   /**
    * Loads a configuration of type A from the specified resource path.
    * Uses PureConfig to read the configuration and Kyo to handle errors.

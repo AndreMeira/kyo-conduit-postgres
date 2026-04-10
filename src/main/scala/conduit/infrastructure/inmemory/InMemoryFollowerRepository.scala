@@ -2,7 +2,7 @@ package conduit.infrastructure.inmemory
 
 import conduit.domain.model.UserProfile
 import conduit.domain.service.persistence.FollowerRepository
-import conduit.infrastructure.inmemory.InMemoryState.Changed.{Deleted, Inserted, Updated}
+import conduit.infrastructure.inmemory.InMemoryState.Changed.{ Deleted, Inserted, Updated }
 import conduit.infrastructure.inmemory.InMemoryState.RowReference.FollowerRow
 import kyo.*
 
@@ -30,7 +30,7 @@ class InMemoryFollowerRepository extends FollowerRepository[InMemoryTransaction]
         followers.getOrElse(followed.followerId, Nil).contains(followed.profileId)
       }
     }
-    
+
   override def followedBy(profileId: UserProfile.Id, followerIds: List[UserProfile.Id]): List[UserProfile.Id] < Effect =
     InMemoryTransaction { state =>
       state.followers.get.map { followers =>
@@ -77,15 +77,18 @@ class InMemoryFollowerRepository extends FollowerRepository[InMemoryTransaction]
    */
   override def delete(followed: UserProfile.FollowedBy): Unit < Effect =
     InMemoryTransaction { state =>
-      state.followers.updateAndGet { followers =>
-        val currentFollowers = followers.getOrElse(followed.followerId, Nil)
-        followers + (followed.followerId -> currentFollowers.filterNot(_ == followed.profileId))
-      }.flatMap { followers =>
-        state.addChange(
-          if !followers.contains(followed.followerId)
-          then Deleted(FollowerRow(followed.followerId))
-          else Updated(FollowerRow(followed.followerId))
-        )
-      }
+      state
+        .followers
+        .updateAndGet { followers =>
+          val currentFollowers = followers.getOrElse(followed.followerId, Nil)
+          followers + (followed.followerId -> currentFollowers.filterNot(_ == followed.profileId))
+        }
+        .flatMap { followers =>
+          state.addChange(
+            if !followers.contains(followed.followerId)
+            then Deleted(FollowerRow(followed.followerId))
+            else Updated(FollowerRow(followed.followerId))
+          )
+        }
     }.unit
 }

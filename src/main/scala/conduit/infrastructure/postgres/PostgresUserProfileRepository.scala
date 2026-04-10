@@ -64,7 +64,8 @@ class PostgresUserProfileRepository extends UserProfileRepository[PostgresTransa
       sql"""SELECT EXISTS(SELECT 1 FROM profiles WHERE id = $id)"""
         .query[Boolean]
         .run()
-        .headOption.contains(true)
+        .headOption
+        .contains(true)
 
   /**
    * Finds a user profile by its unique ID.
@@ -142,7 +143,8 @@ class PostgresUserProfileRepository extends UserProfileRepository[PostgresTransa
       sql"""SELECT EXISTS(SELECT 1 FROM profiles WHERE name = $username)"""
         .query[Boolean]
         .run()
-        .headOption.contains(true)
+        .headOption
+        .contains(true)
 
   /**
    * Finds a user profile by the associated article ID.

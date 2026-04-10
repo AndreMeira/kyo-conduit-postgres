@@ -1,6 +1,6 @@
 package conduit.domain.request.user
 
-import conduit.domain.model.{User, UserProfile}
+import conduit.domain.model.{ User, UserProfile }
 import kyo.Maybe
 
 import java.net.URI
@@ -20,7 +20,7 @@ case class UpdateUserRequest(
 )
 
 object UpdateUserRequest:
-  
+
   /**
    * Represents the payload for updating a user's details.
    *
@@ -46,7 +46,7 @@ object UpdateUserRequest:
     bio: Option[String],
     image: Option[String],
   )
-  
+
   enum Patch:
     case Email(email: String)
     case Username(username: String)

@@ -127,13 +127,13 @@ class PostgresArticleRepository extends ArticleRepository[PostgresTransaction] {
   override def search(params: List[ArticleRepository.SearchParam]): List[Article] < Effect =
     Transactional:
       val (filterByTag, tagVal) = params
-        .collectFirst { case ArticleRepository.SearchParam.Tag(v)  => v }
+        .collectFirst { case ArticleRepository.SearchParam.Tag(v) => v }
         .fold((false, ""))(v => (true, v))
-        
+
       val (filterByAuthor, authorVal) = params
         .collectFirst { case ArticleRepository.SearchParam.Author(v) => v }
         .fold((false, ""))(v => (true, v))
-        
+
       val (filterByFav, favVal) = params
         .collectFirst { case ArticleRepository.SearchParam.FavoriteBy(v) => v }
         .fold((false, ""))(v => (true, v))
@@ -204,5 +204,6 @@ class PostgresArticleRepository extends ArticleRepository[PostgresTransaction] {
             WHERE fol.follower_id = $userId"""
         .query[Int]
         .run()
-        .headOption.getOrElse(0)
+        .headOption
+        .getOrElse(0)
 }

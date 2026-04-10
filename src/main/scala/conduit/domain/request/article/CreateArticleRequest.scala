@@ -39,6 +39,7 @@ object CreateArticleRequest:
     body: String,
     tagList: Option[List[String]], // @todo replace with kyo.Maybe
   ) {
+
     /** Returns tags as a List, defaulting to empty list if not provided */
     def tags: List[String] = tagList.getOrElse(Nil)
   }

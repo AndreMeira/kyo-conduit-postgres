@@ -1,7 +1,7 @@
 package conduit.domain.service.usecase
 
-import conduit.domain.service.persistence.{Database, Persistence}
-import conduit.domain.model.{Article, User, UserProfile}
+import conduit.domain.service.persistence.{ Database, Persistence }
+import conduit.domain.model.{ Article, User, UserProfile }
 import conduit.domain.error.ApplicationError
 import conduit.domain.error.MissingEntity.UserProfileMissing
 import conduit.domain.error.NotFound.ArticleNotFound

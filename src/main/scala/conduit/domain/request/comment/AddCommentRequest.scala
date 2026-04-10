@@ -19,14 +19,14 @@ case class AddCommentRequest(
 )
 
 object AddCommentRequest:
-  
+
   /**
    * Represents the payload for adding a comment.
    *
    * @param comment the comment data
    */
   case class Payload(comment: Data)
-  
+
   /**
    * Represents the data for adding a comment.
    *

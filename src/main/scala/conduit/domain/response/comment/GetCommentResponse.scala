@@ -1,6 +1,6 @@
 package conduit.domain.response.comment
 
-import conduit.domain.model.{Comment, UserProfile}
+import conduit.domain.model.{ Comment, UserProfile }
 import conduit.domain.response.user.GetProfileResponse
 
 /**

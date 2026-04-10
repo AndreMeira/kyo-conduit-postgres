@@ -42,7 +42,7 @@ class StateValidationService[Tx <: Transaction](persistence: Persistence[Tx]) {
       case true  => Validation.succeed(email)
       case false => Validation.fail(EmailAlreadyInUse(email))
     }
-    
+
   /**
    * Validates that the provided username is not already in use.
    *
@@ -51,7 +51,7 @@ class StateValidationService[Tx <: Transaction](persistence: Persistence[Tx]) {
    */
   def validateUsernameIsFree(username: String): Validated[String] < Effect =
     persistence.users.exists(username).map {
-      case true => Validation.fail(UsernameAlreadyExists(username))
+      case true  => Validation.fail(UsernameAlreadyExists(username))
       case false => Validation.succeed(username)
     }
 }

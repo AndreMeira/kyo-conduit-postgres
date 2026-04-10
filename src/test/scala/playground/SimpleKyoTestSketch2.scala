@@ -7,7 +7,6 @@ object SimpleKyoTestSketch2 extends KyoApp {
   opaque type TestName  = String
   opaque type SuiteName = String
 
-
   def specSuite = suite("test suite")
     *> test("simple test") {
       for {

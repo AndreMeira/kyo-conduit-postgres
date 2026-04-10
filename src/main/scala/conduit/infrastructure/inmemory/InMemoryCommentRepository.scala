@@ -1,9 +1,9 @@
 package conduit.infrastructure.inmemory
 
 import conduit.domain.error.ApplicationError
-import conduit.domain.model.{Article, Comment}
+import conduit.domain.model.{ Article, Comment }
 import conduit.domain.service.persistence.CommentRepository
-import conduit.infrastructure.inmemory.InMemoryState.Changed.{Deleted, Inserted, Updated}
+import conduit.infrastructure.inmemory.InMemoryState.Changed.{ Deleted, Inserted, Updated }
 import conduit.infrastructure.inmemory.InMemoryState.RowReference.CommentRow
 import kyo.*
 
@@ -48,14 +48,16 @@ class InMemoryCommentRepository(lock: Meter) extends CommentRepository[InMemoryT
    * @return the saved comment
    */
   override def save(comment: Comment.Data): Comment < Effect = Scope.run {
-    lock.run {
-      InMemoryTransaction { state =>
-        nextCommentId(state).map: id =>
-          state.addChange(Inserted(CommentRow(id)))
-            *> state.comments.updateAndGet(_ + (id -> comment.withId(id)))
-            *> comment.withId(id)
+    lock
+      .run {
+        InMemoryTransaction { state =>
+          nextCommentId(state).map: id =>
+            state.addChange(Inserted(CommentRow(id)))
+              *> state.comments.updateAndGet(_ + (id -> comment.withId(id)))
+              *> comment.withId(id)
+        }
       }
-    }.mapAbort(_ => InMemoryCommentRepository.LockError)
+      .mapAbort(_ => InMemoryCommentRepository.LockError)
   }
 
   /**
@@ -101,9 +103,12 @@ class InMemoryCommentRepository(lock: Meter) extends CommentRepository[InMemoryT
    * 
    * @return Long
    */
-  private def nextCommentId(state: InMemoryState): Long < Effect  =
-    state.comments.get.map: comments =>
-      comments.keySet.toList.sorted.lastOption.getOrElse(1L)
+  private def nextCommentId(state: InMemoryState): Long < Effect =
+    state
+      .comments
+      .get
+      .map: comments =>
+        comments.keySet.toList.sorted.lastOption.getOrElse(1L)
 }
 
 object InMemoryCommentRepository {

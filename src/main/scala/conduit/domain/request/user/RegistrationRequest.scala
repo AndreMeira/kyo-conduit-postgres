@@ -36,4 +36,4 @@ object RegistrationRequest:
     username: String,
     email: String,
     password: String,
-  )                              // wrapping due to api spec
+  ) // wrapping due to api spec

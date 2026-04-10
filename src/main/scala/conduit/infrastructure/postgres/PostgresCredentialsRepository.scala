@@ -49,7 +49,8 @@ class PostgresCredentialsRepository extends CredentialsRepository[PostgresTransa
       sql"""SELECT EXISTS(SELECT 1 FROM users WHERE email = $email)"""
         .query[Boolean]
         .run()
-        .headOption.contains(true)
+        .headOption
+        .contains(true)
 
   /**
    * Saves new credentials for a user, inserting a row into the users table.

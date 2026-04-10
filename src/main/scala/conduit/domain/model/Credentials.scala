@@ -34,5 +34,5 @@ enum Credentials:
 
 object Credentials:
   /** Type alias for email addresses and password */
-  type Email = String
+  type Email    = String
   type Password = String

@@ -2,7 +2,7 @@ package conduit.infrastructure.inmemory
 
 import conduit.domain.model.Article
 import conduit.domain.service.persistence.TagRepository
-import conduit.infrastructure.inmemory.InMemoryState.Changed.{Deleted, Inserted, Updated}
+import conduit.infrastructure.inmemory.InMemoryState.Changed.{ Deleted, Inserted, Updated }
 import conduit.infrastructure.inmemory.InMemoryState.RowReference.TagsRow
 import kyo.*
 

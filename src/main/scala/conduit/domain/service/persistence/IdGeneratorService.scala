@@ -14,6 +14,7 @@ import java.util.UUID
  * titles with unique identifiers to ensure uniqueness while maintaining readability.
  */
 object IdGeneratorService {
+
   /**
    * Generates a new random UUID.
    *

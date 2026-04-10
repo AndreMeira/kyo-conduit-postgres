@@ -48,7 +48,7 @@ object Comment:
         body = body,
         authorId = authorId,
         createdAt = createdAt,
-        updatedAt = updatedAt
+        updatedAt = updatedAt,
       )
 
   }

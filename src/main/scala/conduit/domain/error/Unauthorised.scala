@@ -8,30 +8,31 @@ package conduit.domain.error
  * Each case provides a descriptive error message.
  */
 enum Unauthorised extends ApplicationError.UnauthorisedError {
+
   /** 
    * The provided authentication token is invalid.
    * This error indicates that the token could not be verified or is malformed.
    */
   case InvalidToken
-  
+
   /** 
    * The authentication token has expired.
    * This error indicates that the token is no longer valid due to time constraints.
    */
   case TokenExpired
-  
+
   /** 
    * The provided credentials (email/password) are invalid.
    * This error indicates that the authentication attempt failed due to incorrect user input.
    */
   case InvalidCredentials
-  
+
   /** 
    * The subject of the authentication token is invalid.
    * This error indicates that the token does not correspond to a valid user or entity.
    */
   case InvalidTokenSubject
-  
+
   /** 
    * The user is not authorized to update the article.
    * This error indicates insufficient permissions for the requested operation.

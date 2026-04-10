@@ -16,7 +16,7 @@ import kyo.*
  */
 trait FavoriteRepository[Tx <: Transaction] {
   type Effect = Async & Abort[ApplicationError] & Env[Tx]
-  
+
   /**
    * Checks if a favorite entry for an article by a user exists.
    *
@@ -24,7 +24,7 @@ trait FavoriteRepository[Tx <: Transaction] {
    * @return true if the favorite entry exists, false otherwise
    */
   def exists(favorite: Article.FavoriteBy): Boolean < Effect
-  
+
   /**
    * Finds favorite entries for a user across multiple articles.
    *
@@ -41,7 +41,7 @@ trait FavoriteRepository[Tx <: Transaction] {
    * @return Unit on successful addition
    */
   def add(favorite: Article.FavoriteBy): Unit < Effect
-  
+
   /**
    * Deletes a favorite entry for an article by a user.
    *

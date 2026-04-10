@@ -15,7 +15,7 @@ import kyo.*
  * @tparam Tx the transaction type used for database operations
  */
 trait Database[Tx <: Transaction] {
-  
+
   /** 
    * Type alias representing the combined effect requirements for pending operations.
    *
@@ -23,7 +23,7 @@ trait Database[Tx <: Transaction] {
    * indicating that operations may be asynchronous and can fail with application-level errors.
    */
   type Pending = Async & Abort[ApplicationError]
-  
+
   /**
    * Executes an effect within a database transaction context.
    *
