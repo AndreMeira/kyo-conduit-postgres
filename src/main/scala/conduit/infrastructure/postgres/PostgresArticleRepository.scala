@@ -65,8 +65,7 @@ class PostgresArticleRepository extends ArticleRepository[PostgresTransaction] {
       sql"""SELECT 1 FROM articles WHERE id = $id"""
         .query[Option[Int]]
         .run()
-        .headOption
-        .isDefined
+        .nonEmpty
 
   /**
    * Saves a new article to the repository.

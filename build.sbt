@@ -32,7 +32,8 @@ lazy val root = project
       "io.circe" %% "circe-parser"  % "0.14.15",
 
       // test
-      "org.scalameta" %% "munit" % "1.2.4" % Test,
+      "org.scalameta"      %% "munit"      % "1.2.4"  % Test,
+      "org.testcontainers"  % "postgresql" % "1.21.4" % Test,
       // We need this to run the kyo tests with sbt
       // "dev.zio"       %% "zio-test"     % "2.1.24"  % Test,
       // "dev.zio"       %% "zio-test-sbt" % "2.1.24"  % Test,
