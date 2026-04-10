@@ -44,11 +44,11 @@ object Comment:
     def withId(id: Long): Comment =
       Comment(
         id = id,
-        articleId = comment.articleId,
-        body = comment.body,
-        authorId = comment.authorId,
-        createdAt = comment.createdAt,
-        updatedAt = comment.updatedAt
+        articleId = articleId,
+        body = body,
+        authorId = authorId,
+        createdAt = createdAt,
+        updatedAt = updatedAt
       )
 
   }

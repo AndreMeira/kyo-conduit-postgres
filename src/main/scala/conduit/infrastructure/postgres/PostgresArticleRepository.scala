@@ -10,16 +10,6 @@ import kyo.*
 
 class PostgresArticleRepository extends ArticleRepository[PostgresTransaction] {
 
-  private val articleSelectBase: Frag =
-    sql"""SELECT
-         a.id,
-         a.slug, a.title, a.description, a.body, a.author_id,
-         (SELECT count(*) FROM favorites f WHERE f.article_id = a.id) as favorite_count,
-         ARRAY(SELECT name FROM tags t WHERE t.article_id = a.id) as tags,
-         a.created_at, a.updated_at
-         FROM articles a
-         JOIN profiles p ON a.author_id = p.user_id"""
-
   /**
    * Finds an article by its unique ID.
    *
@@ -29,7 +19,15 @@ class PostgresArticleRepository extends ArticleRepository[PostgresTransaction] {
   override def find(id: Id): Maybe[Article] < Effect =
     Transactional:
       Maybe.fromOption:
-        (articleSelectBase ++ sql"WHERE a.id = $id")
+        sql"""SELECT
+             a.id,
+             a.slug, a.title, a.description, a.body, a.author_id,
+             (SELECT count(*) FROM favorites f WHERE f.article_id = a.id) as favorite_count,
+             ARRAY(SELECT name FROM tags t WHERE t.article_id = a.id) as tags,
+             a.created_at, a.updated_at
+             FROM articles a
+             JOIN profiles p ON a.author_id = p.user_id
+             WHERE a.id = $id"""
           .query[Article]
           .run()
           .headOption
@@ -43,7 +41,15 @@ class PostgresArticleRepository extends ArticleRepository[PostgresTransaction] {
   override def findBySlug(slug: String): Maybe[Article] < Effect =
     Transactional:
       Maybe.fromOption:
-        (articleSelectBase ++ sql"WHERE a.slug = $slug")
+        sql"""SELECT
+             a.id,
+             a.slug, a.title, a.description, a.body, a.author_id,
+             (SELECT count(*) FROM favorites f WHERE f.article_id = a.id) as favorite_count,
+             ARRAY(SELECT name FROM tags t WHERE t.article_id = a.id) as tags,
+             a.created_at, a.updated_at
+             FROM articles a
+             JOIN profiles p ON a.author_id = p.user_id
+             WHERE a.slug = $slug"""
           .query[Article]
           .run()
           .headOption
@@ -87,7 +93,6 @@ class PostgresArticleRepository extends ArticleRepository[PostgresTransaction] {
         .run()
       require(count == 1, "Failed to insert article")
 
-
   /**
    * Updates an existing article in the repository.
    *
@@ -113,33 +118,46 @@ class PostgresArticleRepository extends ArticleRepository[PostgresTransaction] {
   /**
    * Searches for articles based on multiple search parameters.
    *
-   * Supports filtering by tag, author, and favorite user. Multiple parameters
-   * are applied as cumulative filters (AND logic). Uses subqueries to avoid
-   * duplicate rows from multi-valued joins.
+   * Each optional filter is paired with a Boolean flag. When the flag is false
+   * the corresponding condition short-circuits to true, avoiding dynamic SQL
+   * fragment concatenation.
    *
    * @param params a list of search parameters to apply
    * @return a list of articles matching all search criteria, ordered by creation date descending
    */
   override def search(params: List[ArticleRepository.SearchParam]): List[Article] < Effect =
     Transactional:
-      val conditions: List[Frag] = params.map {
-        case ArticleRepository.SearchParam.Tag(value) =>
-          sql"EXISTS (SELECT 1 FROM tags t2 WHERE t2.article_id = a.id AND t2.name = $value)"
-        case ArticleRepository.SearchParam.Author(username) =>
-          sql"p.name = $username"
-        case ArticleRepository.SearchParam.FavoriteBy(username) =>
-          sql"""EXISTS (
-            SELECT 1 FROM favorites fav
-            JOIN profiles fp ON fav.user_id = fp.user_id
-            WHERE fav.article_id = a.id AND fp.name = $username
-          )"""
-      }
+      val (filterByTag, tagVal) = params
+        .collectFirst { case ArticleRepository.SearchParam.Tag(v)  => v }
+        .fold((false, ""))(v => (true, v))
+        
+      val (filterByAuthor, authorVal) = params
+        .collectFirst { case ArticleRepository.SearchParam.Author(v) => v }
+        .fold((false, ""))(v => (true, v))
+        
+      val (filterByFav, favVal) = params
+        .collectFirst { case ArticleRepository.SearchParam.FavoriteBy(v) => v }
+        .fold((false, ""))(v => (true, v))
 
-      val whereClause: Frag =
-        if conditions.isEmpty then sql""
-        else conditions.tail.foldLeft(sql"WHERE " ++ conditions.head)((acc, cond) => acc ++ sql" AND " ++ cond)
-
-      (articleSelectBase ++ whereClause ++ sql"ORDER BY a.created_at DESC")
+      sql"""SELECT
+           a.id,
+           a.slug, a.title, a.description, a.body, a.author_id,
+           (SELECT count(*) FROM favorites f WHERE f.article_id = a.id) as favorite_count,
+           ARRAY(SELECT name FROM tags t WHERE t.article_id = a.id) as tags,
+           a.created_at, a.updated_at
+           FROM articles a
+           JOIN profiles p ON a.author_id = p.user_id
+           WHERE (NOT $filterByTag OR EXISTS (
+                   SELECT 1 FROM tags t2
+                   WHERE t2.article_id = a.id AND t2.name = $tagVal
+                 ))
+             AND (NOT $filterByAuthor OR p.name = $authorVal)
+             AND (NOT $filterByFav OR EXISTS (
+                   SELECT 1 FROM favorites fav
+                   JOIN profiles fp ON fav.user_id = fp.user_id
+                   WHERE fav.article_id = a.id AND fp.name = $favVal
+                 ))
+           ORDER BY a.created_at DESC"""
         .query[Article]
         .run()
         .toList
@@ -156,11 +174,18 @@ class PostgresArticleRepository extends ArticleRepository[PostgresTransaction] {
    */
   override def feedOf(userId: Id, offset: Int, limit: Int): List[Article] < Effect =
     Transactional:
-      (articleSelectBase ++ sql"""
-         JOIN followers fol ON p.user_id = fol.followee_id
-         WHERE fol.follower_id = $userId
-         ORDER BY a.created_at DESC
-         OFFSET $offset LIMIT $limit""")
+      sql"""SELECT
+           a.id,
+           a.slug, a.title, a.description, a.body, a.author_id,
+           (SELECT count(*) FROM favorites f WHERE f.article_id = a.id) as favorite_count,
+           ARRAY(SELECT name FROM tags t WHERE t.article_id = a.id) as tags,
+           a.created_at, a.updated_at
+           FROM articles a
+           JOIN profiles p ON a.author_id = p.user_id
+           JOIN followers fol ON p.user_id = fol.followee_id
+           WHERE fol.follower_id = $userId
+           ORDER BY a.created_at DESC
+           OFFSET $offset LIMIT $limit"""
         .query[Article]
         .run()
         .toList

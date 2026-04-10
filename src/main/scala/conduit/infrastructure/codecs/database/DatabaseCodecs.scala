@@ -70,7 +70,7 @@ object DatabaseCodecs:
   )
 
   /** A codec for nullable TEXT columns mapped to Maybe[String]. */
-  given DbCodec[Maybe[String]] with {
+  given maybeString: DbCodec[Maybe[String]] with {
     val cols: IArray[Int] = IArray(Types.VARCHAR)
     def queryRepr: String = "?"
     def readSingle(rs: ResultSet, pos: Int): Maybe[String] =
@@ -83,7 +83,7 @@ object DatabaseCodecs:
   }
 
   /** A codec for nullable TEXT columns mapped to Maybe[URI], storing URIs as strings. */
-  given DbCodec[Maybe[URI]] with {
+  given maybeUri: DbCodec[Maybe[URI]] with {
     val cols: IArray[Int] = IArray(Types.VARCHAR)
     def queryRepr: String = "?"
     def readSingle(rs: ResultSet, pos: Int): Maybe[URI] =
@@ -96,7 +96,7 @@ object DatabaseCodecs:
   }
 
   /** A codec for PostgreSQL UUID array columns, used with = ANY(?) queries. */
-  given DbCodec[List[UUID]] with {
+  given listUUID: DbCodec[List[UUID]] with {
     val cols: IArray[Int] = IArray(Types.ARRAY)
     def queryRepr: String = "?"
     def readSingle(rs: ResultSet, pos: Int): List[UUID] =

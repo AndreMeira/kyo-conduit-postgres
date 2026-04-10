@@ -22,13 +22,10 @@ class InMemoryCommentRepository(lock: Meter) extends CommentRepository[InMemoryT
    * @param id the comment ID to search for
    * @return a Maybe containing the comment if found, or None otherwise
    */
-  override def find(id: Comment.Id): Maybe[Comment] < Effect = {
-    lock.run {
-      InMemoryTransaction { state =>
-        state.comments.get.map(_.get(id)).map(Maybe.fromOption)
-      }
+  override def find(id: Comment.Id): Maybe[Comment] < Effect =
+    InMemoryTransaction { state =>
+      state.comments.get.map(_.get(id)).map(Maybe.fromOption)
     }
-  }
 
   /**
    * Checks if a comment with the given ID exists.
@@ -50,12 +47,13 @@ class InMemoryCommentRepository(lock: Meter) extends CommentRepository[InMemoryT
    * @param comment the comment to save
    * @return the saved comment
    */
-  override def save(comment: Comment.Data): Comment < Effect = {
+  override def save(comment: Comment.Data): Comment < Effect = Scope.run {
     lock.run {
       InMemoryTransaction { state =>
-        val id = nextCommentId(state)
-        state.addChange(Inserted(CommentRow(id)))
-          *> state.comments.updateAndGet(_ + (id -> comment.withId(id)))
+        nextCommentId(state).map: id =>
+          state.addChange(Inserted(CommentRow(id)))
+            *> state.comments.updateAndGet(_ + (id -> comment.withId(id)))
+            *> comment.withId(id)
       }
     }.mapAbort(_ => InMemoryCommentRepository.LockError)
   }
@@ -103,11 +101,12 @@ class InMemoryCommentRepository(lock: Meter) extends CommentRepository[InMemoryT
    * 
    * @return Long
    */
-  private def nextCommentId(state: InMemoryState): Long  =
+  private def nextCommentId(state: InMemoryState): Long < Effect  =
     state.comments.get.map: comments =>
-      comments.keySet.toList.sorted.lastOption.getOrElse(1)
+      comments.keySet.toList.sorted.lastOption.getOrElse(1L)
 }
 
 object InMemoryCommentRepository {
-  case object LockError extends ApplicationError.TransientError
+  case object LockError extends ApplicationError.TransientError:
+    override def message: String = "Can not acquire lock"
 }
