@@ -69,31 +69,27 @@ object DatabaseCodecs:
     instant => Timestamp.from(instant),
   )
 
-  /** A codec for nullable TEXT columns mapped to Maybe[String]. */
-  given maybeString: DbCodec[Maybe[String]] with {
-    val cols: IArray[Int]                                                         = IArray(Types.VARCHAR)
-    def queryRepr: String                                                         = "?"
-    def readSingle(rs: ResultSet, pos: Int): Maybe[String]                        =
-      val value = rs.getString(pos)
-      if rs.wasNull() then Maybe.Absent else Maybe.Present(value)
-    def writeSingle(entity: Maybe[String], ps: PreparedStatement, pos: Int): Unit =
-      entity match
-        case Maybe.Present(s) => ps.setString(pos, s)
-        case _                => ps.setNull(pos, Types.VARCHAR)
-  }
+  /**
+   * A codec for TEXT columns mapped to java.net.URI, storing URIs as strings.
+   *
+   * The reader is null-tolerant because Magnum's `OptionCodec` calls `readSingle`
+   * unconditionally and only checks `rs.wasNull()` afterward, so for a NULL
+   * column the underlying `DbCodec[String]` returns `null` which must not blow
+   * up the biMap.
+   */
+  given DbCodec[URI] =
+    DbCodec[String].biMap(
+      s => if s == null then null else URI.create(s),
+      _.toString,
+    )
 
-  /** A codec for nullable TEXT columns mapped to Maybe[URI], storing URIs as strings. */
-  given maybeUri: DbCodec[Maybe[URI]] with {
-    val cols: IArray[Int]                                                      = IArray(Types.VARCHAR)
-    def queryRepr: String                                                      = "?"
-    def readSingle(rs: ResultSet, pos: Int): Maybe[URI]                        =
-      val value = rs.getString(pos)
-      if rs.wasNull() then Maybe.Absent else Maybe.Present(URI.create(value))
-    def writeSingle(entity: Maybe[URI], ps: PreparedStatement, pos: Int): Unit =
-      entity match
-        case Maybe.Present(uri) => ps.setString(pos, uri.toString)
-        case _                  => ps.setNull(pos, Types.VARCHAR)
-  }
+  /**
+   * Generic codec for kyo's `Maybe[A]`, derived from `DbCodec[Option[A]]` — which
+   * Magnum provides for free for any `A` that has a `DbCodec`. This single derivation
+   * covers `Maybe[String]`, `Maybe[URI]`, and any other nullable column type.
+   */
+  given [A](using DbCodec[Option[A]]): DbCodec[Maybe[A]] =
+    DbCodec[Option[A]].biMap(Maybe.fromOption, _.toOption)
 
   /** A codec for PostgreSQL UUID array columns, used with = ANY(?) queries. */
   given listUUID: DbCodec[List[UUID]] with {
