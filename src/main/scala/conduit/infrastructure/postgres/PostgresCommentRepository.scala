@@ -33,11 +33,10 @@ class PostgresCommentRepository extends CommentRepository[PostgresTransaction]:
    */
   override def exists(id: Comment.Id): Boolean < Effect =
     Transactional:
-      sql"""SELECT EXISTS(SELECT 1 FROM comments WHERE id = $id)"""
-        .query[Boolean]
+      sql"""SELECT 1 FROM comments WHERE id = $id"""
+        .query[Int]
         .run()
-        .headOption
-        .contains(true)
+        .nonEmpty
 
   /**
    * Saves a new comment to the repository and returns the persisted comment with
@@ -60,7 +59,7 @@ class PostgresCommentRepository extends CommentRepository[PostgresTransaction]:
               ${data.updatedAt}
             )
             RETURNING id, article_id, body, author_id, created_at, updated_at"""
-        .query[Comment]
+        .returning[Comment]
         .run()
         .head
 
@@ -76,8 +75,7 @@ class PostgresCommentRepository extends CommentRepository[PostgresTransaction]:
           UPDATE comments SET
             body       = ${comment.body},
             updated_at = ${comment.updatedAt}
-          WHERE id = ${comment.id}"""
-        .update
+          WHERE id = ${comment.id}""".update
         .run()
       require(count == 1, "Failed to update comment")
 
@@ -105,7 +103,6 @@ class PostgresCommentRepository extends CommentRepository[PostgresTransaction]:
    */
   override def delete(id: Comment.Id): Unit < Effect =
     Transactional {
-      sql"""DELETE FROM comments WHERE id = $id"""
-        .update
+      sql"""DELETE FROM comments WHERE id = $id""".update
         .run()
     }.unit

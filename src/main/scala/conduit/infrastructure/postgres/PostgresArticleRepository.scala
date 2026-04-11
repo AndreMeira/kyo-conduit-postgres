@@ -1,6 +1,8 @@
 package conduit.infrastructure.postgres
 
 import com.augustnagro.magnum.*
+import com.augustnagro.magnum.MagnumInterop.syntax.*
+import com.augustnagro.magnum.MagnumInterop.syntax.{ when, concat }
 import conduit.domain.model.Article
 import conduit.domain.model.Article.Id
 import conduit.domain.service.persistence.ArticleRepository
@@ -26,7 +28,6 @@ class PostgresArticleRepository extends ArticleRepository[PostgresTransaction] {
              ARRAY(SELECT name FROM tags t WHERE t.article_id = a.id) as tags,
              a.created_at, a.updated_at
              FROM articles a
-             JOIN profiles p ON a.author_id = p.user_id
              WHERE a.id = $id"""
           .query[Article]
           .run()
@@ -48,7 +49,6 @@ class PostgresArticleRepository extends ArticleRepository[PostgresTransaction] {
              ARRAY(SELECT name FROM tags t WHERE t.article_id = a.id) as tags,
              a.created_at, a.updated_at
              FROM articles a
-             JOIN profiles p ON a.author_id = p.user_id
              WHERE a.slug = $slug"""
           .query[Article]
           .run()
@@ -87,8 +87,7 @@ class PostgresArticleRepository extends ArticleRepository[PostgresTransaction] {
             ${article.authorId},
             ${article.createdAt},
             ${article.updatedAt}
-          )"""
-        .update
+          )""".update
         .run()
       require(count == 1, "Failed to insert article")
 
@@ -109,8 +108,7 @@ class PostgresArticleRepository extends ArticleRepository[PostgresTransaction] {
             author_id = ${article.authorId},
             created_at = ${article.createdAt},
             updated_at = ${article.updatedAt}
-          WHERE id = ${article.id}"""
-        .update
+          WHERE id = ${article.id}""".update
         .run()
       require(count == 1, "Failed to update article")
 
@@ -126,37 +124,27 @@ class PostgresArticleRepository extends ArticleRepository[PostgresTransaction] {
    */
   override def search(params: List[ArticleRepository.SearchParam]): List[Article] < Effect =
     Transactional:
-      val (filterByTag, tagVal) = params
-        .collectFirst { case ArticleRepository.SearchParam.Tag(v) => v }
-        .fold((false, ""))(v => (true, v))
-
-      val (filterByAuthor, authorVal) = params
-        .collectFirst { case ArticleRepository.SearchParam.Author(v) => v }
-        .fold((false, ""))(v => (true, v))
-
-      val (filterByFav, favVal) = params
-        .collectFirst { case ArticleRepository.SearchParam.FavoriteBy(v) => v }
-        .fold((false, ""))(v => (true, v))
-
       sql"""SELECT
-           a.id,
-           a.slug, a.title, a.description, a.body, a.author_id,
-           (SELECT count(*) FROM favorites f WHERE f.article_id = a.id) as favorite_count,
-           ARRAY(SELECT name FROM tags t WHERE t.article_id = a.id) as tags,
-           a.created_at, a.updated_at
-           FROM articles a
-           JOIN profiles p ON a.author_id = p.user_id
-           WHERE (NOT $filterByTag OR EXISTS (
-                   SELECT 1 FROM tags t2
-                   WHERE t2.article_id = a.id AND t2.name = $tagVal
-                 ))
-             AND (NOT $filterByAuthor OR p.name = $authorVal)
-             AND (NOT $filterByFav OR EXISTS (
-                   SELECT 1 FROM favorites fav
-                   JOIN profiles fp ON fav.user_id = fp.user_id
-                   WHERE fav.article_id = a.id AND fp.name = $favVal
-                 ))
-           ORDER BY a.created_at DESC"""
+         a.id,
+         a.slug, a.title, a.description, a.body, a.author_id,
+         (SELECT count(*) FROM favorites f WHERE f.article_id = a.id) as favorite_count,
+         ARRAY(SELECT name FROM tags t WHERE t.article_id = a.id) as tags,
+         a.created_at, a.updated_at
+         FROM articles a
+         JOIN profiles p ON a.author_id = p.user_id
+         WHERE (${params.author.isEmpty} OR p.name = ${params.author.getOrElse("")})
+         AND (${params.tag.isEmpty} OR EXISTS (
+           SELECT 1 FROM tags t2
+           WHERE t2.article_id = a.id
+           AND t2.name = ${params.tag.getOrElse("")}
+         ))
+         AND (${params.favoriteBy.isEmpty} OR EXISTS (
+           SELECT 1 FROM favorites fav
+           JOIN profiles fp ON fav.user_id = fp.user_id
+           WHERE fav.article_id = a.id
+           AND fp.name = ${params.favoriteBy.getOrElse("")}
+         ))
+         ORDER BY a.created_at DESC"""
         .query[Article]
         .run()
         .toList
@@ -206,4 +194,38 @@ class PostgresArticleRepository extends ArticleRepository[PostgresTransaction] {
         .run()
         .headOption
         .getOrElse(0)
+
+  /**
+   * Extension methods for extracting search parameters from a list of SearchParam instances.
+   *
+   * These methods provide convenient access to specific search criteria such as tag, author, and favoriter.
+   * Each method uses pattern matching to find the first occurrence of the corresponding SearchParam type
+   * and returns it as an Option.
+   */
+  extension (params: List[ArticleRepository.SearchParam]) {
+
+    /**
+     * Extracts the tag filter from the search parameters, if present.
+     *
+     * @return an Option containing the tag to filter by, or None if not specified
+     */
+    def tag: Option[String] =
+      params.collectFirst { case ArticleRepository.SearchParam.Tag(tag) => tag }
+
+    /**
+     * Extracts the author filter from the search parameters, if present.
+     *
+     * @return an Option containing the author's name to filter by, or None if not specified
+     */
+    def author: Option[String] =
+      params.collectFirst { case ArticleRepository.SearchParam.Author(name) => name }
+
+    /**
+     * Extracts the favoriter filter from the search parameters, if present.
+     *
+     * @return an Option containing the username of the favoriter to filter by, or None if not specified
+     */
+    def favoriteBy: Option[String] =
+      params.collectFirst { case ArticleRepository.SearchParam.FavoriteBy(name) => name }
+  }
 }

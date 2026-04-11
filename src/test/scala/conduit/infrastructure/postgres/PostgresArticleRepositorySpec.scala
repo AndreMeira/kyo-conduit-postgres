@@ -114,11 +114,8 @@ object PostgresArticleRepositorySpec extends KyoTestSuite:
               favProf   <- fixtures.makeProfile(favUserId)
               article   <- fixtures.makeArticle(authorId, "Favorited")
               _         <- persistence.favorites.add(Article.FavoriteBy(favUserId, article.id))
-              result    <- persistence
-                             .articles
-                             .search(
-                               List(SearchParam.FavoriteBy(favProf.name))
-                             )
+              result    <- persistence.articles.search:
+                             List(SearchParam.FavoriteBy(favProf.name))
             yield assert(
               result.map(_.id).contains(article.id),
               s"Expected article in favorite search: $result",
@@ -134,11 +131,8 @@ object PostgresArticleRepositorySpec extends KyoTestSuite:
               _          <- fixtures.makeProfile(authorId)
               otherId    <- fixtures.makeUser
               _          <- fixtures.makeProfile(otherId)
-              _          <- persistence
-                              .followers
-                              .add(
-                                UserProfile.FollowedBy(followerId, authorId)
-                              )
+              _          <- persistence.followers.add:
+                              UserProfile.FollowedBy(followerId, authorId)
               a1         <- fixtures.makeArticle(authorId, "From followee")
               _          <- fixtures.makeArticle(otherId, "From other")
               feed       <- persistence.articles.feedOf(followerId, 0, 10)
