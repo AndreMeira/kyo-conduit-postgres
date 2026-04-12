@@ -4,18 +4,19 @@ lazy val root = project
   .in(file("."))
   .settings(
     TestTask.settings,
-    name         := "conduit-kyo-postgres",
-    version      := "0.1.0-SNAPSHOT",
-    scalaVersion := scala3Version,
+    name           := "conduit-kyo-postgres",
+    version        := "0.1.0-SNAPSHOT",
+    scalaVersion   := scala3Version,
     libraryDependencies ++= Seq(
       // core
       "dev.zio"              %% "zio-prelude"     % "1.0.0-RC47",
       "io.getkyo"            %% "kyo-prelude"     % "1.0-RC1",
       "io.getkyo"            %% "kyo-core"        % "1.0-RC1",
+      "io.getkyo"            %% "kyo-tapir"       % "1.0-RC1",
       "io.getkyo"            %% "kyo-combinators" % "1.0-RC1",
       "ch.qos.logback"        % "logback-classic" % "1.5.32",
       "commons-codec"         % "commons-codec"   % "1.21.0",
-      "com.github.jwt-scala" %% "jwt-circe"       % "11.0.3",
+      "com.github.jwt-scala" %% "jwt-circe"       % "11.0.4",
       "com.typesafe"          % "config"          % "1.4.6",
 
       // database
@@ -28,9 +29,10 @@ lazy val root = project
       "com.github.pureconfig" %% "pureconfig-core"            % "0.17.10",
 
       // json
-      "io.circe" %% "circe-generic" % "0.14.15",
-      "io.circe" %% "circe-core"    % "0.14.15",
-      "io.circe" %% "circe-parser"  % "0.14.15",
+      "io.circe"                    %% "circe-generic"     % "0.14.15",
+      "io.circe"                    %% "circe-core"        % "0.14.15",
+      "io.circe"                    %% "circe-parser"      % "0.14.15",
+      "com.softwaremill.sttp.tapir" %% "tapir-json-circe"  % "1.11.34",
 
       // test
       "org.scalameta"     %% "munit"      % "1.2.4"  % Test,

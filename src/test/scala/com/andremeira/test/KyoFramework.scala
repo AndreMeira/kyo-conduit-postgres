@@ -112,12 +112,12 @@ class KyoTask(val taskDef: TaskDef, classLoader: ClassLoader) extends Task {
     import AllowUnsafe.embrace.danger
     given Frame = Frame.derive
 
-    val fqn       = taskDef.fullyQualifiedName()
-    val startTime = System.currentTimeMillis()
+    val qualifiedName = taskDef.fullyQualifiedName()
+    val startTime     = System.currentTimeMillis()
 
     try {
       // Load the Scala object (MODULE$ singleton)
-      val moduleClass = classLoader.loadClass(fqn + "$")
+      val moduleClass = classLoader.loadClass(qualifiedName + "$")
       val raw         = moduleClass.getField("MODULE$").get(null)
 
       // Skip the KyoTestSuite companion object and any non-KyoTestSuite objects
@@ -154,26 +154,26 @@ class KyoTask(val taskDef: TaskDef, classLoader: ClassLoader) extends Task {
 
         case Result.Error(ex: Throwable) =>
           val duration = System.currentTimeMillis() - startTime
-          loggers.foreach(_.error(s"Suite $fqn failed with exception: ${ex.getMessage}"))
-          handler.handle(KyoEvent(taskDef, fqn, Status.Error, duration, Some(ex)))
+          loggers.foreach(_.error(s"Suite $qualifiedName failed with exception: ${ex.getMessage}"))
+          handler.handle(KyoEvent(taskDef, qualifiedName, Status.Error, duration, Some(ex)))
 
         case Result.Panic(ex) =>
           val duration = System.currentTimeMillis() - startTime
-          loggers.foreach(_.error(s"Suite $fqn panicked: ${ex.getMessage}"))
-          handler.handle(KyoEvent(taskDef, fqn, Status.Error, duration, Some(ex)))
+          loggers.foreach(_.error(s"Suite $qualifiedName panicked: ${ex.getMessage}"))
+          handler.handle(KyoEvent(taskDef, qualifiedName, Status.Error, duration, Some(ex)))
 
         case other =>
           val duration = System.currentTimeMillis() - startTime
-          loggers.foreach(_.error(s"Suite $fqn returned unexpected result: $other"))
-          handler.handle(KyoEvent(taskDef, fqn, Status.Error, duration))
+          loggers.foreach(_.error(s"Suite $qualifiedName returned unexpected result: $other"))
+          handler.handle(KyoEvent(taskDef, qualifiedName, Status.Error, duration))
       }
 
     }
     catch {
       case ex: Throwable =>
         val duration = System.currentTimeMillis() - startTime
-        loggers.foreach(_.error(s"Suite $fqn threw: ${ex.getMessage}"))
-        handler.handle(KyoEvent(taskDef, fqn, Status.Error, duration, Some(ex)))
+        loggers.foreach(_.error(s"Suite $qualifiedName threw: ${ex.getMessage}"))
+        handler.handle(KyoEvent(taskDef, qualifiedName, Status.Error, duration, Some(ex)))
     }
 
     Array.empty // no nested tasks
