@@ -314,6 +314,25 @@ class InMemoryState(
 }
 
 object InMemoryState:
+  
+  /**
+   * Creates an empty InMemoryState with initialized atomic references and a lock.
+   *
+   * @return a new InMemoryState instance with no data
+   */
+  def empty: InMemoryState < (Sync & Scope) =
+    for
+      lock        <- Meter.initMutex
+      articles    <- AtomicRef.init(Map.empty[Article.Id, Article])
+      comments    <- AtomicRef.init(Map.empty[Comment.Id, Comment])
+      profiles    <- AtomicRef.init(Map.empty[UserProfile.Id, UserProfile])
+      favorites   <- AtomicRef.init(Map.empty[User.Id, List[Article.Id]])
+      followers   <- AtomicRef.init(Map.empty[User.Id, List[UserProfile.Id]])
+      credentials <- AtomicRef.init(Map.empty[User.Id, Credentials.Hashed])
+      tags        <- AtomicRef.init(Map.empty[Article.Id, List[String]])
+      changes     <- AtomicRef.init(List.empty[InMemoryState.Changed])
+    yield InMemoryState(lock, articles, comments, profiles, favorites, followers, credentials, tags, changes)
+  
   /**
    * Companion object for InMemoryState providing reference types and change tracking.
    */

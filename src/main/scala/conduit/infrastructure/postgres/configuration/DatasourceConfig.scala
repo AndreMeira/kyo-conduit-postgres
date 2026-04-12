@@ -20,7 +20,7 @@ import scala.concurrent.duration.Duration
  * @param driverClass The fully qualified class name of the JDBC driver (default is "org.postgresql.Driver").
  * @param connectionTimeout The maximum time to wait for a connection from the pool (default is 60 seconds).
  */
-case class DatabaseSourceConfig(
+case class DatasourceConfig(
   jdbcUrl: String,
   user: String,
   password: String,
@@ -31,11 +31,11 @@ case class DatabaseSourceConfig(
 ) derives ConfigReader {
 
   /** 
-   * Converts this DatabaseSourceConfig into a HikariConfig, which can be used to create a Hikari DataSource. 
-   * This method maps the properties of DatabaseSourceConfig to the corresponding settings in HikariConfig.
+   * Converts this DatasourceConfig into a HikariConfig, which can be used to create a Hikari DataSource. 
+   * This method maps the properties of DatasourceConfig to the corresponding settings in HikariConfig.
    * Auto-commit is disabled by default to allow transaction management at application level.
    *
-   * @return A HikariConfig instance configured according to the properties of this DatabaseSourceConfig.
+   * @return A HikariConfig instance configured according to the properties of this DatasourceConfig.
    */
   def toHikariConfig: HikariConfig =
     val config = new HikariConfig()
@@ -50,13 +50,3 @@ case class DatabaseSourceConfig(
     config.setAutoCommit(false)
     config
 }
-
-object DatabaseSourceConfig:
-
-  /**
-   * Loads the database source configuration from the specified resource path.
-   *
-   * @return An effect that produces the loaded DatabaseSourceConfig or an error if loading fails.
-   */
-  def load: DatabaseSourceConfig < Abort[ConfigurationLoader.Error] =
-    ConfigurationLoader.load[DatabaseSourceConfig]("config/database.conf")

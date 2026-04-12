@@ -9,10 +9,10 @@ import kyo.*
 
 object InMemoryUserProfileRepositorySpec extends KyoTestSuite:
 
-  def makePersistence: Persistence[InMemoryTransaction] < Sync =
+  def makePersistence: Persistence[InMemoryTransaction] < (Sync & Scope) =
     InMemoryTestSupport.makePersistence
 
-  def makeFixtures: TestFixtures[InMemoryTransaction] < Sync =
+  def makeFixtures: TestFixtures[InMemoryTransaction] < (Sync & Scope) =
     makePersistence.map(TestFixtures(_))
 
   def specSuite: SuiteResult < (Async & Scope) =

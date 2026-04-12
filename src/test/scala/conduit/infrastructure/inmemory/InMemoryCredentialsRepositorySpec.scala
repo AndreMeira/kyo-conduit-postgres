@@ -9,7 +9,7 @@ import kyo.*
 
 object InMemoryCredentialsRepositorySpec extends KyoTestSuite:
 
-  def makePersistence: Persistence[InMemoryTransaction] < Sync =
+  def makePersistence: Persistence[InMemoryTransaction] < (Sync & Scope) =
     InMemoryTestSupport.makePersistence
 
   def specSuite: SuiteResult < (Async & Scope) =

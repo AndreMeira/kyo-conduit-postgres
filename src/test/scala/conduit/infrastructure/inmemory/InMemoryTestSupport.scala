@@ -36,9 +36,9 @@ object InMemoryTestSupport:
    * reference is allocated with its zero value so the resulting state contains
    * no articles, users, followers, etc.
    */
-  def emptyState: InMemoryState < Sync =
+  def emptyState: InMemoryState < (Sync & Scope) =
     for
-      lock        <- Meter.initMutexUnscoped
+      lock        <- Meter.initMutex
       articles    <- AtomicRef.init(Map.empty[Article.Id, Article])
       comments    <- AtomicRef.init(Map.empty[Comment.Id, Comment])
       profiles    <- AtomicRef.init(Map.empty[UserProfile.Id, UserProfile])
@@ -68,8 +68,8 @@ object InMemoryTestSupport:
    * The comment repository needs a dedicated [[Meter]] to serialise id
    * generation; a fresh mutex is allocated for each persistence instance.
    */
-  def makePersistence: Persistence[InMemoryTransaction] < Sync =
-    Meter.initMutexUnscoped.map { commentLock =>
+  def makePersistence: Persistence[InMemoryTransaction] < (Sync & Scope) =
+    Meter.initMutex.map { commentLock =>
       Persistence(
         articles = InMemoryArticleRepository(),
         users = InMemoryUserProfileRepository(),
