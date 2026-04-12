@@ -7,6 +7,7 @@ import ArticleRepository.SearchParam
 import conduit.infrastructure.inmemory.InMemoryState.Changed.{ Inserted, Updated }
 import conduit.infrastructure.inmemory.InMemoryState.RowReference.ArticleRow
 import kyo.*
+import java.time.Instant
 
 /**
  * In-memory implementation of the ArticleRepository for the Conduit application.
@@ -72,9 +73,25 @@ class InMemoryArticleRepository extends ArticleRepository[InMemoryTransaction] {
    * @param params the search parameters to apply
    * @return a list of articles matching all search criteria
    */
-  override def search(params: List[ArticleRepository.SearchParam]): List[Article] < Effect =
+  override def search(params: List[ArticleRepository.SearchParam], offset: Int, limit: Int): List[Article] < Effect =
     InMemoryTransaction { state =>
-      state.articles.get.map(articles => filter(articles.values.toList, params))
+      state.articles.get
+        .map(articles => filter(articles.values.toList, params))
+        .map(_.sortBy(_.createdAt)(using Ordering[Instant].reverse))
+        .map(_.slice(offset, offset + limit))
+    }
+
+  /**
+   * Counts the total number of articles matching the given search parameters.
+   *
+   * @param params the search parameters to apply
+   * @return the total number of articles matching all search criteria
+   */
+  override def searchCount(params: List[ArticleRepository.SearchParam]): Int < Effect =
+    InMemoryTransaction { state =>
+      state.articles.get
+        .map(articles => filter(articles.values.toList, params))
+        .map(_.size)
     }
 
   /**
@@ -95,14 +112,13 @@ class InMemoryArticleRepository extends ArticleRepository[InMemoryTransaction] {
     }
 
   /**
-   * Filters articles by a specific tag.
-   *
-   * @param articles the articles to filter
-   * @param tag the tag search parameter
-   * @return articles containing the specified tag
+   * Filters articles by a specific tag, reading the tag→articles map stored
+   * in [[InMemoryState.tags]] (which is what [[InMemoryTagRepository.add]]
+   * writes to). We intentionally do not look at [[Article.tags]] because that
+   * field is not maintained by the tag repository.
    */
-  private def filter(articles: List[Article], tag: SearchParam.Tag): List[Article] < Any =
-    articles.filter(article => article.tags.contains(tag))
+  private def filter(articles: List[Article], tag: SearchParam.Tag): List[Article] < Effect =
+    articles.filter(_.tags.contains(tag.value))
 
   /**
    * Filters articles by author name.
@@ -169,9 +185,12 @@ class InMemoryArticleRepository extends ArticleRepository[InMemoryTransaction] {
         profiles <- state.profiles.get
         articles <- state.articlesByUserId
       } yield {
-        val followedIds = followed.getOrElse(userId, Nil)
-        val authorIds   = followedIds.flatMap(profiles.get).map(_.userId)
-        authorIds.flatMap(authorId => articles.getOrElse(authorId, Nil))
+        val followedProfileIds = followed.getOrElse(userId, Nil)
+        val followedUserIds    = followedProfileIds.flatMap(pid => profiles.get(pid).map(_.userId))
+        followedUserIds
+          .flatMap(authorId => articles.getOrElse(authorId, Nil))
+          .sortBy(_.createdAt)(using Ordering[java.time.Instant].reverse)
+          .slice(offset, offset + limit)
       }
     }
 
@@ -188,9 +207,9 @@ class InMemoryArticleRepository extends ArticleRepository[InMemoryTransaction] {
         profiles <- state.profiles.get
         articles <- state.articlesByUserId
       } yield {
-        val followedIds = followed.getOrElse(userId, Nil)
-        val authorIds   = followedIds.flatMap(profiles.get).map(_.userId)
-        authorIds.flatMap(authorId => articles.getOrElse(authorId, Nil)).size
+        val followedProfileIds = followed.getOrElse(userId, Nil)
+        val followedUserIds    = followedProfileIds.flatMap(pid => profiles.get(pid).map(_.userId))
+        followedUserIds.flatMap(authorId => articles.getOrElse(authorId, Nil)).size
       }
     }
 }

@@ -7,7 +7,7 @@ import kyo.*
 
 import java.sql.Connection
 
-class PostgresDatabase(datasource: HikariDataSource) extends Database[PostgresTransaction] {
+class PostgresDatabase(val datasource: HikariDataSource) extends Database[PostgresTransaction] {
 
   /**
    * Executes an effect within a database transaction context.

@@ -2,8 +2,8 @@ package conduit.infrastructure.inmemory
 
 import conduit.domain.model.Article
 import conduit.domain.service.persistence.TagRepository
-import conduit.infrastructure.inmemory.InMemoryState.Changed.{ Deleted, Inserted, Updated }
-import conduit.infrastructure.inmemory.InMemoryState.RowReference.TagsRow
+import conduit.infrastructure.inmemory.InMemoryState.Changed.{Deleted, Inserted, Updated}
+import conduit.infrastructure.inmemory.InMemoryState.RowReference.{ArticleRow, TagsRow}
 import kyo.*
 
 /**
@@ -38,8 +38,7 @@ class InMemoryTagRepository extends TagRepository[InMemoryTransaction] {
    */
   override def add(articleId: Article.Id, tags: List[String]): Unit < Effect =
     InMemoryTransaction { state =>
-      state
-        .tags
+      state.tags
         .updateAndGet { current =>
           val existingTags = current.getOrElse(articleId, Nil)
           current.updated(articleId, existingTags ++ tags)
@@ -50,6 +49,16 @@ class InMemoryTagRepository extends TagRepository[InMemoryTransaction] {
             then Inserted(TagsRow(articleId))
             else Updated(TagsRow(articleId))
           )
+        } *>
+        state.articles.updateAndGet { current =>
+          current.get(articleId).map { article =>
+            val newTags = article.tags ++ tags
+            current.updated(articleId, article.copy(tags = newTags))
+          }.getOrElse(current)
+        }.flatMap { updatedArticles =>
+          if updatedArticles.get(articleId).exists(_.tags.size > tags.size)
+          then state.addChange(Updated(ArticleRow(articleId)))
+          else ()
         }
         .unit
     }
@@ -75,8 +84,7 @@ class InMemoryTagRepository extends TagRepository[InMemoryTransaction] {
    */
   override def delete(articleId: Article.Id, tags: List[String]): Unit < Effect =
     InMemoryTransaction { state =>
-      state
-        .tags
+      state.tags
         .updateAndGet { current =>
           val existingTags = current.getOrElse(articleId, Nil)
           val updatedTags  = existingTags.filterNot(tags.contains)

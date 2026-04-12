@@ -42,7 +42,7 @@ class ProfileFollowingUseCase[Tx <: Database.Transaction](
     database.transaction:
       for {
         profile <- findProfile(request)
-        follower = FollowedBy(request.requester.userId, profile.userId)
+        follower = FollowedBy(request.requester.userId, profile.id)
         _       <- persistence.followers.add(follower)
       } yield GetProfileResponse.make(profile, true)
 

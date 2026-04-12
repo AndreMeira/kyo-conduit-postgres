@@ -1,6 +1,6 @@
 package conduit.domain.error
 
-import conduit.domain.model.User
+import conduit.domain.model.{ Comment, User }
 
 /**
  * Enum representing not found errors in the application.
@@ -25,6 +25,13 @@ enum NotFound extends ApplicationError.NotFoundError {
   case ProfileNotFound(username: String)
 
   /**
+   * Error indicating that a comment with the specified ID was not found.
+   *
+   * @param id the identifier of the comment that was not found
+   */
+  case CommentNotFound(id: Comment.Id)
+
+  /**
    * Returns a human-readable message describing the not found error.
    *
    * @return the error message corresponding to this not found error case
@@ -32,5 +39,6 @@ enum NotFound extends ApplicationError.NotFoundError {
   override def message: String = this match {
     case ArticleNotFound(slug)     => s"Article with slug $slug not found"
     case ProfileNotFound(username) => s"Profile with username $username not found"
+    case CommentNotFound(id)       => s"Comment with id $id not found"
   }
 }

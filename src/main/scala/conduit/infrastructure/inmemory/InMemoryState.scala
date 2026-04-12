@@ -292,6 +292,25 @@ class InMemoryState(
       }
       .mapAbort(_ => InMemoryState.Failure.LockFailed)
       .unit
+
+  /**
+   * Clears all data from the state, resetting it to an empty state.
+   *
+   * This method is useful for testing purposes to ensure a clean slate before each test case.
+   *
+   * @return Unit after clearing all data
+   */
+  def clean: Unit < Sync =
+    for
+      _ <- articles.updateAndGet(_ => Map.empty)
+      _ <- comments.updateAndGet(_ => Map.empty)
+      _ <- profiles.updateAndGet(_ => Map.empty)
+      _ <- favorites.updateAndGet(_ => Map.empty)
+      _ <- followers.updateAndGet(_ => Map.empty)
+      _ <- credentials.updateAndGet(_ => Map.empty)
+      _ <- tags.updateAndGet(_ => Map.empty)
+      _ <- changes.updateAndGet(_ => Nil)
+    yield ()
 }
 
 object InMemoryState:

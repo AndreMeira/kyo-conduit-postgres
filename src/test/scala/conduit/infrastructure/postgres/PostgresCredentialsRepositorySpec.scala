@@ -15,7 +15,7 @@ object PostgresCredentialsRepositorySpec extends KyoTestSuite:
     "PostgresCredentialsRepository" should withDatabase { database =>
 
       "save and find by user ID" in
-        database.withCleanDatabase:
+        database.withMigration:
           database.transaction:
             for
               userId                   <- IdGeneratorService.uuid
@@ -25,7 +25,7 @@ object PostgresCredentialsRepositorySpec extends KyoTestSuite:
             yield assert(found == Maybe.Present(creds), s"Expected $creds but got $found")
 
       "save and find by hashed credentials" in
-        database.withCleanDatabase:
+        database.withMigration:
           database.transaction:
             for
               userId                   <- IdGeneratorService.uuid
@@ -35,7 +35,7 @@ object PostgresCredentialsRepositorySpec extends KyoTestSuite:
             yield assert(found == Maybe.Present(userId), s"Expected $userId but got $found")
 
       "return Absent for an unknown user ID" in
-        database.withCleanDatabase:
+        database.withMigration:
           database.transaction:
             for
               unknownId <- IdGeneratorService.uuid
@@ -43,7 +43,7 @@ object PostgresCredentialsRepositorySpec extends KyoTestSuite:
             yield assert(found == Maybe.Absent, s"Expected Absent but got $found")
 
       "return Absent for credentials that do not match" in
-        database.withCleanDatabase:
+        database.withMigration:
           database.transaction:
             for
               userId                   <- IdGeneratorService.uuid
@@ -54,7 +54,7 @@ object PostgresCredentialsRepositorySpec extends KyoTestSuite:
             yield assert(found == Maybe.Absent, s"Expected Absent for wrong password but got $found")
 
       "report email existence before and after save" in
-        database.withCleanDatabase:
+        database.withMigration:
           database.transaction:
             for
               userId                   <- IdGeneratorService.uuid
@@ -67,7 +67,7 @@ object PostgresCredentialsRepositorySpec extends KyoTestSuite:
               assert(afterSave, "email should exist after save")
 
       "update credentials" in
-        database.withCleanDatabase:
+        database.withMigration:
           database.transaction:
             for
               userId                      <- IdGeneratorService.uuid
@@ -79,7 +79,7 @@ object PostgresCredentialsRepositorySpec extends KyoTestSuite:
             yield assert(found == Maybe.Present(updated), s"Expected updated creds but got $found")
 
       "delete credentials" in
-        database.withCleanDatabase:
+        database.withMigration:
           database.transaction:
             for
               userId                   <- IdGeneratorService.uuid

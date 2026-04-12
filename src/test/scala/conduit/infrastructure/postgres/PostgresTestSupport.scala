@@ -102,35 +102,30 @@ object PostgresTestSupport:
       comments = PostgresCommentRepository(),
       tags = PostgresTagRepository(),
     )
-
-  // ---------------------------------------------------------------------------
-  // Test runner
-  // ---------------------------------------------------------------------------
-
+    
   /**
-   * WithCleanDatabase that wraps a single test body with a fresh database and a
-   * transaction. For each invocation:
+   * Provides a `withMigration` method that runs a test body with a clean database.
    *
-   *   1. Flyway `clean` drops all objects in the schema.
-   *   2. Flyway `migrate` re-creates the schema from scratch.
-   *   3. The body is executed inside a `PostgresDatabase.transaction`.
-   *
-   * This makes every test start from an identical, empty, freshly-migrated
-   * database — no cross-test data leakage.
+   * The body is executed inside a transaction, so it can call any repository
+   * method directly — just as the Postgres spec bodies do.
    */
-  final class WithCleanDatabase(datasource: HikariDataSource) {
-    def apply[A, Effect <: Async & Abort[ApplicationError]](body: => A < Effect): A < Effect =
-      Scope.run:
-        for
-          migration <- Kyo.lift(flyway(datasource))
-          _         <- Scope.acquireRelease(migration.migrate())(_ => migration.clean())
-          result    <- body
-        yield result
-
+  trait WithCleanDatabase {
     extension (database: PostgresDatabase) {
-      def withCleanDatabase[A, Effect <: Async & Abort[ApplicationError]](
-        body: => A < Effect
-      ): A < Effect = apply(body)
+      /** 
+       * Runs the given body with a clean database. The body is executed inside a
+       * transaction, so it can call any repository method directly — just as
+       * the Postgres spec bodies do.
+       *
+       * @param body the test body to execute with a clean database
+       * @return the result of the test body
+       */
+      def withMigration[A, Effect <: Async & Abort[ApplicationError]](body: => A < Effect): A < Effect = 
+        Scope.run:
+          for
+            migration <- Kyo.lift(flyway(database.datasource))
+            _         <- Scope.acquireRelease(migration.migrate())(_ => migration.clean())
+            result    <- body
+          yield result
     }
   }
 
@@ -156,6 +151,5 @@ object PostgresTestSupport:
       container  <- Scope.acquireRelease(startContainer)(stopContainer)
       datasource <- Scope.acquireRelease(createDatasource(container))(closeDatasource)
       database    = PostgresDatabase(datasource)
-      runner      = WithCleanDatabase(datasource)
-      result     <- test(using runner)(database)
+      result     <- test(using new WithCleanDatabase {})(database)
     yield result

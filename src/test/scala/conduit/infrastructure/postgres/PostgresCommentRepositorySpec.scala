@@ -4,6 +4,7 @@ import com.andremeira.test.KyoTestSuite
 import com.andremeira.test.KyoTestSuite.SuiteResult
 import conduit.domain.model.Comment
 import conduit.infrastructure.postgres.PostgresTestSupport.withDatabase
+import conduit.infrastructure.TestFixtures
 import kyo.*
 
 object PostgresCommentRepositorySpec extends KyoTestSuite:
@@ -15,7 +16,7 @@ object PostgresCommentRepositorySpec extends KyoTestSuite:
     "PostgresCommentRepository" should withDatabase { database =>
 
       "save and find a comment" in
-        database.withCleanDatabase:
+        database.withMigration:
           database.transaction:
             for
               authorId <- fixtures.makeUser
@@ -35,7 +36,7 @@ object PostgresCommentRepositorySpec extends KyoTestSuite:
               assert(saved.body == "Nice article!", s"Expected body round-trip, got ${saved.body}")
 
       "save assigns distinct DB-generated ids" in
-        database.withCleanDatabase:
+        database.withMigration:
           database.transaction:
             for
               authorId <- fixtures.makeUser
@@ -48,7 +49,7 @@ object PostgresCommentRepositorySpec extends KyoTestSuite:
             yield assert(c1.id != c2.id, s"Expected distinct ids but got ${c1.id} and ${c2.id}")
 
       "exists returns true for a saved comment and false otherwise" in
-        database.withCleanDatabase:
+        database.withMigration:
           database.transaction:
             for
               authorId  <- fixtures.makeUser
@@ -66,7 +67,7 @@ object PostgresCommentRepositorySpec extends KyoTestSuite:
               assert(!existsNo, "expected exists(unknown)=false")
 
       "findByArticleId returns comments in creation order" in
-        database.withCleanDatabase:
+        database.withMigration:
           database.transaction:
             for
               authorId <- fixtures.makeUser
@@ -107,7 +108,7 @@ object PostgresCommentRepositorySpec extends KyoTestSuite:
             )
 
       "findByArticleId returns empty for an article without comments" in
-        database.withCleanDatabase:
+        database.withMigration:
           database.transaction:
             for
               authorId <- fixtures.makeUser
@@ -117,7 +118,7 @@ object PostgresCommentRepositorySpec extends KyoTestSuite:
             yield assert(all.isEmpty, s"Expected empty, got $all")
 
       "update changes the comment body" in
-        database.withCleanDatabase:
+        database.withMigration:
           database.transaction:
             for
               authorId <- fixtures.makeUser
@@ -135,7 +136,7 @@ object PostgresCommentRepositorySpec extends KyoTestSuite:
             yield assert(found == Maybe.Present(updated), s"Expected $updated but got $found")
 
       "delete removes a comment" in
-        database.withCleanDatabase:
+        database.withMigration:
           database.transaction:
             for
               authorId <- fixtures.makeUser

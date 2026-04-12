@@ -21,7 +21,7 @@ CREATE INDEX idx_profiles_name ON profiles(name);
 
 CREATE TABLE followers(
     follower_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-    followee_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    followee_id UUID NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY (follower_id, followee_id)
 );

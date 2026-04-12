@@ -4,6 +4,7 @@ import com.andremeira.test.KyoTestSuite
 import com.andremeira.test.KyoTestSuite.SuiteResult
 import conduit.domain.model.Article
 import PostgresTestSupport.withDatabase
+import conduit.infrastructure.TestFixtures
 import kyo.*
 
 object PostgresFavoriteRepositorySpec extends KyoTestSuite:
@@ -15,7 +16,7 @@ object PostgresFavoriteRepositorySpec extends KyoTestSuite:
     "PostgresFavoriteRepository" should withDatabase { database =>
 
       "add and detect a favorite" in
-        database.withCleanDatabase:
+        database.withMigration:
           database.transaction:
             for
               authorId <- fixtures.makeUser
@@ -30,7 +31,7 @@ object PostgresFavoriteRepositorySpec extends KyoTestSuite:
               assert(after, "should exist after add")
 
       "add is idempotent (ON CONFLICT DO NOTHING)" in
-        database.withCleanDatabase:
+        database.withMigration:
           database.transaction:
             for
               authorId <- fixtures.makeUser
@@ -44,7 +45,7 @@ object PostgresFavoriteRepositorySpec extends KyoTestSuite:
             yield assert(exists, "should still exist after double-add")
 
       "delete a favorite" in
-        database.withCleanDatabase:
+        database.withMigration:
           database.transaction:
             for
               authorId <- fixtures.makeUser
@@ -58,7 +59,7 @@ object PostgresFavoriteRepositorySpec extends KyoTestSuite:
             yield assert(!exists, "should not exist after delete")
 
       "favoriteOf returns only favorited article ids" in
-        database.withCleanDatabase:
+        database.withMigration:
           database.transaction:
             for
               authorId <- fixtures.makeUser
@@ -73,7 +74,7 @@ object PostgresFavoriteRepositorySpec extends KyoTestSuite:
             yield assert(result.toSet == Set(a1.id, a3.id), s"Expected {a1,a3}, got $result")
 
       "favoriteOf returns empty for empty input" in
-        database.withCleanDatabase:
+        database.withMigration:
           database.transaction:
             for
               userId <- fixtures.makeUser
@@ -81,7 +82,7 @@ object PostgresFavoriteRepositorySpec extends KyoTestSuite:
             yield assert(result.isEmpty, s"Expected empty, got $result")
 
       "saved favorite increments the article's favoriteCount on read" in
-        database.withCleanDatabase:
+        database.withMigration:
           database.transaction:
             for
               authorId <- fixtures.makeUser

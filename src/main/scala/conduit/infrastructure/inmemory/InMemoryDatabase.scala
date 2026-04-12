@@ -12,7 +12,7 @@ import kyo.*
  *
  * @param state the in-memory state used for transactions
  */
-class InMemoryDatabase(state: InMemoryState) extends Database[InMemoryTransaction] {
+class InMemoryDatabase(val state: InMemoryState) extends Database[InMemoryTransaction] {
 
   /**
    * Executes a given effect within a transaction context.

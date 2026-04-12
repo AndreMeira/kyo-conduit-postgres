@@ -76,5 +76,5 @@ class ArticleFavoriteUseCase[Tx <: Database.Transaction](
    * @return True if the requester is following the author, false otherwise.
    */
   def isFollowing(userId: User.Id, profile: UserProfile): Boolean < (Effect & Env[Tx]) =
-    persistence.followers.exists(UserProfile.FollowedBy(userId, profile.userId))
+    persistence.followers.exists(UserProfile.FollowedBy(userId, profile.id))
 }

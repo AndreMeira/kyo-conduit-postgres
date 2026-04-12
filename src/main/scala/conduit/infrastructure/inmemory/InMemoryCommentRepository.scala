@@ -82,7 +82,7 @@ class InMemoryCommentRepository(lock: Meter) extends CommentRepository[InMemoryT
     InMemoryTransaction { state =>
       for {
         commentsByArticleId <- state.commentsByArticleId
-      } yield commentsByArticleId.getOrElse(articleId, Nil)
+      } yield commentsByArticleId.getOrElse(articleId, Nil).sortBy(_.id)
     }
 
   /**
@@ -108,7 +108,7 @@ class InMemoryCommentRepository(lock: Meter) extends CommentRepository[InMemoryT
       .comments
       .get
       .map: comments =>
-        comments.keySet.toList.sorted.lastOption.getOrElse(1L)
+        comments.keySet.toList.sorted.lastOption.map(_ + 1L).getOrElse(1L)
 }
 
 object InMemoryCommentRepository {

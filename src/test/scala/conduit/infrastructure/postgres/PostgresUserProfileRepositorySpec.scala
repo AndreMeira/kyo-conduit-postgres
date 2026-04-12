@@ -4,6 +4,7 @@ import com.andremeira.test.KyoTestSuite
 import com.andremeira.test.KyoTestSuite.SuiteResult
 import conduit.domain.service.persistence.IdGeneratorService
 import PostgresTestSupport.withDatabase
+import conduit.infrastructure.TestFixtures
 import kyo.*
 
 object PostgresUserProfileRepositorySpec extends KyoTestSuite:
@@ -15,7 +16,7 @@ object PostgresUserProfileRepositorySpec extends KyoTestSuite:
     "PostgresUserProfileRepository" should withDatabase { database =>
 
       "save and find by profile id" in
-        database.withCleanDatabase:
+        database.withMigration:
           database.transaction:
             for
               userId  <- fixtures.makeUser
@@ -24,7 +25,7 @@ object PostgresUserProfileRepositorySpec extends KyoTestSuite:
             yield assert(found == Maybe.Present(profile), s"Expected $profile but got $found")
 
       "save and find by user id" in
-        database.withCleanDatabase:
+        database.withMigration:
           database.transaction:
             for
               userId  <- fixtures.makeUser
@@ -33,7 +34,7 @@ object PostgresUserProfileRepositorySpec extends KyoTestSuite:
             yield assert(found == Maybe.Present(profile), s"Expected $profile but got $found")
 
       "save and find by username" in
-        database.withCleanDatabase:
+        database.withMigration:
           database.transaction:
             for
               userId  <- fixtures.makeUser
@@ -43,7 +44,7 @@ object PostgresUserProfileRepositorySpec extends KyoTestSuite:
             yield assert(found == Maybe.Present(profile), s"Expected $profile but got $found")
 
       "return Absent for unknown id" in
-        database.withCleanDatabase:
+        database.withMigration:
           database.transaction:
             for
               unknownId <- IdGeneratorService.uuid
@@ -53,7 +54,7 @@ object PostgresUserProfileRepositorySpec extends KyoTestSuite:
               assert(!exists, "expected exists(unknown)=false")
 
       "report existence of saved profile by id and by username" in
-        database.withCleanDatabase:
+        database.withMigration:
           database.transaction:
             for
               userId       <- fixtures.makeUser
@@ -64,7 +65,7 @@ object PostgresUserProfileRepositorySpec extends KyoTestSuite:
               assert(existsByName, s"expected exists(name=${profile.name})=true")
 
       "findByUsers returns profiles for all given user ids" in
-        database.withCleanDatabase:
+        database.withMigration:
           database.transaction:
             for
               u1    <- fixtures.makeUser
@@ -77,13 +78,13 @@ object PostgresUserProfileRepositorySpec extends KyoTestSuite:
             yield assert(found.toSet == Set(p1, p2, p3), s"Expected {p1,p2,p3}, got $found")
 
       "findByUsers returns empty for empty input" in
-        database.withCleanDatabase:
+        database.withMigration:
           database.transaction:
             for found <- persistence.users.findByUsers(List.empty)
             yield assert(found.isEmpty, s"Expected empty, got $found")
 
       "update profile" in
-        database.withCleanDatabase:
+        database.withMigration:
           database.transaction:
             for
               userId  <- fixtures.makeUser
@@ -98,7 +99,7 @@ object PostgresUserProfileRepositorySpec extends KyoTestSuite:
             yield assert(found == Maybe.Present(updated), s"Expected $updated but got $found")
 
       "findByArticle returns author profile" in
-        database.withCleanDatabase:
+        database.withMigration:
           database.transaction:
             for
               userId  <- fixtures.makeUser
@@ -108,7 +109,7 @@ object PostgresUserProfileRepositorySpec extends KyoTestSuite:
             yield assert(found == Maybe.Present(profile), s"Expected $profile but got $found")
 
       "findByArticles returns a map of article id to author profile" in
-        database.withCleanDatabase:
+        database.withMigration:
           database.transaction:
             for
               u1    <- fixtures.makeUser
@@ -124,7 +125,7 @@ object PostgresUserProfileRepositorySpec extends KyoTestSuite:
             )
 
       "findByArticles returns empty for empty input" in
-        database.withCleanDatabase:
+        database.withMigration:
           database.transaction:
             for found <- persistence.users.findByArticles(Set.empty)
             yield assert(found.isEmpty, s"Expected empty, got $found")

@@ -14,8 +14,8 @@ class PostgresFollowerRepository extends FollowerRepository[PostgresTransaction]
   /**
    * Checks if a follower relationship exists.
    *
-   * Both follower_id and followee_id store user UUIDs. FollowedBy.profileId
-   * is treated as the followed user's ID, consistent with how ProfileFollowingUseCase writes it.
+   * follower_id references users(id), followee_id references profiles(id).
+   * FollowedBy.profileId stores the profile ID of the followed user.
    *
    * @param followed the follower relationship to check
    * @return true if the follower relationship exists, false otherwise

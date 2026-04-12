@@ -122,7 +122,7 @@ class PostgresArticleRepository extends ArticleRepository[PostgresTransaction] {
    * @param params a list of search parameters to apply
    * @return a list of articles matching all search criteria, ordered by creation date descending
    */
-  override def search(params: List[ArticleRepository.SearchParam]): List[Article] < Effect =
+  override def search(params: List[ArticleRepository.SearchParam], offset: Int, limit: Int): List[Article] < Effect =
     Transactional:
       sql"""SELECT
          a.id,
@@ -144,10 +144,40 @@ class PostgresArticleRepository extends ArticleRepository[PostgresTransaction] {
            WHERE fav.article_id = a.id
            AND fp.name = ${params.favoriteBy.getOrElse("")}
          ))
-         ORDER BY a.created_at DESC"""
+         ORDER BY a.created_at DESC LIMIT $limit OFFSET $offset"""
         .query[Article]
         .run()
         .toList
+
+  /**
+   * Counts the total number of articles matching the given search parameters.
+   *
+   * Uses the same filtering semantics as [[searchBy]], ignoring pagination.
+   *
+   * @param params a list of search parameters to apply
+   * @return the total number of articles matching all search criteria
+   */
+  override def searchCount(params: List[ArticleRepository.SearchParam]): Int < Effect =
+    Transactional:
+      sql"""SELECT count(*)
+           FROM articles a
+           JOIN profiles p ON a.author_id = p.user_id
+           WHERE (${params.author.isEmpty} OR p.name = ${params.author.getOrElse("")})
+           AND (${params.tag.isEmpty} OR EXISTS (
+             SELECT 1 FROM tags t2
+             WHERE t2.article_id = a.id
+             AND t2.name = ${params.tag.getOrElse("")}
+           ))
+           AND (${params.favoriteBy.isEmpty} OR EXISTS (
+             SELECT 1 FROM favorites fav
+             JOIN profiles fp ON fav.user_id = fp.user_id
+             WHERE fav.article_id = a.id
+             AND fp.name = ${params.favoriteBy.getOrElse("")}
+           ))"""
+        .query[Int]
+        .run()
+        .headOption
+        .getOrElse(0)
 
   /**
    * Retrieves a feed of articles for a specific user.
@@ -169,7 +199,7 @@ class PostgresArticleRepository extends ArticleRepository[PostgresTransaction] {
            a.created_at, a.updated_at
            FROM articles a
            JOIN profiles p ON a.author_id = p.user_id
-           JOIN followers fol ON p.user_id = fol.followee_id
+           JOIN followers fol ON p.id = fol.followee_id
            WHERE fol.follower_id = $userId
            ORDER BY a.created_at DESC
            OFFSET $offset LIMIT $limit"""
@@ -188,7 +218,7 @@ class PostgresArticleRepository extends ArticleRepository[PostgresTransaction] {
       sql"""SELECT count(*)
             FROM articles a
             JOIN profiles p ON a.author_id = p.user_id
-            JOIN followers fol ON p.user_id = fol.followee_id
+            JOIN followers fol ON p.id = fol.followee_id
             WHERE fol.follower_id = $userId"""
         .query[Int]
         .run()

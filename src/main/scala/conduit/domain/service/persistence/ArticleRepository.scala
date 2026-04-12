@@ -67,7 +67,17 @@ trait ArticleRepository[Tx <: Transaction] {
    * @param params a list of search parameters to apply
    * @return a list of articles matching all search criteria
    */
-  def search(params: List[SearchParam]): List[Article] < Effect
+  def search(params: List[SearchParam], offset: Int, limit: Int): List[Article] < Effect
+
+  /**
+   * Counts the total number of articles matching the given search parameters.
+   *
+   * Uses the same filtering semantics as [[searchBy]], ignoring pagination.
+   *
+   * @param params a list of search parameters to apply
+   * @return the total number of articles matching all search criteria
+   */
+  def searchCount(params: List[SearchParam]): Int < Effect
 
   /**
    * Retrieves a feed of articles for a specific user.

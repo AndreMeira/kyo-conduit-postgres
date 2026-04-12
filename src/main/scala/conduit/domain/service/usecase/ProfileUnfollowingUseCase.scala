@@ -42,7 +42,7 @@ class ProfileUnfollowingUseCase[Tx <: Database.Transaction](
     database.transaction:
       for {
         profile <- findProfile(request)
-        follower = FollowedBy(request.requester.userId, profile.userId)
+        follower = FollowedBy(request.requester.userId, profile.id)
         _       <- persistence.followers.delete(follower)
       } yield GetProfileResponse.make(profile, false)
 
