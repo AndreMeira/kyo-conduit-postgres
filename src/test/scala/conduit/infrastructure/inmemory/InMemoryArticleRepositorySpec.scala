@@ -27,6 +27,7 @@ object InMemoryArticleRepositorySpec extends KyoTestSuite:
   def specSuite: SuiteResult < (Async & Scope) =
 
     "InMemoryArticleRepository" should {
+
       "save and find by id" in withDatabase { database =>
         database.transaction:
           for

@@ -2,6 +2,7 @@ package com.andremeira.test
 
 import kyo.*
 import sbt.testing.*
+import java.lang.System
 
 /**
  * sbt test framework that discovers and runs [[KyoTestSuite]] objects.
@@ -112,7 +113,7 @@ class KyoTask(val taskDef: TaskDef, classLoader: ClassLoader) extends Task {
     given Frame = Frame.derive
 
     val fqn       = taskDef.fullyQualifiedName()
-    val startTime = java.lang.System.currentTimeMillis()
+    val startTime = System.currentTimeMillis()
 
     try {
       // Load the Scala object (MODULE$ singleton)
@@ -130,16 +131,11 @@ class KyoTask(val taskDef: TaskDef, classLoader: ClassLoader) extends Task {
 
       result match {
         case Result.Success(testResults) =>
-          testResults.foreach { tr =>
-            val testName = s"${tr.suiteName} should ${tr.testName}"
-            val status   = tr.result match {
-              case Result.Success(_) => Status.Success
-              case _                 => Status.Failure
-            }
-            val duration = java.lang.System.currentTimeMillis() - startTime
+          testResults.foreach { testResult =>
+            val testName = s"${testResult.suiteName} should ${testResult.testName}"
 
             // Log to console (same format as KyoTestSuite)
-            tr.result match {
+            testResult.result match
               case Result.Success(_)     =>
               // loggers.foreach(_.info(Ansi.green(s"✓ $testName")))
               case Result.Failure(check) =>
@@ -148,23 +144,26 @@ class KyoTask(val taskDef: TaskDef, classLoader: ClassLoader) extends Task {
                   l.info("  - " + Ansi.red(check.message))
                   l.info(check.frame.render.replace("\u001b[32m", "\u001b[33m"))
                 }
-            }
 
+            val status   = testResult.result match
+              case Result.Success(_) => Status.Success
+              case _                 => Status.Failure
+            val duration = System.currentTimeMillis() - startTime
             handler.handle(KyoEvent(taskDef, testName, status, duration))
           }
 
         case Result.Error(ex: Throwable) =>
-          val duration = java.lang.System.currentTimeMillis() - startTime
+          val duration = System.currentTimeMillis() - startTime
           loggers.foreach(_.error(s"Suite $fqn failed with exception: ${ex.getMessage}"))
           handler.handle(KyoEvent(taskDef, fqn, Status.Error, duration, Some(ex)))
 
         case Result.Panic(ex) =>
-          val duration = java.lang.System.currentTimeMillis() - startTime
+          val duration = System.currentTimeMillis() - startTime
           loggers.foreach(_.error(s"Suite $fqn panicked: ${ex.getMessage}"))
           handler.handle(KyoEvent(taskDef, fqn, Status.Error, duration, Some(ex)))
 
         case other =>
-          val duration = java.lang.System.currentTimeMillis() - startTime
+          val duration = System.currentTimeMillis() - startTime
           loggers.foreach(_.error(s"Suite $fqn returned unexpected result: $other"))
           handler.handle(KyoEvent(taskDef, fqn, Status.Error, duration))
       }
@@ -172,7 +171,7 @@ class KyoTask(val taskDef: TaskDef, classLoader: ClassLoader) extends Task {
     }
     catch {
       case ex: Throwable =>
-        val duration = java.lang.System.currentTimeMillis() - startTime
+        val duration = System.currentTimeMillis() - startTime
         loggers.foreach(_.error(s"Suite $fqn threw: ${ex.getMessage}"))
         handler.handle(KyoEvent(taskDef, fqn, Status.Error, duration, Some(ex)))
     }
