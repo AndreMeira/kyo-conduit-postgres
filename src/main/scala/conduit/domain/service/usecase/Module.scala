@@ -25,10 +25,9 @@ object Module:
    * @tparam Tx The transaction type, which must be a subtype of Database.Transaction and have a Tag instance.
    * @return A Layer that provides ArticleCreationUseCase[Tx] and requires Database[Tx] and Persistence[Tx] in the environment.
    */
-  def articleCreation[Tx <: Database.Transaction: Tag]
-    : Layer[ArticleCreationUseCase[Tx], Env[Database[Tx]] & Env[Persistence[Tx]]] =
-    Layer.from { (db: Database[Tx], p: Persistence[Tx]) =>
-      ArticleCreationUseCase(db, p)
+  def articleCreation[Tx <: Database.Transaction: Tag]: Layer[ArticleCreationUseCase[Tx], Env[Database[Tx]] & Env[Persistence[Tx]]] =
+    Layer.from { (database: Database[Tx], persistence: Persistence[Tx]) =>
+      ArticleCreationUseCase(database, persistence)
     }
 
   /**
@@ -38,10 +37,9 @@ object Module:
    * @tparam Tx The transaction type, which must be a subtype of Database.Transaction and have a Tag instance.
    * @return A Layer that provides ArticleDeletionUseCase[Tx] and requires Database[Tx] and Persistence[Tx] in the environment.
    */
-  def articleFavorite[Tx <: Database.Transaction: Tag]
-    : Layer[ArticleFavoriteUseCase[Tx], Env[Database[Tx]] & Env[Persistence[Tx]]] =
-    Layer.from { (db: Database[Tx], p: Persistence[Tx]) =>
-      ArticleFavoriteUseCase(db, p)
+  def articleFavorite[Tx <: Database.Transaction: Tag]: Layer[ArticleFavoriteUseCase[Tx], Env[Database[Tx]] & Env[Persistence[Tx]]] =
+    Layer.from { (database: Database[Tx], persistence: Persistence[Tx]) =>
+      ArticleFavoriteUseCase(database, persistence)
     }
 
   /**
@@ -51,10 +49,9 @@ object Module:
    * @tparam Tx The transaction type, which must be a subtype of Database.Transaction and have a Tag instance.
    * @return A Layer that provides ArticleFeedUseCase[Tx] and requires Database[Tx] and Persistence[Tx] in the environment.
    */
-  def articleFeed[Tx <: Database.Transaction: Tag]
-    : Layer[ArticleFeedUseCase[Tx], Env[Database[Tx]] & Env[Persistence[Tx]]] =
-    Layer.from { (db: Database[Tx], p: Persistence[Tx]) =>
-      ArticleFeedUseCase(db, p)
+  def articleFeed[Tx <: Database.Transaction: Tag]: Layer[ArticleFeedUseCase[Tx], Env[Database[Tx]] & Env[Persistence[Tx]]] =
+    Layer.from { (database: Database[Tx], persistence: Persistence[Tx]) =>
+      ArticleFeedUseCase(database, persistence)
     }
 
   /**
@@ -64,10 +61,9 @@ object Module:
    * @tparam Tx The transaction type, which must be a subtype of Database.Transaction and have a Tag instance.
    * @return A Layer that provides ArticleUnfavoriteUseCase[Tx] and requires Database[Tx] and Persistence[Tx] in the environment.
    */
-  def articleUnfavorite[Tx <: Database.Transaction: Tag]
-    : Layer[ArticleUnfavoriteUseCase[Tx], Env[Database[Tx]] & Env[Persistence[Tx]]] =
-    Layer.from { (db: Database[Tx], p: Persistence[Tx]) =>
-      ArticleUnfavoriteUseCase(db, p)
+  def articleUnfavorite[Tx <: Database.Transaction: Tag]: Layer[ArticleUnfavoriteUseCase[Tx], Env[Database[Tx]] & Env[Persistence[Tx]]] =
+    Layer.from { (database: Database[Tx], persistence: Persistence[Tx]) =>
+      ArticleUnfavoriteUseCase(database, persistence)
     }
 
   /**
@@ -77,10 +73,9 @@ object Module:
    * @tparam Tx The transaction type, which must be a subtype of Database.Transaction and have a Tag instance.
    * @return A Layer that provides ArticleUpdateUseCase[Tx] and requires Database[Tx] and Persistence[Tx] in the environment.
    */
-  def articleUpdate[Tx <: Database.Transaction: Tag]
-    : Layer[ArticleUpdateUseCase[Tx], Env[Database[Tx]] & Env[Persistence[Tx]]] =
-    Layer.from { (db: Database[Tx], p: Persistence[Tx]) =>
-      ArticleUpdateUseCase(db, p)
+  def articleUpdate[Tx <: Database.Transaction: Tag]: Layer[ArticleUpdateUseCase[Tx], Env[Database[Tx]] & Env[Persistence[Tx]]] =
+    Layer.from { (database: Database[Tx], persistence: Persistence[Tx]) =>
+      ArticleUpdateUseCase(database, persistence)
     }
 
   /**
@@ -90,10 +85,9 @@ object Module:
    * @tparam Tx The transaction type, which must be a subtype of Database.Transaction and have a Tag instance.
    * @return A Layer that provides CommentAdditionUseCase[Tx] and requires Database[Tx] and Persistence[Tx] in the environment.
    */
-  def commentAddition[Tx <: Database.Transaction: Tag]
-    : Layer[CommentAdditionUseCase[Tx], Env[Database[Tx]] & Env[Persistence[Tx]]] =
-    Layer.from { (db: Database[Tx], p: Persistence[Tx]) =>
-      CommentAdditionUseCase(db, p)
+  def commentAddition[Tx <: Database.Transaction: Tag]: Layer[CommentAdditionUseCase[Tx], Env[Database[Tx]] & Env[Persistence[Tx]]] =
+    Layer.from { (database: Database[Tx], persistence: Persistence[Tx]) =>
+      CommentAdditionUseCase(database, persistence)
     }
 
   /**
@@ -103,10 +97,9 @@ object Module:
    * @tparam Tx The transaction type, which must be a subtype of Database.Transaction and have a Tag instance.
    * @return A Layer that provides CommentDeletionUseCase[Tx] and requires Database[Tx] and Persistence[Tx] in the environment.
    */
-  def commentDeletion[Tx <: Database.Transaction: Tag]
-    : Layer[CommentDeletionUseCase[Tx], Env[Database[Tx]] & Env[Persistence[Tx]]] =
-    Layer.from { (db: Database[Tx], p: Persistence[Tx]) =>
-      CommentDeletionUseCase(db, p)
+  def commentDeletion[Tx <: Database.Transaction: Tag]: Layer[CommentDeletionUseCase[Tx], Env[Database[Tx]] & Env[Persistence[Tx]]] =
+    Layer.from { (database: Database[Tx], persistence: Persistence[Tx]) =>
+      CommentDeletionUseCase(database, persistence)
     }
 
   /**
@@ -116,10 +109,9 @@ object Module:
    * @tparam Tx The transaction type, which must be a subtype of Database.Transaction and have a Tag instance.
    * @return A Layer that provides ListArticlesUseCase[Tx] and requires Database[Tx] and Persistence[Tx] in the environment.
    */
-  def listArticles[Tx <: Database.Transaction: Tag]
-    : Layer[ListArticlesUseCase[Tx], Env[Database[Tx]] & Env[Persistence[Tx]]] =
-    Layer.from { (db: Database[Tx], p: Persistence[Tx]) =>
-      ListArticlesUseCase(db, p)
+  def listArticles[Tx <: Database.Transaction: Tag]: Layer[ListArticlesUseCase[Tx], Env[Database[Tx]] & Env[Persistence[Tx]]] =
+    Layer.from { (database: Database[Tx], persistence: Persistence[Tx]) =>
+      ListArticlesUseCase(database, persistence)
     }
 
   /**
@@ -129,10 +121,9 @@ object Module:
    * @tparam Tx The transaction type, which must be a subtype of Database.Transaction and have a Tag instance.
    * @return A Layer that provides ListCommentsUseCase[Tx] and requires Database[Tx] and Persistence[Tx] in the environment.
    */
-  def listComments[Tx <: Database.Transaction: Tag]
-    : Layer[ListCommentsUseCase[Tx], Env[Database[Tx]] & Env[Persistence[Tx]]] =
-    Layer.from { (db: Database[Tx], p: Persistence[Tx]) =>
-      ListCommentsUseCase(db, p)
+  def listComments[Tx <: Database.Transaction: Tag]: Layer[ListCommentsUseCase[Tx], Env[Database[Tx]] & Env[Persistence[Tx]]] =
+    Layer.from { (database: Database[Tx], persistence: Persistence[Tx]) =>
+      ListCommentsUseCase(database, persistence)
     }
 
   /**
@@ -142,10 +133,9 @@ object Module:
    * @tparam Tx The transaction type, which must be a subtype of Database.Transaction and have a Tag instance.
    * @return A Layer that provides ProfileFollowingUseCase[Tx] and requires Database[Tx] and Persistence[Tx] in the environment.
    */
-  def profileFollowing[Tx <: Database.Transaction: Tag]
-    : Layer[ProfileFollowingUseCase[Tx], Env[Database[Tx]] & Env[Persistence[Tx]]] =
-    Layer.from { (db: Database[Tx], p: Persistence[Tx]) =>
-      ProfileFollowingUseCase(db, p)
+  def profileFollowing[Tx <: Database.Transaction: Tag]: Layer[ProfileFollowingUseCase[Tx], Env[Database[Tx]] & Env[Persistence[Tx]]] =
+    Layer.from { (database: Database[Tx], persistence: Persistence[Tx]) =>
+      ProfileFollowingUseCase(database, persistence)
     }
 
   /**
@@ -155,10 +145,9 @@ object Module:
    * @tparam Tx The transaction type, which must be a subtype of Database.Transaction and have a Tag instance.
    * @return A Layer that provides ProfileReadUseCase[Tx] and requires Database[Tx] and Persistence[Tx] in the environment.
    */
-  def profileRead[Tx <: Database.Transaction: Tag]
-    : Layer[ProfileReadUseCase[Tx], Env[Database[Tx]] & Env[Persistence[Tx]]] =
-    Layer.from { (db: Database[Tx], p: Persistence[Tx]) =>
-      ProfileReadUseCase(db, p)
+  def profileRead[Tx <: Database.Transaction: Tag]: Layer[ProfileReadUseCase[Tx], Env[Database[Tx]] & Env[Persistence[Tx]]] =
+    Layer.from { (database: Database[Tx], persistence: Persistence[Tx]) =>
+      ProfileReadUseCase(database, persistence)
     }
 
   /**
@@ -168,10 +157,9 @@ object Module:
    * @tparam Tx The transaction type, which must be a subtype of Database.Transaction and have a Tag instance.
    * @return A Layer that provides ProfileUnfollowingUseCase[Tx] and requires Database[Tx] and Persistence[Tx] in the environment.
    */
-  def profileUnfollowing[Tx <: Database.Transaction: Tag]
-    : Layer[ProfileUnfollowingUseCase[Tx], Env[Database[Tx]] & Env[Persistence[Tx]]] =
-    Layer.from { (db: Database[Tx], p: Persistence[Tx]) =>
-      ProfileUnfollowingUseCase(db, p)
+  def profileUnfollowing[Tx <: Database.Transaction: Tag]: Layer[ProfileUnfollowingUseCase[Tx], Env[Database[Tx]] & Env[Persistence[Tx]]] =
+    Layer.from { (database: Database[Tx], persistence: Persistence[Tx]) =>
+      ProfileUnfollowingUseCase(database, persistence)
     }
 
   /**
@@ -181,10 +169,9 @@ object Module:
    * @tparam Tx The transaction type, which must be a subtype of Database.Transaction and have a Tag instance.
    * @return A Layer that provides UserReadUseCase[Tx] and requires Database[Tx] and Persistence[Tx] in the environment.
    */
-  def userRead[Tx <: Database.Transaction: Tag]
-    : Layer[UserReadUseCase[Tx], Env[Database[Tx]] & Env[Persistence[Tx]]] =
-    Layer.from { (db: Database[Tx], p: Persistence[Tx]) =>
-      UserReadUseCase(db, p)
+  def userRead[Tx <: Database.Transaction: Tag]: Layer[UserReadUseCase[Tx], Env[Database[Tx]] & Env[Persistence[Tx]]] =
+    Layer.from { (database: Database[Tx], persistence: Persistence[Tx]) =>
+      UserReadUseCase(database, persistence)
     }
 
   /**
@@ -198,8 +185,8 @@ object Module:
    */
   def articleRead[Tx <: Database.Transaction: Tag]
     : Layer[ArticleReadUseCase[Tx], Env[Database[Tx]] & Env[Persistence[Tx]] & Env[AuthenticationService]] =
-    Layer.from { (db: Database[Tx], p: Persistence[Tx], auth: AuthenticationService) =>
-      ArticleReadUseCase(db, p, auth)
+    Layer.from { (database: Database[Tx], persistence: Persistence[Tx], authentication: AuthenticationService) =>
+      ArticleReadUseCase(database, persistence, authentication)
     }
 
   /**
@@ -214,8 +201,8 @@ object Module:
    */
   def userAuthentication[Tx <: Database.Transaction: Tag]
     : Layer[UserAuthenticationUseCase[Tx], Env[Database[Tx]] & Env[Persistence[Tx]] & Env[AuthenticationService]] =
-    Layer.from { (db: Database[Tx], p: Persistence[Tx], auth: AuthenticationService) =>
-      UserAuthenticationUseCase(db, p, auth)
+    Layer.from { (database: Database[Tx], persistence: Persistence[Tx], authentication: AuthenticationService) =>
+      UserAuthenticationUseCase(database, persistence, authentication)
     }
 
   /**
@@ -230,8 +217,9 @@ object Module:
    */
   def userRegistration[Tx <: Database.Transaction: Tag]
     : Layer[UserRegistrationUseCase[Tx], Env[Database[Tx]] & Env[Persistence[Tx]] & Env[AuthenticationService] & Env[StateValidationService[Tx]]] =
-    Layer.from { (db: Database[Tx], p: Persistence[Tx], auth: AuthenticationService, sv: StateValidationService[Tx]) =>
-      UserRegistrationUseCase(db, p, auth, sv)
+    Layer.from {
+      (database: Database[Tx], persistence: Persistence[Tx], authentication: AuthenticationService, stateValidation: StateValidationService[Tx]) =>
+        UserRegistrationUseCase(database, persistence, authentication, stateValidation)
     }
 
   /**
@@ -246,6 +234,45 @@ object Module:
    */
   def userUpdate[Tx <: Database.Transaction: Tag]
     : Layer[UserUpdateUseCase[Tx], Env[Database[Tx]] & Env[Persistence[Tx]] & Env[AuthenticationService] & Env[StateValidationService[Tx]]] =
-    Layer.from { (db: Database[Tx], p: Persistence[Tx], auth: AuthenticationService, sv: StateValidationService[Tx]) =>
-      UserUpdateUseCase(db, p, auth, sv)
+    Layer.from {
+      (database: Database[Tx], persistence: Persistence[Tx], authentication: AuthenticationService, stateValidation: StateValidationService[Tx]) =>
+        UserUpdateUseCase(database, persistence, authentication, stateValidation)
+    }
+
+  // ---------------------------------------------------------------------------
+  // Aggregate layer — produces a single UseCases[Tx] from all dependencies
+  // ---------------------------------------------------------------------------
+
+  /**
+   * Provides a [[UseCases]] layer that aggregates all use cases into a single instance,
+   * following the same pattern as [[conduit.domain.service.persistence.Persistence]]
+   * for repositories.
+   *
+   * @tparam Tx The transaction type, which must be a subtype of Database.Transaction and have a Tag instance.
+   * @return A Layer that provides UseCases[Tx] and requires Database[Tx], Persistence[Tx],
+   *         AuthenticationService, and StateValidationService[Tx] in the environment.
+   */
+  def useCases[Tx <: Database.Transaction: Tag]
+    : Layer[UseCases[Tx], Env[Database[Tx]] & Env[Persistence[Tx]] & Env[AuthenticationService] & Env[StateValidationService[Tx]]] =
+    Layer.from {
+      (database: Database[Tx], persistence: Persistence[Tx], authentication: AuthenticationService, stateValidation: StateValidationService[Tx]) =>
+        UseCases(
+          userRegistration = UserRegistrationUseCase(database, persistence, authentication, stateValidation),
+          userAuthentication = UserAuthenticationUseCase(database, persistence, authentication),
+          userRead = UserReadUseCase(database, persistence),
+          userUpdate = UserUpdateUseCase(database, persistence, authentication, stateValidation),
+          profileRead = ProfileReadUseCase(database, persistence),
+          profileFollowing = ProfileFollowingUseCase(database, persistence),
+          profileUnfollowing = ProfileUnfollowingUseCase(database, persistence),
+          articleCreation = ArticleCreationUseCase(database, persistence),
+          articleRead = ArticleReadUseCase(database, persistence, authentication),
+          articleUpdate = ArticleUpdateUseCase(database, persistence),
+          articleFeed = ArticleFeedUseCase(database, persistence),
+          listArticles = ListArticlesUseCase(database, persistence),
+          articleFavorite = ArticleFavoriteUseCase(database, persistence),
+          articleUnfavorite = ArticleUnfavoriteUseCase(database, persistence),
+          commentAddition = CommentAdditionUseCase(database, persistence),
+          commentDeletion = CommentDeletionUseCase(database, persistence),
+          listComments = ListCommentsUseCase(database, persistence),
+        )
     }
