@@ -1,15 +1,16 @@
 package conduit.application.http
 
-import conduit.application.http.types.{BearerToken, NamedSearch, Search}
-import conduit.domain.request.article.{CreateArticleRequest, UpdateArticleRequest}
+import conduit.application.http.types.*
+import conduit.domain.request.article.{ CreateArticleRequest, UpdateArticleRequest }
 import conduit.domain.request.comment.AddCommentRequest
-import conduit.domain.request.user.{AuthenticateRequest, RegistrationRequest, UpdateUserRequest}
-import conduit.domain.response.article.{ArticleListResponse, GetArticleResponse, TagListResponse}
-import conduit.domain.response.comment.{CommentListResponse, GetCommentResponse}
-import conduit.domain.response.user.{AuthenticationResponse, GetProfileResponse}
+import conduit.domain.request.user.{ AuthenticateRequest, RegistrationRequest, UpdateUserRequest }
+import conduit.domain.response.article.{ ArticleListResponse, GetArticleResponse, TagListResponse }
+import conduit.domain.response.comment.{ CommentListResponse, GetCommentResponse }
+import conduit.domain.response.user.{ AuthenticationResponse, GetProfileResponse }
 import io.circe.generic.auto.*
 import sttp.model.StatusCode
 import sttp.tapir.*
+import sttp.tapir.EndpointInput.AuthType
 import sttp.tapir.generic.auto.*
 import sttp.tapir.json.circe.*
 
@@ -28,13 +29,6 @@ import sttp.tapir.json.circe.*
   *   - Tags (list)
   */
 object Endpoint:
-
-  // ---------------------------------------------------------------------------
-  // Error response — matches the Conduit spec format:
-  // {"errors": {"body": ["can't be empty", "is too short"]}}
-  // ---------------------------------------------------------------------------
-
-  case class ErrorBody(errors: Map[String, List[String]])
 
   // ---------------------------------------------------------------------------
   // Base endpoints
@@ -70,14 +64,14 @@ object Endpoint:
   /** GET /api/user — Get the currently authenticated user. */
   val getCurrentUser: Endpoint[BearerToken, Unit, (StatusCode, ErrorBody), AuthenticationResponse, Any] =
     api.get
-      .securityIn(auth.bearer[BearerToken]())
+      .securityIn(authenticated)
       .in("user")
       .out(jsonBody[AuthenticationResponse])
 
   /** PUT /api/user — Update the currently authenticated user. */
   val updateUser: Endpoint[BearerToken, UpdateUserRequest.Payload, (StatusCode, ErrorBody), AuthenticationResponse, Any] =
     api.put
-      .securityIn(auth.bearer[BearerToken]())
+      .securityIn(authenticated)
       .in("user")
       .in(jsonBody[UpdateUserRequest.Payload])
       .out(jsonBody[AuthenticationResponse])
@@ -87,23 +81,23 @@ object Endpoint:
   // ---------------------------------------------------------------------------
 
   /** GET /api/profiles/:username — Get a user profile. Auth optional. */
-  val getProfile: Endpoint[Option[BearerToken], String, (StatusCode, ErrorBody), GetProfileResponse, Any] =
+  val getProfile: Endpoint[Option[BearerToken], UserName, (StatusCode, ErrorBody), GetProfileResponse, Any] =
     api.get
-      .securityIn(auth.bearer[Option[BearerToken]]())
+      .securityIn(anyone)
       .in("profiles" / path[String]("username"))
       .out(jsonBody[GetProfileResponse])
 
   /** POST /api/profiles/:username/follow — Follow a user. */
-  val followUser: Endpoint[BearerToken, String, (StatusCode, ErrorBody), GetProfileResponse, Any] =
+  val followUser: Endpoint[BearerToken, UserName, (StatusCode, ErrorBody), GetProfileResponse, Any] =
     api.post
-      .securityIn(auth.bearer[BearerToken]())
+      .securityIn(authenticated)
       .in("profiles" / path[String]("username") / "follow")
       .out(jsonBody[GetProfileResponse])
 
   /** DELETE /api/profiles/:username/follow — Unfollow a user. */
-  val unfollowUser: Endpoint[BearerToken, String, (StatusCode, ErrorBody), GetProfileResponse, Any] =
+  val unfollowUser: Endpoint[BearerToken, UserName, (StatusCode, ErrorBody), GetProfileResponse, Any] =
     api.delete
-      .securityIn(auth.bearer[BearerToken]())
+      .securityIn(authenticated)
       .in("profiles" / path[String]("username") / "follow")
       .out(jsonBody[GetProfileResponse])
 
@@ -112,54 +106,53 @@ object Endpoint:
   // ---------------------------------------------------------------------------
 
   /** GET /api/articles — List articles with optional filters. Auth optional. */
-  val listArticles
-    : Endpoint[Option[BearerToken], Search, (StatusCode, ErrorBody), ArticleListResponse, Any] =
+  val listArticles: Endpoint[Option[BearerToken], Search, (StatusCode, ErrorBody), ArticleListResponse, Any] =
     api.get
-      .securityIn(auth.bearer[Option[BearerToken]]())
+      .securityIn(anyone)
       .in("articles")
       .in(query[Option[String]]("tag"))
       .in(query[Option[String]]("author"))
       .in(query[Option[String]]("favorited"))
-      .in(query[Option[Int]]("limit"))
       .in(query[Option[Int]]("offset"))
+      .in(query[Option[Int]]("limit"))
       .out(jsonBody[ArticleListResponse])
 
   /** GET /api/articles/feed — Get articles from followed users. Auth required. */
-  val feedArticles: Endpoint[BearerToken, (Option[Int], Option[Int]), (StatusCode, ErrorBody), ArticleListResponse, Any] =
+  val feedArticles: Endpoint[BearerToken, Page, (StatusCode, ErrorBody), ArticleListResponse, Any] =
     api.get
-      .securityIn(auth.bearer[BearerToken]())
+      .securityIn(authenticated)
       .in("articles" / "feed")
-      .in(query[Option[Int]]("limit"))
       .in(query[Option[Int]]("offset"))
+      .in(query[Option[Int]]("limit"))
       .out(jsonBody[ArticleListResponse])
 
   /** GET /api/articles/:slug — Get a single article. Auth optional. */
-  val getArticle: Endpoint[Option[BearerToken], String, (StatusCode, ErrorBody), GetArticleResponse, Any] =
+  val getArticle: Endpoint[Option[BearerToken], Slug, (StatusCode, ErrorBody), GetArticleResponse, Any] =
     api.get
-      .securityIn(auth.bearer[Option[BearerToken]]())
+      .securityIn(anyone)
       .in("articles" / path[String]("slug"))
       .out(jsonBody[GetArticleResponse])
 
   /** POST /api/articles — Create an article. Auth required. */
   val createArticle: Endpoint[BearerToken, CreateArticleRequest.Payload, (StatusCode, ErrorBody), GetArticleResponse, Any] =
     api.post
-      .securityIn(auth.bearer[BearerToken]())
+      .securityIn(authenticated)
       .in("articles")
       .in(jsonBody[CreateArticleRequest.Payload])
       .out(jsonBody[GetArticleResponse])
 
   /** PUT /api/articles/:slug — Update an article. Auth required. */
-  val updateArticle: Endpoint[BearerToken, (String, UpdateArticleRequest.Payload), (StatusCode, ErrorBody), GetArticleResponse, Any] =
+  val updateArticle: Endpoint[BearerToken, (Slug, UpdateArticleRequest.Payload), (StatusCode, ErrorBody), GetArticleResponse, Any] =
     api.put
-      .securityIn(auth.bearer[BearerToken]())
+      .securityIn(authenticated)
       .in("articles" / path[String]("slug"))
       .in(jsonBody[UpdateArticleRequest.Payload])
       .out(jsonBody[GetArticleResponse])
 
   /** DELETE /api/articles/:slug — Delete an article. Auth required. */
-  val deleteArticle: Endpoint[BearerToken, String, (StatusCode, ErrorBody), Unit, Any] =
+  val deleteArticle: Endpoint[BearerToken, Slug, (StatusCode, ErrorBody), Unit, Any] =
     api.delete
-      .securityIn(auth.bearer[BearerToken]())
+      .securityIn(authenticated)
       .in("articles" / path[String]("slug"))
 
   // ---------------------------------------------------------------------------
@@ -167,16 +160,16 @@ object Endpoint:
   // ---------------------------------------------------------------------------
 
   /** POST /api/articles/:slug/favorite — Favorite an article. Auth required. */
-  val favoriteArticle: Endpoint[BearerToken, String, (StatusCode, ErrorBody), GetArticleResponse, Any] =
+  val favoriteArticle: Endpoint[BearerToken, Slug, (StatusCode, ErrorBody), GetArticleResponse, Any] =
     api.post
-      .securityIn(auth.bearer[BearerToken]())
+      .securityIn(authenticated)
       .in("articles" / path[String]("slug") / "favorite")
       .out(jsonBody[GetArticleResponse])
 
   /** DELETE /api/articles/:slug/favorite — Unfavorite an article. Auth required. */
-  val unfavoriteArticle: Endpoint[BearerToken, String, (StatusCode, ErrorBody), GetArticleResponse, Any] =
+  val unfavoriteArticle: Endpoint[BearerToken, Slug, (StatusCode, ErrorBody), GetArticleResponse, Any] =
     api.delete
-      .securityIn(auth.bearer[BearerToken]())
+      .securityIn(authenticated)
       .in("articles" / path[String]("slug") / "favorite")
       .out(jsonBody[GetArticleResponse])
 
@@ -185,24 +178,24 @@ object Endpoint:
   // ---------------------------------------------------------------------------
 
   /** POST /api/articles/:slug/comments — Add a comment to an article. Auth required. */
-  val addComment: Endpoint[BearerToken, (String, AddCommentRequest.Payload), (StatusCode, ErrorBody), GetCommentResponse, Any] =
+  val addComment: Endpoint[BearerToken, (Slug, AddCommentRequest.Payload), (StatusCode, ErrorBody), GetCommentResponse, Any] =
     api.post
-      .securityIn(auth.bearer[BearerToken]())
+      .securityIn(authenticated)
       .in("articles" / path[String]("slug") / "comments")
       .in(jsonBody[AddCommentRequest.Payload])
       .out(jsonBody[GetCommentResponse])
 
   /** GET /api/articles/:slug/comments — Get comments for an article. Auth optional. */
-  val getComments: Endpoint[Option[BearerToken], String, (StatusCode, ErrorBody), CommentListResponse, Any] =
+  val getComments: Endpoint[Option[BearerToken], Slug, (StatusCode, ErrorBody), CommentListResponse, Any] =
     api.get
-      .securityIn(auth.bearer[Option[BearerToken]]())
+      .securityIn(anyone)
       .in("articles" / path[String]("slug") / "comments")
       .out(jsonBody[CommentListResponse])
 
   /** DELETE /api/articles/:slug/comments/:id — Delete a comment. Auth required. */
   val deleteComment: Endpoint[BearerToken, (String, Long), (StatusCode, ErrorBody), Unit, Any] =
     api.delete
-      .securityIn(auth.bearer[BearerToken]())
+      .securityIn(authenticated)
       .in("articles" / path[String]("slug") / "comments" / path[Long]("id"))
 
   // ---------------------------------------------------------------------------
@@ -214,3 +207,20 @@ object Endpoint:
     api.get
       .in("tags")
       .out(jsonBody[TagListResponse])
+
+  /**
+   * Helper for authenticated endpoints that want to reuse the same logic for optional vs required auth. For example, the
+   * GET /api/articles endpoint can be accessed by both authenticated and unauthenticated users, but the handler logic is mostly
+   * the same except for some personalization based on the user. This helper allows us to define a single endpoint with optional
+   * auth and then handle the presence or absence of the token in the handler logic.
+   */
+  def authenticated: EndpointInput.Auth[BearerToken, AuthType.Http] =
+    auth.bearer[BearerToken]()
+
+  /**
+   * Helper for authenticated endpoints that require a token.
+   * This is just a shorthand for the more verbose syntax used in the
+   * endpoint definitions, but it can be useful for consistency and readability.
+   */
+  def anyone: EndpointInput.Auth[Option[BearerToken], AuthType.Http] =
+    auth.bearer[Option[BearerToken]]()
