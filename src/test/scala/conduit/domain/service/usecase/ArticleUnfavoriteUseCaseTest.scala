@@ -30,14 +30,14 @@ object ArticleUnfavoriteUseCaseTest extends KyoTestSuite {
           userId      <- database.transaction(fixtures.makeUser)
           profile     <- database.transaction(fixtures.makeProfile(userId))
           article     <- database.transaction(fixtures.makeArticle(userId))
-          _           <- database.transaction(persistence.favorites.add(Article.FavoriteBy(userId, article.id)))
-          exists      <- database.transaction(persistence.favorites.exists(Article.FavoriteBy(userId, article.id)))
+          _           <- database.transaction(persistence.favorites.add(Article.Favorite(userId, article.id)))
+          exists      <- database.transaction(persistence.favorites.exists(Article.Favorite(userId, article.id)))
           request      = RemoveFavoriteArticleRequest(
                            requester = User.Authenticated(userId),
                            slug = article.slug,
                          )
           response    <- ArticleUnfavoriteUseCase(database, persistence).apply(request)
-          found       <- database.transaction(persistence.favorites.exists(Article.FavoriteBy(userId, article.id)))
+          found       <- database.transaction(persistence.favorites.exists(Article.Favorite(userId, article.id)))
         yield assert(
           response.article.slug == article.slug &&
           !response.article.favorited &&

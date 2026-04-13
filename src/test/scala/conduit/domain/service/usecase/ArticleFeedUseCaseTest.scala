@@ -31,7 +31,7 @@ object ArticleFeedUseCaseTest extends KyoTestSuite {
           _           <- database.transaction(fixtures.makeProfile(readerId))
           authorId    <- database.transaction(fixtures.makeUser)
           authorProf  <- database.transaction(fixtures.makeProfile(authorId))
-          _           <- database.transaction(persistence.followers.add(UserProfile.FollowedBy(readerId, authorProf.id)))
+          _           <- database.transaction(persistence.followers.add(UserProfile.Follower(readerId, authorProf.id)))
           article     <- database.transaction(fixtures.makeArticle(authorId))
           request      = ArticleFeedRequest(
                            requester = User.Authenticated(readerId),

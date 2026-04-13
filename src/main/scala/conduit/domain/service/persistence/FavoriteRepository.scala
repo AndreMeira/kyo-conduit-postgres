@@ -23,7 +23,7 @@ trait FavoriteRepository[Tx <: Transaction] {
    * @param favorite the favorite entry to check
    * @return true if the favorite entry exists, false otherwise
    */
-  def exists(favorite: Article.FavoriteBy): Boolean < Effect
+  def exists(favorite: Article.Favorite): Boolean < Effect
 
   /**
    * Finds favorite entries for a user across multiple articles.
@@ -40,7 +40,7 @@ trait FavoriteRepository[Tx <: Transaction] {
    * @param favorite the favorite entry to add
    * @return Unit on successful addition
    */
-  def add(favorite: Article.FavoriteBy): Unit < Effect
+  def add(favorite: Article.Favorite): Unit < Effect
 
   /**
    * Deletes a favorite entry for an article by a user.
@@ -48,5 +48,5 @@ trait FavoriteRepository[Tx <: Transaction] {
    * @param favorite the favorite entry to delete
    * @return Unit on successful deletion
    */
-  def delete(favorite: Article.FavoriteBy): Unit < Effect
+  def delete(favorite: Article.Favorite): Unit < Effect
 }

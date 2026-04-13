@@ -14,7 +14,7 @@ class InMemoryFavoriteRepository extends FavoriteRepository[InMemoryTransaction]
    * @param favorite the favorite entry to check
    * @return true if the favorite entry exists, false otherwise
    */
-  override def exists(favorite: Article.FavoriteBy): Boolean < Effect =
+  override def exists(favorite: Article.Favorite): Boolean < Effect =
     InMemoryTransaction { state =>
       state.favorites.get.map { favorites =>
         favorites.get(favorite.userId).exists(_.contains(favorite.articleId))
@@ -42,7 +42,7 @@ class InMemoryFavoriteRepository extends FavoriteRepository[InMemoryTransaction]
    * @param favorite the favorite entry to add
    * @return Unit on successful addition
    */
-  override def add(favorite: Article.FavoriteBy): Unit < Effect =
+  override def add(favorite: Article.Favorite): Unit < Effect =
     InMemoryTransaction { state =>
       for {
         favorites <- state
@@ -72,7 +72,7 @@ class InMemoryFavoriteRepository extends FavoriteRepository[InMemoryTransaction]
    * @param favorite the favorite entry to delete
    * @return Unit on successful deletion
    */
-  override def delete(favorite: Article.FavoriteBy): Unit < Effect =
+  override def delete(favorite: Article.Favorite): Unit < Effect =
     InMemoryTransaction { state =>
       for {
         favorites <- state

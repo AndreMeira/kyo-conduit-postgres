@@ -118,7 +118,7 @@ object Article:
    * @param userId the unique identifier of the user who favorited the article
    * @param articleId the unique identifier of the favorited article
    */
-  case class FavoriteBy(
+  case class Favorite(
     userId: User.Id,
     articleId: Article.Id,
   )

@@ -29,7 +29,7 @@ trait FollowerRepository[Tx <: Transaction] {
    * @param followed the follower relationship to check
    * @return true if the follower relationship exists, false otherwise
    */
-  def exists(followed: UserProfile.FollowedBy): Boolean < Effect
+  def exists(followed: UserProfile.Follower): Boolean < Effect
 
   /**
    * Finds follower relationships for a user across multiple followed users.
@@ -52,7 +52,7 @@ trait FollowerRepository[Tx <: Transaction] {
    * @param followed the follower relationship to add
    * @return Unit on successful addition
    */
-  def add(followed: UserProfile.FollowedBy): Unit < Effect
+  def add(followed: UserProfile.Follower): Unit < Effect
 
   /**
    * Removes a follower relationship.
@@ -63,5 +63,5 @@ trait FollowerRepository[Tx <: Transaction] {
    * @param followed the follower relationship to remove
    * @return Unit on successful deletion
    */
-  def delete(followed: UserProfile.FollowedBy): Unit < Effect
+  def delete(followed: UserProfile.Follower): Unit < Effect
 }

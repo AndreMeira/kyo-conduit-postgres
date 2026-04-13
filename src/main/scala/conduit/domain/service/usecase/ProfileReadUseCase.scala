@@ -2,7 +2,7 @@ package conduit.domain.service.usecase
 
 import conduit.domain.error.ApplicationError
 import conduit.domain.error.NotFound.ProfileNotFound
-import conduit.domain.model.UserProfile.FollowedBy
+import conduit.domain.model.UserProfile.Follower
 import conduit.domain.model.{ User, UserProfile }
 import conduit.domain.request.user.GetProfileRequest
 import conduit.domain.response.user.GetProfileResponse
@@ -59,5 +59,5 @@ class ProfileReadUseCase[Tx <: Database.Transaction](
   private def isFollowing(user: User, profile: UserProfile): Boolean < (Effect & Env[Tx]) =
     user.option match
       case Maybe.Absent          => false
-      case Maybe.Present(userId) => persistence.followers.exists(FollowedBy(userId, profile.id))
+      case Maybe.Present(userId) => persistence.followers.exists(Follower(userId, profile.id))
 }

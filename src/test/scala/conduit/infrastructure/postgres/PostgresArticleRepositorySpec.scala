@@ -101,7 +101,7 @@ object PostgresArticleRepositorySpec extends KyoTestSuite:
               _       <- fixtures.makeProfile(userId)
               article <- fixtures.makeArticle(userId, "With extras")
               _       <- persistence.tags.add(article.id, List("scala", "kyo"))
-              _       <- persistence.favorites.add(Article.FavoriteBy(userId, article.id))
+              _       <- persistence.favorites.add(Article.Favorite(userId, article.id))
               before  <- persistence.articles.find(article.id)
               ts      <- fixtures.now
               updated  = article.data.copy(title = "New title", updatedAt = ts)
@@ -152,7 +152,7 @@ object PostgresArticleRepositorySpec extends KyoTestSuite:
               favUserId <- fixtures.makeUser
               favProf   <- fixtures.makeProfile(favUserId)
               article   <- fixtures.makeArticle(authorId, "Favorited")
-              _         <- persistence.favorites.add(Article.FavoriteBy(favUserId, article.id))
+              _         <- persistence.favorites.add(Article.Favorite(favUserId, article.id))
               result    <- persistence.articles.search(List(SearchParam.FavoriteBy(favProf.name)), 0, 10)
             yield assert(
               result.map(_.id).contains(article.id),
@@ -298,8 +298,8 @@ object PostgresArticleRepositorySpec extends KyoTestSuite:
               a1        <- fixtures.makeArticle(authorId, "Liked one")
               a2        <- fixtures.makeArticle(authorId, "Liked two")
               _         <- fixtures.makeArticle(authorId, "Unliked")
-              _         <- persistence.favorites.add(Article.FavoriteBy(favUserId, a1.id))
-              _         <- persistence.favorites.add(Article.FavoriteBy(favUserId, a2.id))
+              _         <- persistence.favorites.add(Article.Favorite(favUserId, a1.id))
+              _         <- persistence.favorites.add(Article.Favorite(favUserId, a2.id))
               count     <- persistence.articles.searchCount(List(SearchParam.FavoriteBy(favProf.name)))
             yield assert(count == 2, s"Expected 2 articles favorited by ${favProf.name}, got $count")
 
@@ -357,7 +357,7 @@ object PostgresArticleRepositorySpec extends KyoTestSuite:
               otherId       <- fixtures.makeUser
               _             <- fixtures.makeProfile(otherId)
               _             <- persistence.followers.add:
-                                UserProfile.FollowedBy(followerId, authorProfile.id)
+                                UserProfile.Follower(followerId, authorProfile.id)
               a1            <- fixtures.makeArticle(authorId, "From followee")
               _             <- fixtures.makeArticle(otherId, "From other")
               feed          <- persistence.articles.feedOf(followerId, 0, 10)

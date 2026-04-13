@@ -24,7 +24,7 @@ class InMemoryFollowerRepository extends FollowerRepository[InMemoryTransaction]
    * @param followed the follower relationship to check
    * @return true if the follower relationship exists, false otherwise
    */
-  override def exists(followed: UserProfile.FollowedBy): Boolean < Effect =
+  override def exists(followed: UserProfile.Follower): Boolean < Effect =
     InMemoryTransaction { state =>
       state.followers.get.map { followers =>
         followers.getOrElse(followed.followerId, Nil).contains(followed.profileId)
@@ -48,7 +48,7 @@ class InMemoryFollowerRepository extends FollowerRepository[InMemoryTransaction]
    * @param followed the follower relationship to add
    * @return Unit
    */
-  override def add(followed: UserProfile.FollowedBy): Unit < Effect =
+  override def add(followed: UserProfile.Follower): Unit < Effect =
     InMemoryTransaction { state =>
       state
         .followers
@@ -75,7 +75,7 @@ class InMemoryFollowerRepository extends FollowerRepository[InMemoryTransaction]
    * @param followed the follower relationship to remove
    * @return Unit
    */
-  override def delete(followed: UserProfile.FollowedBy): Unit < Effect =
+  override def delete(followed: UserProfile.Follower): Unit < Effect =
     InMemoryTransaction { state =>
       state
         .followers

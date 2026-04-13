@@ -15,12 +15,12 @@ class PostgresFollowerRepository extends FollowerRepository[PostgresTransaction]
    * Checks if a follower relationship exists.
    *
    * follower_id references users(id), followee_id references profiles(id).
-   * FollowedBy.profileId stores the profile ID of the followed user.
+   * Follower.profileId stores the profile ID of the followed user.
    *
    * @param followed the follower relationship to check
    * @return true if the follower relationship exists, false otherwise
    */
-  override def exists(followed: UserProfile.FollowedBy): Boolean < Effect =
+  override def exists(followed: UserProfile.Follower): Boolean < Effect =
     Transactional:
       sql"""SELECT EXISTS(
               SELECT 1 FROM followers
@@ -59,7 +59,7 @@ class PostgresFollowerRepository extends FollowerRepository[PostgresTransaction]
    * @param followed the follower relationship to add
    * @return Unit on successful addition
    */
-  override def add(followed: UserProfile.FollowedBy): Unit < Effect =
+  override def add(followed: UserProfile.Follower): Unit < Effect =
     Transactional {
       sql"""INSERT INTO followers (follower_id, followee_id)
             VALUES (${followed.followerId}, ${followed.profileId})
@@ -74,7 +74,7 @@ class PostgresFollowerRepository extends FollowerRepository[PostgresTransaction]
    * @param followed the follower relationship to remove
    * @return Unit on successful deletion
    */
-  override def delete(followed: UserProfile.FollowedBy): Unit < Effect =
+  override def delete(followed: UserProfile.Follower): Unit < Effect =
     Transactional {
       sql"""DELETE FROM followers
             WHERE follower_id = ${followed.followerId}

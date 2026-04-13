@@ -23,7 +23,7 @@ object PostgresFavoriteRepositorySpec extends KyoTestSuite:
               _        <- fixtures.makeProfile(authorId)
               userId   <- fixtures.makeUser
               article  <- fixtures.makeArticle(authorId)
-              fav       = Article.FavoriteBy(userId, article.id)
+              fav       = Article.Favorite(userId, article.id)
               before   <- persistence.favorites.exists(fav)
               _        <- persistence.favorites.add(fav)
               after    <- persistence.favorites.exists(fav)
@@ -38,7 +38,7 @@ object PostgresFavoriteRepositorySpec extends KyoTestSuite:
               _        <- fixtures.makeProfile(authorId)
               userId   <- fixtures.makeUser
               article  <- fixtures.makeArticle(authorId)
-              fav       = Article.FavoriteBy(userId, article.id)
+              fav       = Article.Favorite(userId, article.id)
               _        <- persistence.favorites.add(fav)
               _        <- persistence.favorites.add(fav) // must not fail
               exists   <- persistence.favorites.exists(fav)
@@ -52,7 +52,7 @@ object PostgresFavoriteRepositorySpec extends KyoTestSuite:
               _        <- fixtures.makeProfile(authorId)
               userId   <- fixtures.makeUser
               article  <- fixtures.makeArticle(authorId)
-              fav       = Article.FavoriteBy(userId, article.id)
+              fav       = Article.Favorite(userId, article.id)
               _        <- persistence.favorites.add(fav)
               _        <- persistence.favorites.delete(fav)
               exists   <- persistence.favorites.exists(fav)
@@ -68,8 +68,8 @@ object PostgresFavoriteRepositorySpec extends KyoTestSuite:
               a1       <- fixtures.makeArticle(authorId, "A1")
               a2       <- fixtures.makeArticle(authorId, "A2")
               a3       <- fixtures.makeArticle(authorId, "A3")
-              _        <- persistence.favorites.add(Article.FavoriteBy(userId, a1.id))
-              _        <- persistence.favorites.add(Article.FavoriteBy(userId, a3.id))
+              _        <- persistence.favorites.add(Article.Favorite(userId, a1.id))
+              _        <- persistence.favorites.add(Article.Favorite(userId, a3.id))
               result   <- persistence.favorites.favoriteOf(userId, List(a1.id, a2.id, a3.id))
             yield assert(result.toSet == Set(a1.id, a3.id), s"Expected {a1,a3}, got $result")
 
@@ -89,7 +89,7 @@ object PostgresFavoriteRepositorySpec extends KyoTestSuite:
               _        <- fixtures.makeProfile(authorId)
               userId   <- fixtures.makeUser
               article  <- fixtures.makeArticle(authorId)
-              _        <- persistence.favorites.add(Article.FavoriteBy(userId, article.id))
+              _        <- persistence.favorites.add(Article.Favorite(userId, article.id))
               found    <- persistence.articles.find(article.id)
             yield assert(found.exists(_.favoriteCount == 1), s"Expected favoriteCount=1, got $found")
     }

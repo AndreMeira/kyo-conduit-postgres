@@ -46,7 +46,7 @@ object UserProfile:
    * @param followerId the unique identifier of the user doing the following
    * @param profileId the unique identifier of the profile being followed
    */
-  case class FollowedBy(
+  case class Follower(
     followerId: User.Id,
     profileId: UserProfile.Id,
   )

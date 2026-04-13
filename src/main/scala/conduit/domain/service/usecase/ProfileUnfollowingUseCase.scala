@@ -3,7 +3,7 @@ package conduit.domain.service.usecase
 import conduit.domain.error.ApplicationError
 import conduit.domain.error.NotFound.ProfileNotFound
 import conduit.domain.model.UserProfile
-import conduit.domain.model.UserProfile.FollowedBy
+import conduit.domain.model.UserProfile.Follower
 import conduit.domain.request.user.UnfollowUserRequest
 import conduit.domain.response.user.GetProfileResponse
 import conduit.domain.service.persistence.{ Database, Persistence }
@@ -42,7 +42,7 @@ class ProfileUnfollowingUseCase[Tx <: Database.Transaction](
     database.transaction:
       for {
         profile <- findProfile(request)
-        follower = FollowedBy(request.requester.userId, profile.id)
+        follower = Follower(request.requester.userId, profile.id)
         _       <- persistence.followers.delete(follower)
       } yield GetProfileResponse.make(profile, false)
 

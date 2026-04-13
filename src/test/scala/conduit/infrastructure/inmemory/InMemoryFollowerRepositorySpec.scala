@@ -27,7 +27,7 @@ object InMemoryFollowerRepositorySpec extends KyoTestSuite:
             follower    <- fixtures.makeUser
             followeeId  <- fixtures.makeUser
             followee    <- fixtures.makeProfile(followeeId)
-            rel          = UserProfile.FollowedBy(follower, followee.id)
+            rel          = UserProfile.Follower(follower, followee.id)
             before      <- persistence.followers.exists(rel)
             _           <- persistence.followers.add(rel)
             after       <- persistence.followers.exists(rel)
@@ -43,7 +43,7 @@ object InMemoryFollowerRepositorySpec extends KyoTestSuite:
             follower    <- fixtures.makeUser
             followeeId  <- fixtures.makeUser
             followee    <- fixtures.makeProfile(followeeId)
-            rel          = UserProfile.FollowedBy(follower, followee.id)
+            rel          = UserProfile.Follower(follower, followee.id)
             _           <- persistence.followers.add(rel)
             _           <- persistence.followers.add(rel) // must not fail
             exists      <- persistence.followers.exists(rel)
@@ -58,7 +58,7 @@ object InMemoryFollowerRepositorySpec extends KyoTestSuite:
             follower    <- fixtures.makeUser
             followeeId  <- fixtures.makeUser
             followee    <- fixtures.makeProfile(followeeId)
-            rel          = UserProfile.FollowedBy(follower, followee.id)
+            rel          = UserProfile.Follower(follower, followee.id)
             _           <- persistence.followers.add(rel)
             _           <- persistence.followers.delete(rel)
             exists      <- persistence.followers.exists(rel)
@@ -73,7 +73,7 @@ object InMemoryFollowerRepositorySpec extends KyoTestSuite:
             follower    <- fixtures.makeUser
             followeeId  <- fixtures.makeUser
             followee    <- fixtures.makeProfile(followeeId)
-            rel          = UserProfile.FollowedBy(follower, followee.id)
+            rel          = UserProfile.Follower(follower, followee.id)
             _           <- persistence.followers.delete(rel) // must not fail
             exists      <- persistence.followers.exists(rel)
           yield assert(!exists, "should not exist")
@@ -91,8 +91,8 @@ object InMemoryFollowerRepositorySpec extends KyoTestSuite:
             p1          <- fixtures.makeProfile(u1Id)
             p2          <- fixtures.makeProfile(u2Id)
             p3          <- fixtures.makeProfile(u3Id)
-            _           <- persistence.followers.add(UserProfile.FollowedBy(follower, p1.id))
-            _           <- persistence.followers.add(UserProfile.FollowedBy(follower, p3.id))
+            _           <- persistence.followers.add(UserProfile.Follower(follower, p1.id))
+            _           <- persistence.followers.add(UserProfile.Follower(follower, p3.id))
             result      <- persistence.followers.followedBy(follower, List(p1.id, p2.id, p3.id))
           yield assert(result.toSet == Set(p1.id, p3.id), s"Expected {p1,p3}, got $result")
       }

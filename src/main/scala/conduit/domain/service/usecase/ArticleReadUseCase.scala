@@ -3,8 +3,8 @@ package conduit.domain.service.usecase
 import conduit.domain.error.ApplicationError
 import conduit.domain.error.MissingEntity.UserProfileMissing
 import conduit.domain.error.NotFound.ArticleNotFound
-import conduit.domain.model.Article.FavoriteBy
-import conduit.domain.model.UserProfile.FollowedBy
+import conduit.domain.model.Article.Favorite
+import conduit.domain.model.UserProfile.Follower
 import conduit.domain.model.{ Article, User, UserProfile }
 import conduit.domain.request.article.GetArticleRequest
 import conduit.domain.response.article.GetArticleResponse
@@ -83,7 +83,7 @@ class ArticleReadUseCase[Tx <: Transaction](
    */
   private def isFollowing(requester: User, profile: UserProfile): Boolean < (Effect & Env[Tx]) =
     requester.option match
-      case Maybe.Present(userId) => persistence.followers.exists(FollowedBy(userId, profile.id))
+      case Maybe.Present(userId) => persistence.followers.exists(Follower(userId, profile.id))
       case _                     => false
 
   /**
@@ -97,6 +97,6 @@ class ArticleReadUseCase[Tx <: Transaction](
    */
   private def isFavorite(requester: User, article: Article): Boolean < (Effect & Env[Tx]) =
     requester.option match
-      case Maybe.Present(userId) => persistence.favorites.exists(FavoriteBy(userId, article.id))
+      case Maybe.Present(userId) => persistence.favorites.exists(Favorite(userId, article.id))
       case _                     => false
 }

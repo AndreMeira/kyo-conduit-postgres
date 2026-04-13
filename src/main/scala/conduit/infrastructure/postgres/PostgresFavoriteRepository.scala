@@ -17,7 +17,7 @@ class PostgresFavoriteRepository extends FavoriteRepository[PostgresTransaction]
    * @param favorite the favorite entry to check
    * @return true if the favorite entry exists, false otherwise
    */
-  override def exists(favorite: Article.FavoriteBy): Boolean < Effect =
+  override def exists(favorite: Article.Favorite): Boolean < Effect =
     Transactional:
       sql"""SELECT EXISTS(
               SELECT 1 FROM favorites
@@ -56,7 +56,7 @@ class PostgresFavoriteRepository extends FavoriteRepository[PostgresTransaction]
    * @param favorite the favorite entry to add
    * @return Unit on successful addition
    */
-  override def add(favorite: Article.FavoriteBy): Unit < Effect =
+  override def add(favorite: Article.Favorite): Unit < Effect =
     Transactional {
       sql"""INSERT INTO favorites (user_id, article_id)
             VALUES (${favorite.userId}, ${favorite.articleId})
@@ -71,7 +71,7 @@ class PostgresFavoriteRepository extends FavoriteRepository[PostgresTransaction]
    * @param favorite the favorite entry to delete
    * @return Unit on successful deletion
    */
-  override def delete(favorite: Article.FavoriteBy): Unit < Effect =
+  override def delete(favorite: Article.Favorite): Unit < Effect =
     Transactional {
       sql"""DELETE FROM favorites
             WHERE user_id = ${favorite.userId}

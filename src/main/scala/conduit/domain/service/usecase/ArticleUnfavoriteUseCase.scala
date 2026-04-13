@@ -46,7 +46,7 @@ class ArticleUnfavoriteUseCase[Tx <: Database.Transaction](
         article   <- findArticle(request)
         profile   <- findAuthor(article)
         following <- isFollowing(request.requester.userId, profile)
-        favorite   = Article.FavoriteBy(request.requester.userId, article.id)
+        favorite   = Article.Favorite(request.requester.userId, article.id)
         _         <- persistence.favorites.delete(favorite)
         updated   <- findArticle(request)
       } yield GetArticleResponse.make(updated, profile, favorited = false, following)
@@ -77,5 +77,5 @@ class ArticleUnfavoriteUseCase[Tx <: Database.Transaction](
    * @return True if the requester is following the author, false otherwise.
    */
   def isFollowing(userId: User.Id, profile: conduit.domain.model.UserProfile): Boolean < (Effect & Env[Tx]) =
-    persistence.followers.exists(UserProfile.FollowedBy(userId, profile.id))
+    persistence.followers.exists(UserProfile.Follower(userId, profile.id))
 }
