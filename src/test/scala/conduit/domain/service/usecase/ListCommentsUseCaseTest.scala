@@ -31,9 +31,8 @@ object ListCommentsUseCaseTest extends KyoTestSuite {
           _           <- database.transaction(fixtures.makeProfile(userId))
           article     <- database.transaction(fixtures.makeArticle(userId))
           now         <- Clock.now.map(_.toJava)
-          _           <- database.transaction(
-                           persistence.comments.save(Comment.Data(article.id, "A test comment", userId, now, now))
-                         )
+          commentData  = Comment.Data(article.id, "A test comment", userId, now, now)
+          _           <- database.transaction(persistence.comments.save(commentData))
           request      = ListCommentsRequest(
                            requester = User.Anonymous,
                            slug = article.slug,

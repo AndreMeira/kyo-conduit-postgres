@@ -121,6 +121,28 @@ object InMemoryArticleRepositorySpec extends KyoTestSuite:
             assert(found == Maybe.Present(expected), s"Expected $expected but got $found")
       }
 
+      "update article data across transactions" in withDatabase { database =>
+        for
+          fixtures    <- makeFixtures
+          persistence <- makePersistence
+          userId      <- database.transaction(fixtures.makeUser)
+          _           <- database.transaction(fixtures.makeProfile(userId))
+          article     <- database.transaction(fixtures.makeArticle(userId))
+          ts          <- Clock.now.map(_.toJava)
+          updated      = article.data.copy(title = "Cross-tx Updated", body = "New body", slug = "cross-tx-updated", updatedAt = ts)
+          _           <- database.transaction(persistence.articles.update(updated))
+          foundById   <- database.transaction(persistence.articles.find(article.id))
+          foundBySlug <- database.transaction(persistence.articles.findBySlug("cross-tx-updated"))
+          oldSlug     <- database.transaction(persistence.articles.findBySlug(article.slug))
+        yield
+          val result = foundById.toOption.get
+          assert(result.title == "Cross-tx Updated", s"Expected updated title, got ${result.title}") &
+          assert(result.body == "New body", s"Expected updated body, got ${result.body}") &
+          assert(result.slug == "cross-tx-updated", s"Expected updated slug, got ${result.slug}") &
+          assert(foundBySlug.isDefined, s"Expected to find article by new slug") &
+          assert(oldSlug.isEmpty, s"Expected old slug to no longer resolve")
+      }
+
       "update article data preserves favorite count and tags" in withDatabase { database =>
         database.transaction:
           for

@@ -34,7 +34,7 @@ object ListArticlesUseCaseTest extends KyoTestSuite {
                            filters = Nil,
                          )
           response    <- ListArticlesUseCase(database, persistence).apply(request)
-        yield
+        yield ok & 
           assert(response.articlesCount == 1, "Expected articlesCount to be 1") &
           assert(response.articles.head.slug == article.slug, "Expected articles list to contain created article")
       }
@@ -49,7 +49,7 @@ object ListArticlesUseCaseTest extends KyoTestSuite {
                            filters = Nil,
                          )
           response    <- ListArticlesUseCase(database, persistence).apply(request)
-        yield
+        yield ok & 
           assert(response.articlesCount == 0, "Expected articlesCount to be 0") &
           assert(response.articles.isEmpty, "Expected articles list to be empty")
       }

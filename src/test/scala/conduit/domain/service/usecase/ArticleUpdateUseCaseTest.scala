@@ -42,10 +42,30 @@ object ArticleUpdateUseCaseTest extends KyoTestSuite {
                            ),
                          )
           response    <- ArticleUpdateUseCase(database, persistence).apply(request)
-        yield assert(
-          response.article.author.username == profile.name,
-          "Expected updated article response to contain the correct author",
-        )
+          found       <- database.transaction(persistence.articles.findBySlug(response.article.slug))
+        yield ok &
+          assert(
+            response.article.author.username == profile.name,
+            "Expected updated article response to contain the correct author",
+          ) & assert(
+            response.article.title == "Updated Title",
+            "Expected article to be updated with new title",
+          ) & assert(
+            response.article.description == "Updated description",
+            "Expected article to be updated with new description",
+          ) & assert(
+            response.article.body.contains("Updated body content"),
+            "Expected article to be updated with new body content",
+          ) & assert(
+            found.exists(_.title == "Updated Title"),
+            "Expected article to be updated in the database with new title",
+          ) & assert(
+            found.exists(_.description == "Updated description"),
+            "Expected article to be updated in the database with new description",
+          ) & assert(
+            found.exists(_.body.contains("Updated body content")),
+            "Expected article to be updated in the database with new body content",
+          )
       }
 
       "fail with ArticleNotFound when updating a non-existent slug" in withDatabase { database =>

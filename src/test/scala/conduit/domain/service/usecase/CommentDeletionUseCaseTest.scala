@@ -27,23 +27,22 @@ object CommentDeletionUseCaseTest extends KyoTestSuite {
         for
           fixtures    <- makeFixtures
           persistence <- makePersistence
+          now         <- Clock.now.map(_.toJava)
           userId      <- database.transaction(fixtures.makeUser)
           _           <- database.transaction(fixtures.makeProfile(userId))
           article     <- database.transaction(fixtures.makeArticle(userId))
-          now         <- Clock.now.map(_.toJava)
-          comment     <- database.transaction(
-                           persistence.comments.save(Comment.Data(article.id, "A comment", userId, now, now))
-                         )
+          commentData  = Comment.Data(article.id, "A comment", userId, now, now)
+          comment     <- database.transaction(persistence.comments.save(commentData))
           request      = DeleteCommentRequest(
                            requester = User.Authenticated(userId),
                            slug = article.slug,
                            commentId = comment.id,
                          )
           response    <- CommentDeletionUseCase(database, persistence).apply(request)
-        yield assert(
-          response.comment == comment.id,
-          "Expected deleted comment id to match",
-        )
+          found       <- database.transaction(persistence.comments.find(comment.id))
+        yield ok &
+          assert(response.comment == comment.id, "Expected deleted comment id to match") &
+          assert(found.isEmpty, "Expected comment to be deleted and not found in database")
       }
 
       "fail with ArticleNotFound when deleting a comment on a non-existent article" in withDatabase { database =>

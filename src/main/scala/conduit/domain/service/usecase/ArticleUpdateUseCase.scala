@@ -44,8 +44,8 @@ class ArticleUpdateUseCase[Tx <: Database.Transaction](
         updated <- patch(article, patches)
         updated <- generateNewSlug(article, updated)
         profile <- findProfile(request.requester)
-        _       <- persistence.articles.update(article.data)
-      } yield GetArticleResponse.make(article, profile, false, false)
+        _       <- persistence.articles.update(updated.data)
+      } yield GetArticleResponse.make(updated, profile, false, false)
 
   /**
    * Checks if the requester is authorized to update the article.

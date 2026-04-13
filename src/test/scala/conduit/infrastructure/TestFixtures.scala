@@ -2,7 +2,7 @@ package conduit.infrastructure
 
 import conduit.domain.error.ApplicationError
 import conduit.domain.model.*
-import conduit.domain.service.persistence.{Database, IdGeneratorService, Persistence}
+import conduit.domain.service.persistence.{ Database, IdGeneratorService, Persistence }
 import kyo.*
 
 import java.time.Instant
@@ -36,12 +36,10 @@ class TestFixtures[Tx <: Database.Transaction](persistence: Persistence[Tx]):
   def makeUser: User.Id < Effect =
     for
       userId <- IdGeneratorService.uuid
-      _      <- persistence
-                  .credentials
-                  .save(
-                    userId,
-                    Credentials.Hashed(s"$userId@test.com", "hashed_password"),
-                  )
+      _      <- persistence.credentials.save(
+                  userId,
+                  Credentials.Hashed(s"$userId@test.com", "hashed_password"),
+                )
     yield userId
 
   /**
