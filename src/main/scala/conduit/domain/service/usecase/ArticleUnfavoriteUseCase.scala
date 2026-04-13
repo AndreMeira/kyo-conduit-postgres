@@ -48,7 +48,8 @@ class ArticleUnfavoriteUseCase[Tx <: Database.Transaction](
         following <- isFollowing(request.requester.userId, profile)
         favorite   = Article.FavoriteBy(request.requester.userId, article.id)
         _         <- persistence.favorites.delete(favorite)
-      } yield GetArticleResponse.make(article, profile, favorited = false, following)
+        updated   <- findArticle(request)
+      } yield GetArticleResponse.make(updated, profile, favorited = false, following)
 
   /**
    * Finds an article by its slug.

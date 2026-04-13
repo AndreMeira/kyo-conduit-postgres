@@ -41,10 +41,10 @@ object CommentListResponse:
     profiles: List[UserProfile],
     followed: Set[UUID],
   ): List[GetCommentResponse.Payload] = {
-    val profileById = profiles.map(profile => profile.id -> profile).toMap
+    val profileByUserId = profiles.map(profile => profile.userId -> profile).toMap
     for {
       comment  <- comments
-      profile  <- profileById.get(comment.authorId)
+      profile  <- profileByUserId.get(comment.authorId)
       following = followed.contains(profile.id)
     } yield GetCommentResponse.payload(comment, profile, following)
   }

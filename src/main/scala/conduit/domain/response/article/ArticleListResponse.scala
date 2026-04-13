@@ -59,12 +59,12 @@ object ArticleListResponse:
     favorites: Set[UUID],
     followed: Set[UUID],
   ): ArticleListResponse = {
-    val profilesById = profiles.map(profile => profile.id -> profile).toMap
+    val profilesByUserId = profiles.map(profile => profile.userId -> profile).toMap
     ArticleListResponse(
       articles =
         for {
           article <- articles
-          author  <- profilesById.get(article.authorId)
+          author  <- profilesByUserId.get(article.authorId)
         } yield Payload(
           slug = article.slug,
           title = article.title,
