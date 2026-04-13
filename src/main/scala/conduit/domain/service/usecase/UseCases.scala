@@ -24,9 +24,11 @@ import conduit.domain.service.persistence.Database.Transaction
   * @param listArticles        lists articles with filters
   * @param articleFavorite     favorites an article
   * @param articleUnfavorite   unfavorites an article
+  * @param articleDeletion     deletes an article
   * @param commentAddition     adds a comment to an article
   * @param commentDeletion     deletes a comment
   * @param listComments        lists comments for an article
+  * @param listTags            lists all available tags
   */
 class UseCases[Tx <: Transaction](
   val userRegistration: UserRegistrationUseCase[Tx],
@@ -43,7 +45,9 @@ class UseCases[Tx <: Transaction](
   val listArticles: ListArticlesUseCase[Tx],
   val articleFavorite: ArticleFavoriteUseCase[Tx],
   val articleUnfavorite: ArticleUnfavoriteUseCase[Tx],
+  val articleDeletion: ArticleDeletionUseCase[Tx],
   val commentAddition: CommentAdditionUseCase[Tx],
   val commentDeletion: CommentDeletionUseCase[Tx],
   val listComments: ListCommentsUseCase[Tx],
+  val listTags: ListTagsUseCase[Tx],
 )

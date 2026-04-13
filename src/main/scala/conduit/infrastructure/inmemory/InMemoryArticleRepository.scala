@@ -65,6 +65,18 @@ class InMemoryArticleRepository extends ArticleRepository[InMemoryTransaction] {
     }
 
   /**
+   * Deletes an article from the repository.
+   *
+   * @param id the ID of the article to delete
+   * @return Unit
+   */
+  override def delete(id: Article.Id): Unit < Effect =
+    InMemoryTransaction { state =>
+      state.articles.updateAndGet(_ - id)
+        *> state.addChange(InMemoryState.Changed.Deleted(ArticleRow(id)))
+    }
+
+  /**
    * Searches for articles based on the provided search parameters.
    *
    * Supports filtering by tag, author, and favorite user. Multiple parameters

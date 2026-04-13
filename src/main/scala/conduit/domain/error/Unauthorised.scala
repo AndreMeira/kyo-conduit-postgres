@@ -40,6 +40,12 @@ enum Unauthorised extends ApplicationError.UnauthorisedError {
   case ArticleUpdateDenied
 
   /**
+   * The user is not authorized to delete the article.
+   * This error indicates that the requester is not the author of the article.
+   */
+  case ArticleDeleteDenied
+
+  /**
    * The user is not authorized to delete the comment.
    * This error indicates that the requester is not the author of the comment.
    */
@@ -54,6 +60,7 @@ enum Unauthorised extends ApplicationError.UnauthorisedError {
     case TokenExpired        => "Token has expired"
     case InvalidTokenSubject => "Invalid token subject"
     case ArticleUpdateDenied => "Article update denied"
+    case ArticleDeleteDenied => "Article delete denied"
     case CommentDeleteDenied => "Comment delete denied"
   }
 }

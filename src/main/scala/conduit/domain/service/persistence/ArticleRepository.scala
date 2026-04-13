@@ -59,6 +59,14 @@ trait ArticleRepository[Tx <: Transaction] {
   def update(article: Article): Unit < Effect
 
   /**
+   * Deletes an article from the repository.
+   *
+   * @param id the ID of the article to delete
+   * @return Unit on successful deletion
+   */
+  def delete(id: Article.Id): Unit < Effect
+
+  /**
    * Searches for articles based on multiple search parameters.
    *
    * Supports filtering by tag, author, and favorite user. Multiple parameters

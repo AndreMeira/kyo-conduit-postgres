@@ -79,6 +79,18 @@ object Module:
     }
 
   /**
+   * Provides the ArticleDeletionUseCase layer, which depends on the Database and Persistence services.
+   * This use case allows for deleting an existing article from the system.
+   *
+   * @tparam Tx The transaction type, which must be a subtype of Database.Transaction and have a Tag instance.
+   * @return A Layer that provides ArticleDeletionUseCase[Tx] and requires Database[Tx] and Persistence[Tx] in the environment.
+   */
+  def articleDeletion[Tx <: Database.Transaction: Tag]: Layer[ArticleDeletionUseCase[Tx], Env[Database[Tx]] & Env[Persistence[Tx]]] =
+    Layer.from { (database: Database[Tx], persistence: Persistence[Tx]) =>
+      ArticleDeletionUseCase(database, persistence)
+    }
+
+  /**
    * Provides the CommentAdditionUseCase layer, which depends on the Database and Persistence services.
    * This use case allows for adding a new comment to an article in the system.
    *
@@ -124,6 +136,18 @@ object Module:
   def listComments[Tx <: Database.Transaction: Tag]: Layer[ListCommentsUseCase[Tx], Env[Database[Tx]] & Env[Persistence[Tx]]] =
     Layer.from { (database: Database[Tx], persistence: Persistence[Tx]) =>
       ListCommentsUseCase(database, persistence)
+    }
+
+  /**
+   * Provides the ListTagsUseCase layer, which depends on the Database and Persistence services.
+   * This use case allows for retrieving all available tags in the system.
+   *
+   * @tparam Tx The transaction type, which must be a subtype of Database.Transaction and have a Tag instance.
+   * @return A Layer that provides ListTagsUseCase[Tx] and requires Database[Tx] and Persistence[Tx] in the environment.
+   */
+  def listTags[Tx <: Database.Transaction: Tag]: Layer[ListTagsUseCase[Tx], Env[Database[Tx]] & Env[Persistence[Tx]]] =
+    Layer.from { (database: Database[Tx], persistence: Persistence[Tx]) =>
+      ListTagsUseCase(database, persistence)
     }
 
   /**
@@ -271,8 +295,10 @@ object Module:
           listArticles = ListArticlesUseCase(database, persistence),
           articleFavorite = ArticleFavoriteUseCase(database, persistence),
           articleUnfavorite = ArticleUnfavoriteUseCase(database, persistence),
+          articleDeletion = ArticleDeletionUseCase(database, persistence),
           commentAddition = CommentAdditionUseCase(database, persistence),
           commentDeletion = CommentDeletionUseCase(database, persistence),
           listComments = ListCommentsUseCase(database, persistence),
+          listTags = ListTagsUseCase(database, persistence),
         )
     }

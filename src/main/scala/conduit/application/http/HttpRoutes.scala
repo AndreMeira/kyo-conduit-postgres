@@ -155,16 +155,15 @@ class HttpRoutes(useCases: UseCases[?], authentication: AuthenticationService) e
     yield response
   }
 
-  // TODO: ArticleDeletionUseCase does not exist yet
-  // /** DELETE /api/articles/:slug */
-  // val deleteArticle: Unit < Routes = Routes.add(Endpoint.deleteArticle) { slug =>
-  //   for
-  //     token    <- Env.get[BearerToken]
-  //     user     <- authenticateRequired(token)
-  //     request   = DeleteArticleRequest(user, slug)
-  //     _        <- useCases.articleDeletion(request).mapAbort(ErrorCodec.encode)
-  //   yield ()
-  // }
+  /** DELETE /api/articles/:slug */
+  val deleteArticle: Unit < Routes = Routes.add(Endpoint.deleteArticle) { slug =>
+    for
+      token    <- Env.get[BearerToken]
+      user     <- authenticateRequired(token)
+      request   = DeleteArticleRequest(user, slug)
+      _        <- useCases.articleDeletion(request).mapAbort(ErrorCodec.encode)
+    yield ()
+  }
 
   // ---------------------------------------------------------------------------
   // Favorites
@@ -228,12 +227,11 @@ class HttpRoutes(useCases: UseCases[?], authentication: AuthenticationService) e
   // Tags
   // ---------------------------------------------------------------------------
 
-  // TODO: ListTagsUseCase does not exist yet
-  // /** GET /api/tags */
-  // val getTags: Unit < Routes = Routes.add(Endpoint.getTags) { _ =>
-  //   val request = ListTagsRequest(User.Anonymous)
-  //   useCases.listTags(request).mapAbort(ErrorCodec.encode)
-  // }
+  /** GET /api/tags */
+  val getTags: Unit < Routes = Routes.add(Endpoint.getTags) { _ =>
+    val request = ListTagsRequest(User.Anonymous)
+    useCases.listTags(request).mapAbort(ErrorCodec.encode)
+  }
 
   // ---------------------------------------------------------------------------
   // Collect all routes
@@ -243,10 +241,10 @@ class HttpRoutes(useCases: UseCases[?], authentication: AuthenticationService) e
     login, register,
     getCurrentUser, updateUser,
     getProfile, followUser, unfollowUser,
-    listArticles, feedArticles, getArticle, createArticle, updateArticle,
+    listArticles, feedArticles, getArticle, createArticle, updateArticle, deleteArticle,
     favoriteArticle, unfavoriteArticle,
     addComment, getComments, deleteComment,
-    // TODO: deleteArticle, getTags — awaiting missing use cases
+    getTags,
   )
 
   // ---------------------------------------------------------------------------

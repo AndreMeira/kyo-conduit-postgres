@@ -113,6 +113,17 @@ class PostgresArticleRepository extends ArticleRepository[PostgresTransaction] {
       require(count == 1, "Failed to update article")
 
   /**
+   * Deletes an article from the repository.
+   *
+   * @param id the ID of the article to delete
+   * @return Unit on successful deletion
+   */
+  override def delete(id: Article.Id): Unit < Effect =
+    Transactional:
+      val count = sql"""DELETE FROM articles WHERE id = $id""".update.run()
+      require(count == 1, "Failed to delete article")
+
+  /**
    * Searches for articles based on multiple search parameters.
    *
    * Each optional filter is paired with a Boolean flag. When the flag is false
