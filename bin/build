@@ -1,0 +1,17 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PROJECT_DIR="$(dirname "$SCRIPT_DIR")"
+
+IMAGE_NAME="conduit-kyo-postgres"
+IMAGE_TAG="${1:-latest}"
+
+echo "==> Staging application..."
+cd "$PROJECT_DIR"
+sbt stage
+
+echo "==> Building Docker image ${IMAGE_NAME}:${IMAGE_TAG}..."
+docker build -t "${IMAGE_NAME}:${IMAGE_TAG}" .
+
+echo "==> Done. Run with: docker compose up"
