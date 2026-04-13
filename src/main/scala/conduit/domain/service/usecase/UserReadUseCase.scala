@@ -4,7 +4,8 @@ import conduit.domain.error.ApplicationError
 import conduit.domain.error.MissingEntity.UserProfileMissing
 import conduit.domain.model.{ User, UserProfile }
 import conduit.domain.request.user.GetUserRequest
-import conduit.domain.response.user.GetProfileResponse
+import conduit.domain.response.user.{ AuthenticationResponse, GetProfileResponse }
+import conduit.domain.service.authentication.AuthenticationService
 import conduit.domain.service.persistence.{ Database, Persistence }
 import conduit.domain.syntax.*
 import kyo.*
@@ -23,6 +24,7 @@ import kyo.*
 class UserReadUseCase[Tx <: Database.Transaction](
   database: Database[Tx],
   persistence: Persistence[Tx],
+  authentication: AuthenticationService,
 ) {
 
   private type Effect = Async & Abort[ApplicationError]
@@ -36,10 +38,14 @@ class UserReadUseCase[Tx <: Database.Transaction](
    * @param request The request containing the authenticated user information.
    * @return The user profile response wrapped in Effect context.
    */
-  def apply(request: GetUserRequest): GetProfileResponse < Effect =
+  def apply(request: GetUserRequest): AuthenticationResponse < Effect =
     database.transaction:
-      findProfile(request.requester).map:
-        GetProfileResponse.make(_, false)
+      for {
+        profile <- findProfile(request.requester)
+        creds   <- persistence.credentials.find(request.requester.userId)
+                     ?! UserProfileMissing(request.requester.userId) 
+        token   <- authentication.encodeToken(request.requester.userId)
+      } yield AuthenticationResponse.make(creds.email, profile, token)
 
   /**
    * Finds a user profile by the authenticated user's ID.

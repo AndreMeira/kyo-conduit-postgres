@@ -169,9 +169,9 @@ object Module:
    * @tparam Tx The transaction type, which must be a subtype of Database.Transaction and have a Tag instance.
    * @return A Layer that provides UserReadUseCase[Tx] and requires Database[Tx] and Persistence[Tx] in the environment.
    */
-  def userRead[Tx <: Database.Transaction: Tag]: Layer[UserReadUseCase[Tx], Env[Database[Tx]] & Env[Persistence[Tx]]] =
-    Layer.from { (database: Database[Tx], persistence: Persistence[Tx]) =>
-      UserReadUseCase(database, persistence)
+  def userRead[Tx <: Database.Transaction: Tag]: Layer[UserReadUseCase[Tx], Env[Database[Tx]] & Env[Persistence[Tx]] & Env[AuthenticationService]] =
+    Layer.from { (database: Database[Tx], persistence: Persistence[Tx], authentication: AuthenticationService) =>
+      UserReadUseCase(database, persistence, authentication)
     }
 
   /**
@@ -259,7 +259,7 @@ object Module:
         UseCases(
           userRegistration = UserRegistrationUseCase(database, persistence, authentication, stateValidation),
           userAuthentication = UserAuthenticationUseCase(database, persistence, authentication),
-          userRead = UserReadUseCase(database, persistence),
+          userRead = UserReadUseCase(database, persistence, authentication),
           userUpdate = UserUpdateUseCase(database, persistence, authentication, stateValidation),
           profileRead = ProfileReadUseCase(database, persistence),
           profileFollowing = ProfileFollowingUseCase(database, persistence),

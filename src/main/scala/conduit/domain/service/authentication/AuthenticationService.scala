@@ -53,6 +53,28 @@ class AuthenticationService(clock: Clock, config: Config) {
   def hashPassword(password: String): String < Any =
     DigestUtils.sha256Hex(s"$password.${config.passwordSalt}")
 
+  /**  
+   * Authenticates a user based on a signed token, returning the authenticated user ID.
+   *
+   * @param token The signed user token.
+   * @return The authenticated user ID if the token is valid.
+   * @throws Unauthorised if the token is invalid or expired.
+   */
+  def authenticate(token: User.SignedToken): User.Authenticated < (Sync & Abort[Unauthorised]) =
+    user(token).map(User.Authenticated(_))
+
+  /**
+   * Authenticates a user based on an optional signed token, returning either an authenticated user ID or anonymous.
+   * 
+   * @param token The optional signed user token.
+   * @return The authenticated user ID if the token is valid, or anonymous if the token is absent.
+   */
+  def authenticate(token: Maybe[User.SignedToken]): User < (Sync & Abort[Unauthorised]) =
+    user(token).map {
+      case Maybe.Present(userId) => User.Authenticated(userId).recover(_ => User.Anonymous)
+      case Maybe.Absent          => User.Anonymous
+    }
+
   /**
    * Extracts the user ID from a signed token, verifying its validity and expiration.
    *

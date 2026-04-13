@@ -5,7 +5,7 @@ import conduit.domain.error.MissingEntity.{ CredentialsMissing, UserProfileMissi
 import conduit.domain.model.{ Credentials, User, UserProfile }
 import conduit.domain.request.user.UpdateUserRequest
 import conduit.domain.request.user.UpdateUserRequest.Patch
-import conduit.domain.response.user.GetProfileResponse
+import conduit.domain.response.user.{ AuthenticationResponse, GetProfileResponse }
 import conduit.domain.service.authentication.AuthenticationService
 import conduit.domain.service.persistence.{ Database, Persistence }
 import conduit.domain.service.validation.{ CredentialsInputValidation, StateValidationService, UserProfileInputValidation }
@@ -47,13 +47,14 @@ class UserUpdateUseCase[Tx <: Database.Transaction](
    * @param request The update request containing the requester and update data.
    * @return The updated user profile response wrapped in Effect context.
    */
-  def apply(request: UpdateUserRequest): GetProfileResponse < Effect =
+  def apply(request: UpdateUserRequest): AuthenticationResponse < Effect =
     database.transaction:
       for {
         patches <- parse(request)
         profile <- updateUserProfile(request, patches)
-        _       <- updateUserCredentials(request, patches)
-      } yield GetProfileResponse.make(profile, false)
+        creds   <- updateUserCredentials(request, patches)
+        token   <- authentication.encodeToken(request.requester.userId)
+      } yield AuthenticationResponse.make(creds.email, profile, token)
 
   /**
    * Updates only the user profile based on the provided patches.
@@ -84,16 +85,16 @@ class UserUpdateUseCase[Tx <: Database.Transaction](
    * @param patches The list of validated patches to apply.
    * @return Unit wrapped in Effect context.
    */
-  private def updateUserCredentials(request: UpdateUserRequest, patches: List[Patch]): Unit < (Effect & Env[Tx]) =
+  private def updateUserCredentials(request: UpdateUserRequest, patches: List[Patch]): Credentials < (Effect & Env[Tx]) =
     val payload = request.payload.user
-    if payload.email.isEmpty && payload.password.isEmpty then Kyo.unit
+    if payload.email.isEmpty && payload.password.isEmpty then findCredentials(request)
     else
       for {
         creds   <- findCredentials(request)
         patched <- patch(creds, patches)
         _       <- if creds == patched then Kyo.unit
                    else persistence.credentials.update(request.requester.userId, patched)
-      } yield ()
+      } yield creds
 
   /**
    * Finds the user profile for the authenticated user.

@@ -4,7 +4,7 @@ import conduit.domain.syntax.*
 import conduit.domain.error.ApplicationError
 import conduit.domain.model.{ Credentials, UserProfile }
 import conduit.domain.request.user.RegistrationRequest
-import conduit.domain.response.user.GetProfileResponse
+import conduit.domain.response.user.{ AuthenticationResponse, GetProfileResponse }
 import conduit.domain.service.authentication.AuthenticationService
 import conduit.domain.service.persistence.Database.Transaction
 import conduit.domain.service.persistence.{ Database, IdGeneratorService, Persistence }
@@ -47,9 +47,9 @@ class UserRegistrationUseCase[Tx <: Transaction](
    * 5. Return the profile response with following flag set to false
    *
    * @param request The registration request containing user data.
-   * @return The newly created user profile response wrapped in Effect context.
+   * @return The newly created user authentication response wrapped in Effect context.
    */
-  def apply(request: RegistrationRequest): GetProfileResponse < Effect =
+  def apply(request: RegistrationRequest): AuthenticationResponse < Effect =
     database.transaction:
       for {
         (name, creds) <- parse(request).validOrAbort
@@ -57,7 +57,8 @@ class UserRegistrationUseCase[Tx <: Transaction](
         profile       <- createProfile(name)
         _             <- persistence.credentials.save(profile.userId, hashedCreds)
         _             <- persistence.users.save(profile)
-      } yield GetProfileResponse.make(profile, false)
+        token         <- authentication.encodeToken(profile.userId)
+      } yield AuthenticationResponse.make(creds.email, profile, token)
 
   /**
    * Parses and validates the registration request data.
