@@ -2,6 +2,7 @@ val scala3Version = "3.8.2"
 
 lazy val root = project
   .in(file("."))
+  .enablePlugins(JavaAppPackaging)
   .settings(
     TestTask.settings,
     name           := "conduit-kyo-postgres",
@@ -42,6 +43,7 @@ lazy val root = project
       // "dev.zio"       %% "zio-test-sbt" % "2.1.24"  % Test,
       // "io.getkyo"     %% "kyo-zio-test" % "1.0-RC1" % Test,
     ),
+    Compile / mainClass := Some("conduit.application.http.HttpApplication"),
     testFrameworks := Seq(new TestFramework("com.andremeira.test.KyoFramework")),
     scalacOptions ++= Seq(
       "-Wvalue-discard",

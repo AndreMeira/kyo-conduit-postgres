@@ -11,5 +11,15 @@ services:
     volumes:
       - conduit-data:/var/lib/postgresql/data
 
+  app:
+    image: conduit-kyo-postgres:latest
+    container_name: conduit-app
+    ports:
+      - "8080:8080"
+    environment:
+      DB_URL: "jdbc:postgresql://postgres:5432/conduit"
+    depends_on:
+      - postgres
+
 volumes:
   conduit-data:
