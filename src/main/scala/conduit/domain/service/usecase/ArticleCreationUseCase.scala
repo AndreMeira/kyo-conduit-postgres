@@ -46,7 +46,7 @@ class ArticleCreationUseCase[Tx <: Database.Transaction](
       for {
         article <- parse(request).validOrAbort
         profile <- findProfile(request.requester)
-        _       <- persistence.articles.save(article)
+        _       <- persistence.articles.save(article.data)
         _       <- persistence.tags.add(article.id, article.tags)
       } yield GetArticleResponse.make(article, profile, favorited = false, following = false)
 

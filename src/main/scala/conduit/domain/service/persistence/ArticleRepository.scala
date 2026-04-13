@@ -43,20 +43,23 @@ trait ArticleRepository[Tx <: Transaction] {
   def exists(id: Article.Id): Boolean < Effect
 
   /**
-   * Saves a new article to the repository.
+   * Saves a new article to the repository using article data.
    *
-   * @param article the article to save
+   * @param article the article data to save
    * @return Unit on successful save
    */
-  def save(article: Article): Unit < Effect
+  def save(article: Article.Data): Unit < Effect
 
   /**
-   * Updates an existing article in the repository.
+   * Updates an existing article in the repository using article data.
    *
-   * @param article the article with updated data
+   * Only the core content fields are updated; aggregated fields like
+   * favorite count and tags are managed separately and preserved.
+   *
+   * @param article the article data with updated content
    * @return Unit on successful update
    */
-  def update(article: Article): Unit < Effect
+  def update(article: Article.Data): Unit < Effect
 
   /**
    * Deletes an article from the repository.

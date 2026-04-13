@@ -1,12 +1,14 @@
 package conduit.infrastructure.inmemory
 
-import conduit.domain.model.{ Article, User, UserProfile }
 import conduit.domain.model.Article.Id
+import conduit.domain.model.{ Article, UserProfile }
 import conduit.domain.service.persistence.ArticleRepository
-import ArticleRepository.SearchParam
+import conduit.domain.service.persistence.ArticleRepository.SearchParam
 import conduit.infrastructure.inmemory.InMemoryState.Changed.{ Inserted, Updated }
+import conduit.infrastructure.inmemory.InMemoryState.Failure
 import conduit.infrastructure.inmemory.InMemoryState.RowReference.ArticleRow
 import kyo.*
+
 import java.time.Instant
 
 /**
@@ -41,27 +43,36 @@ class InMemoryArticleRepository extends ArticleRepository[InMemoryTransaction] {
     }
 
   /**
-   * Saves a new article to the repository.
+   * Saves a new article to the repository using article data.
    *
-   * @param article the article to save
+   * @param article the article data to save
    * @return Unit
    */
-  override def save(article: Article): Unit < Effect =
+  override def save(article: Article.Data): Unit < Effect =
     InMemoryTransaction { state =>
-      state.articles.updateAndGet(_ + (article.id -> article))
+      val created = article.toArticle(favoriteCount = 0, tags = List.empty)
+      state.articles.updateAndGet(_ + (article.id -> created))
         *> state.addChange(Inserted(ArticleRow(article.id)))
     }
 
   /**
-   * Updates an existing article in the repository.
+   * Updates an existing article in the repository using article data.
    *
-   * @param article the article to update
-   * @return Unit
+   * Preserves the existing favorite count and tags while updating
+   * the core content fields.
+   *
+   * @param article the article data with updated content
+   * @return Unit on successful update
    */
-  override def update(article: Article): Unit < Effect =
+  override def update(article: Article.Data): Unit < Effect =
     InMemoryTransaction { state =>
-      state.articles.updateAndGet(_ + (article.id -> article))
-        *> state.addChange(Updated(ArticleRow(article.id)))
+      state.articles.get.map(_.get(article.id)).flatMap {
+        case None           => Abort.fail(Failure.ConstraintViolation)
+        case Some(existing) =>
+          val updated = article.toArticle(existing.favoriteCount, existing.tags)
+          state.articles.updateAndGet(_ + (article.id -> updated))
+            *> state.addChange(Updated(ArticleRow(article.id)))
+      }
     }
 
   /**

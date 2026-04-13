@@ -76,7 +76,25 @@ object InMemoryArticleRepositorySpec extends KyoTestSuite:
             assert(!existsNo, "expected exists(unknown)=false")
       }
 
-      "update article" in withDatabase { database =>
+      "save article data and find by id" in withDatabase { database =>
+        database.transaction:
+          for
+            fixtures    <- makeFixtures
+            persistence <- makePersistence
+            userId      <- fixtures.makeUser
+            _           <- fixtures.makeProfile(userId)
+            articleId   <- IdGeneratorService.uuid
+            slug        <- IdGeneratorService.slug("Data Save Test")
+            ts          <- fixtures.now
+            data         = Article.Data(articleId, slug, "Data Save Test", "desc", "body", userId, ts, ts)
+            _           <- persistence.articles.save(data)
+            found       <- persistence.articles.find(articleId)
+          yield
+            val expected = data.toArticle(favoriteCount = 0, tags = List.empty)
+            assert(found == Maybe.Present(expected), s"Expected $expected but got $found")
+      }
+
+      "update article data" in withDatabase { database =>
         database.transaction:
           for
             fixtures    <- makeFixtures
@@ -85,10 +103,34 @@ object InMemoryArticleRepositorySpec extends KyoTestSuite:
             _           <- fixtures.makeProfile(userId)
             article     <- fixtures.makeArticle(userId, "Original")
             ts          <- fixtures.now
-            updated      = article.copy(title = "Updated title", body = "New body", updatedAt = ts)
+            updated      = article.data.copy(title = "Updated title", body = "New body", updatedAt = ts)
             _           <- persistence.articles.update(updated)
             found       <- persistence.articles.find(article.id)
-          yield assert(found == Maybe.Present(updated), s"Expected $updated but got $found")
+          yield
+            val expected = updated.toArticle(article.favoriteCount, article.tags)
+            assert(found == Maybe.Present(expected), s"Expected $expected but got $found")
+      }
+
+      "update article data preserves favorite count and tags" in withDatabase { database =>
+        database.transaction:
+          for
+            fixtures    <- makeFixtures
+            persistence <- makePersistence
+            userId      <- fixtures.makeUser
+            _           <- fixtures.makeProfile(userId)
+            article     <- fixtures.makeArticle(userId, "With extras")
+            _           <- persistence.tags.add(article.id, List("scala", "kyo"))
+            _           <- persistence.favorites.add(Article.FavoriteBy(userId, article.id))
+            before      <- persistence.articles.find(article.id)
+            ts          <- fixtures.now
+            updated      = article.data.copy(title = "New title", updatedAt = ts)
+            _           <- persistence.articles.update(updated)
+            after       <- persistence.articles.find(article.id)
+          yield
+            val result = after.toOption.get
+            assert(result.favoriteCount == 1, s"Expected favoriteCount=1 but got ${result.favoriteCount}") &
+            assert(result.tags.sorted == List("kyo", "scala"), s"Expected tags preserved but got ${result.tags}") &
+            assert(result.title == "New title", s"Expected updated title")
       }
 
       "search by author username" in withDatabase { database =>

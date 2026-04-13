@@ -86,5 +86,5 @@ class TestFixtures[Tx <: Database.Transaction](persistence: Persistence[Tx]):
                      createdAt = ts,
                      updatedAt = ts,
                    )
-      _         <- persistence.articles.save(article)
+      _         <- persistence.articles.save(article.data)
     yield article

@@ -68,14 +68,15 @@ class PostgresArticleRepository extends ArticleRepository[PostgresTransaction] {
         .nonEmpty
 
   /**
-   * Saves a new article to the repository.
+   * Saves a new article to the repository using article data.
    *
-   * @param article the article to save
+   * @param article the article data to save
    * @return Unit on successful save
    */
-  override def save(article: Article): Unit < Effect =
+  override def save(article: Article.Data): Unit < Effect =
     Transactional:
-      val count = sql"""
+      val count =
+        sql"""
           INSERT INTO articles (
             id, slug, title, description, body, author_id, created_at, updated_at
           ) VALUES (
@@ -88,16 +89,17 @@ class PostgresArticleRepository extends ArticleRepository[PostgresTransaction] {
             ${article.createdAt},
             ${article.updatedAt}
           )""".update
-        .run()
+          .run()
       require(count == 1, "Failed to insert article")
 
+
   /**
-   * Updates an existing article in the repository.
+   * Updates an existing article in the repository using article data.
    *
-   * @param article the article with updated data
+   * @param article the article data with updated content
    * @return Unit on successful update
    */
-  override def update(article: Article): Unit < Effect =
+  override def update(article: Article.Data): Unit < Effect =
     Transactional:
       val count = sql"""
           UPDATE articles SET

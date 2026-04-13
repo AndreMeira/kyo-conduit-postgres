@@ -44,7 +44,7 @@ class ArticleUpdateUseCase[Tx <: Database.Transaction](
         updated <- patch(article, patches)
         updated <- generateNewSlug(article, updated)
         profile <- findProfile(request.requester)
-        _       <- persistence.articles.update(article)
+        _       <- persistence.articles.update(article.data)
       } yield GetArticleResponse.make(article, profile, false, false)
 
   /**
