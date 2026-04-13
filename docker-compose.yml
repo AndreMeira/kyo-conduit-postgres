@@ -1,0 +1,15 @@
+services:
+  postgres:
+    image: postgres:17
+    container_name: conduit-postgres
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_DB: conduit
+      POSTGRES_USER: conduit
+      POSTGRES_PASSWORD: conduit
+    volumes:
+      - conduit-data:/var/lib/postgresql/data
+
+volumes:
+  conduit-data:

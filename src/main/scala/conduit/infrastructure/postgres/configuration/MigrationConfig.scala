@@ -52,13 +52,3 @@ case class MigrationConfig(
         then builder.placeholders(placeholders.asJava)
         else builder
 }
-
-object MigrationConfig:
-
-  /**
-   * Loads the migration configuration from the specified resource path.
-   *
-   * @return An effect that produces the loaded MigrationConfig or an error if loading fails.
-   */
-  def load: MigrationConfig < Abort[ConfigurationLoader.Error] =
-    ConfigurationLoader.load[MigrationConfig]("config/migration.conf")

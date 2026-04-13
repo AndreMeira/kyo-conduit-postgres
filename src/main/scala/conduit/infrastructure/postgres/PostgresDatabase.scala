@@ -42,8 +42,6 @@ class PostgresDatabase(val datasource: HikariDataSource) extends Database[Postgr
     Kyo.defer(Abort.catching(datasource.getConnection)).map { connection =>
       Abort
         .catching:
-          connection.setAutoCommit(false)
-          connection.setTransactionIsolation(Connection.TRANSACTION_READ_COMMITTED)
           PostgresTransaction(connection)
         .mapAbort(PostgresTransaction.Error.ConnectionError.apply)
     }

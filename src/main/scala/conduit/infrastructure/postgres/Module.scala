@@ -3,8 +3,9 @@ package conduit.infrastructure.postgres
 import com.zaxxer.hikari.HikariDataSource
 import conduit.domain.service.persistence.{ Database, Persistence }
 import conduit.infrastructure.configuration.ConfigurationLoader
-import conduit.infrastructure.postgres.configuration.{ DatabaseConfig, DatasourceConfig }
+import conduit.infrastructure.postgres.configuration.{ DatabaseConfig, DatasourceConfig, MigrationConfig }
 import kyo.*
+import org.flywaydb.core.Flyway
 
 /**
  * Kyo Layer definitions for the Postgres infrastructure.
@@ -19,23 +20,10 @@ object Module:
    * the necessary configuration and resources. This is the main entry point for
    * integrating the Postgres infrastructure into the application.
    */
-  lazy val all: Layer[
-    Persistence[PostgresTransaction] & Database[PostgresTransaction],
-    Abort[ConfigurationLoader.Error] & Sync & Scope,
-  ] = Layer.init[Persistence[PostgresTransaction] & Database[PostgresTransaction]](
-    config,
-    datasourceConfig,
-    dataSource,
-    database,
-    persistence,
-  )
-
-  /**
-   * Layer definitions for each component of the Postgres infrastructure.
-   * These can be used individually if only specific services are needed.
-   */
-  lazy val config: Layer[DatabaseConfig, Abort[ConfigurationLoader.Error] & Sync] =
-    Layer(DatabaseConfig.load)
+  lazy val all: Layer[Database[PostgresTransaction] & Persistence[PostgresTransaction] & Migration, Env[DatabaseConfig] & Sync & Scope] =
+    datasourceConfig.to(dataSource)
+      .and(migrationConfig)
+      .to(database.and(database.to(persistence)).and(migration))
 
   /**
    * Extracts the DatasourceConfig from the loaded DatabaseConfig. This allows
@@ -44,6 +32,14 @@ object Module:
    */
   lazy val datasourceConfig: Layer[DatasourceConfig, Env[DatabaseConfig] & Sync] =
     Layer.from((dbConfig: DatabaseConfig) => dbConfig.datasource)
+
+  /**
+   * Extracts the MigrationConfig from the loaded DatabaseConfig. This allows
+   * any migration-related layers to depend only on the specific configuration they need,
+   * rather than the entire DatabaseConfig.
+   */
+  lazy val migrationConfig: Layer[MigrationConfig, Env[DatabaseConfig] & Sync] =
+    Layer.from((dbConfig: DatabaseConfig) => dbConfig.migration)
 
   /**
    * Provides a HikariDataSource connection pool based on the provided DatasourceConfig.
@@ -66,9 +62,23 @@ object Module:
     }
 
   /**
+   * Provides a [[Migration]] instance configured with Flyway, using the
+   * [[MigrationConfig]] for Flyway settings and [[HikariDataSource]] as the
+   * database connection.
+   */
+  lazy val migration: Layer[Migration, Env[MigrationConfig] & Env[HikariDataSource]] =
+    Layer {
+      for
+        config     <- Env.get[MigrationConfig]
+        dataSource <- Env.get[HikariDataSource]
+      yield
+        val flyway = config.toFlywayConfig.dataSource(dataSource).load()
+        Migration(flyway)
+    }
+
+  /**
    * Provides a Persistence instance that implements the Persistence trait using
-   * Postgres repositories. This layer depends on the database and provides the
-   * persistence service to the application.
+   * Postgres repositories.
    */
   lazy val persistence: Layer[Persistence[PostgresTransaction], Any] =
     Layer {

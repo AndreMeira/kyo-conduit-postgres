@@ -278,27 +278,31 @@ object Module:
    */
   def useCases[Tx <: Database.Transaction: Tag]
     : Layer[UseCases[Tx], Env[Database[Tx]] & Env[Persistence[Tx]] & Env[AuthenticationService] & Env[StateValidationService[Tx]]] =
-    Layer.from {
-      (database: Database[Tx], persistence: Persistence[Tx], authentication: AuthenticationService, stateValidation: StateValidationService[Tx]) =>
-        UseCases(
-          userRegistration = UserRegistrationUseCase(database, persistence, authentication, stateValidation),
-          userAuthentication = UserAuthenticationUseCase(database, persistence, authentication),
-          userRead = UserReadUseCase(database, persistence, authentication),
-          userUpdate = UserUpdateUseCase(database, persistence, authentication, stateValidation),
-          profileRead = ProfileReadUseCase(database, persistence),
-          profileFollowing = ProfileFollowingUseCase(database, persistence),
-          profileUnfollowing = ProfileUnfollowingUseCase(database, persistence),
-          articleCreation = ArticleCreationUseCase(database, persistence),
-          articleRead = ArticleReadUseCase(database, persistence, authentication),
-          articleUpdate = ArticleUpdateUseCase(database, persistence),
-          articleFeed = ArticleFeedUseCase(database, persistence),
-          listArticles = ListArticlesUseCase(database, persistence),
-          articleFavorite = ArticleFavoriteUseCase(database, persistence),
-          articleUnfavorite = ArticleUnfavoriteUseCase(database, persistence),
-          articleDeletion = ArticleDeletionUseCase(database, persistence),
-          commentAddition = CommentAdditionUseCase(database, persistence),
-          commentDeletion = CommentDeletionUseCase(database, persistence),
-          listComments = ListCommentsUseCase(database, persistence),
-          listTags = ListTagsUseCase(database, persistence),
-        )
+    Layer {
+      for
+        database        <- Env.get[Database[Tx]]
+        persistence     <- Env.get[Persistence[Tx]]
+        authentication  <- Env.get[AuthenticationService]
+        stateValidation <- Env.get[StateValidationService[Tx]]
+      yield UseCases(
+        userRegistration = UserRegistrationUseCase(database, persistence, authentication, stateValidation),
+        userAuthentication = UserAuthenticationUseCase(database, persistence, authentication),
+        userRead = UserReadUseCase(database, persistence, authentication),
+        userUpdate = UserUpdateUseCase(database, persistence, authentication, stateValidation),
+        profileRead = ProfileReadUseCase(database, persistence),
+        profileFollowing = ProfileFollowingUseCase(database, persistence),
+        profileUnfollowing = ProfileUnfollowingUseCase(database, persistence),
+        articleCreation = ArticleCreationUseCase(database, persistence),
+        articleRead = ArticleReadUseCase(database, persistence, authentication),
+        articleUpdate = ArticleUpdateUseCase(database, persistence),
+        articleFeed = ArticleFeedUseCase(database, persistence),
+        listArticles = ListArticlesUseCase(database, persistence),
+        articleFavorite = ArticleFavoriteUseCase(database, persistence),
+        articleUnfavorite = ArticleUnfavoriteUseCase(database, persistence),
+        articleDeletion = ArticleDeletionUseCase(database, persistence),
+        commentAddition = CommentAdditionUseCase(database, persistence),
+        commentDeletion = CommentDeletionUseCase(database, persistence),
+        listComments = ListCommentsUseCase(database, persistence),
+        listTags = ListTagsUseCase(database, persistence),
+      )
     }

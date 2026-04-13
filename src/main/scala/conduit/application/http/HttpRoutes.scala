@@ -100,19 +100,18 @@ class HttpRoutes(useCases: UseCases[?], authentication: AuthenticationService) e
   // ---------------------------------------------------------------------------
 
   /** GET /api/articles */
-  val listArticles: Unit < Routes = Routes.add(Endpoint.listArticles) {
-    (tag, author, favorited, offset, limit) =>
-      for
-        maybeToken <- Env.get[Option[BearerToken]]
-        user       <- authenticateOptional(maybeToken)
-        filters = List(
-                    tag.map(ListArticlesRequest.Filter.Tag.apply),
-                    author.map(ListArticlesRequest.Filter.Author.apply),
-                    favorited.map(ListArticlesRequest.Filter.FavoriteOf.apply),
-                  ).flatten
-        request  = ListArticlesRequest(user, offset.getOrElse(0), limit.getOrElse(20), filters)
-        response <- useCases.listArticles(request).mapAbort(ErrorCodec.encode)
-      yield response
+  val listArticles: Unit < Routes = Routes.add(Endpoint.listArticles) { (tag, author, favorited, offset, limit) =>
+    for
+      maybeToken <- Env.get[Option[BearerToken]]
+      user       <- authenticateOptional(maybeToken)
+      filters     = List(
+                      tag.map(ListArticlesRequest.Filter.Tag.apply),
+                      author.map(ListArticlesRequest.Filter.Author.apply),
+                      favorited.map(ListArticlesRequest.Filter.FavoriteOf.apply),
+                    ).flatten
+      request     = ListArticlesRequest(user, offset.getOrElse(0), limit.getOrElse(20), filters)
+      response   <- useCases.listArticles(request).mapAbort(ErrorCodec.encode)
+    yield response
   }
 
   /** GET /api/articles/feed */
@@ -158,10 +157,10 @@ class HttpRoutes(useCases: UseCases[?], authentication: AuthenticationService) e
   /** DELETE /api/articles/:slug */
   val deleteArticle: Unit < Routes = Routes.add(Endpoint.deleteArticle) { slug =>
     for
-      token    <- Env.get[BearerToken]
-      user     <- authenticateRequired(token)
-      request   = DeleteArticleRequest(user, slug)
-      _        <- useCases.articleDeletion(request).mapAbort(ErrorCodec.encode)
+      token  <- Env.get[BearerToken]
+      user   <- authenticateRequired(token)
+      request = DeleteArticleRequest(user, slug)
+      _      <- useCases.articleDeletion(request).mapAbort(ErrorCodec.encode)
     yield ()
   }
 
@@ -216,10 +215,10 @@ class HttpRoutes(useCases: UseCases[?], authentication: AuthenticationService) e
   /** DELETE /api/articles/:slug/comments/:id */
   val deleteComment: Unit < Routes = Routes.add(Endpoint.deleteComment) { (slug, commentId) =>
     for
-      token    <- Env.get[BearerToken]
-      user     <- authenticateRequired(token)
-      request   = DeleteCommentRequest(user, slug, commentId)
-      _        <- useCases.commentDeletion(request).mapAbort(ErrorCodec.encode)
+      token  <- Env.get[BearerToken]
+      user   <- authenticateRequired(token)
+      request = DeleteCommentRequest(user, slug, commentId)
+      _      <- useCases.commentDeletion(request).mapAbort(ErrorCodec.encode)
     yield ()
   }
 
@@ -238,12 +237,24 @@ class HttpRoutes(useCases: UseCases[?], authentication: AuthenticationService) e
   // ---------------------------------------------------------------------------
 
   val all: Unit < Routes = Routes.collect(
-    login, register,
-    getCurrentUser, updateUser,
-    getProfile, followUser, unfollowUser,
-    listArticles, feedArticles, getArticle, createArticle, updateArticle, deleteArticle,
-    favoriteArticle, unfavoriteArticle,
-    addComment, getComments, deleteComment,
+    login,
+    register,
+    getCurrentUser,
+    updateUser,
+    getProfile,
+    followUser,
+    unfollowUser,
+    listArticles,
+    feedArticles,
+    getArticle,
+    createArticle,
+    updateArticle,
+    deleteArticle,
+    favoriteArticle,
+    unfavoriteArticle,
+    addComment,
+    getComments,
+    deleteComment,
     getTags,
   )
 
