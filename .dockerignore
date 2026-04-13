@@ -1,0 +1,11 @@
+.git
+.idea
+.idea_modules
+.bloop
+.bsp
+.metals
+.vscode
+.DS_Store
+project/target
+project/boot
+project/plugins/project
