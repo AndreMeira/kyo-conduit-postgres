@@ -27,6 +27,16 @@ object InMemoryArticleRepositorySpec extends KyoTestSuite:
   def specSuite: SuiteResult < (Async & Scope) =
 
     "InMemoryArticleRepository" should {
+      "allow sequential transaction" in withDatabase { database =>
+        for
+          fixtures    <- makeFixtures
+          persistence <- makePersistence
+          userId      <- database.transaction(fixtures.makeUser)
+          _           <- database.transaction(fixtures.makeProfile(userId))
+          article     <- database.transaction(fixtures.makeArticle(userId))
+          found       <- database.transaction(persistence.articles.find(article.id))
+        yield assert(found == Maybe.Present(article), s"Expected $article but got $found")
+      }
 
       "save and find by id" in withDatabase { database =>
         database.transaction:

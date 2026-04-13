@@ -57,7 +57,7 @@ class ArticleFavoriteUseCase[Tx <: Database.Transaction](
    * @param request The request containing the article slug.
    * @return The article if found, or aborts with ArticleNotFound error.
    */
-  def findArticle(request: AddFavoriteArticleRequest): Article < (Effect & Env[Tx]) =
+  private def findArticle(request: AddFavoriteArticleRequest): Article < (Effect & Env[Tx]) =
     persistence.articles.findBySlug(request.slug) ?! ArticleNotFound(request.slug)
 
   /**
@@ -66,7 +66,7 @@ class ArticleFavoriteUseCase[Tx <: Database.Transaction](
    * @param article The article whose author profile should be retrieved.
    * @return The author's profile if found, or aborts with UserProfileMissing error.
    */
-  def findAuthor(article: Article): UserProfile < (Effect & Env[Tx]) =
+  private def findAuthor(article: Article): UserProfile < (Effect & Env[Tx]) =
     persistence.users.findByUser(article.authorId) ?! UserProfileMissing(article.authorId)
 
   /**
@@ -76,6 +76,6 @@ class ArticleFavoriteUseCase[Tx <: Database.Transaction](
    * @param profile The author's user profile.
    * @return True if the requester is following the author, false otherwise.
    */
-  def isFollowing(userId: User.Id, profile: UserProfile): Boolean < (Effect & Env[Tx]) =
+  private def isFollowing(userId: User.Id, profile: UserProfile): Boolean < (Effect & Env[Tx]) =
     persistence.followers.exists(UserProfile.FollowedBy(userId, profile.id))
 }

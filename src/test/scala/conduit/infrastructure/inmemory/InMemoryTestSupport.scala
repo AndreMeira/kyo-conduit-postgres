@@ -25,10 +25,9 @@ object InMemoryTestSupport:
     testBody: InMemoryDatabase => A < (Effect & Scope & Sync)
   ): A < (Effect & Scope & Sync) =
     for
-      state       <- emptyState
-      database     = new InMemoryDatabase(state)
-      persistence <- makePersistence
-      result      <- testBody(database)
+      state   <- InMemoryState.empty
+      database = new InMemoryDatabase(state)
+      result  <- testBody(database)
     yield result
 
   /**

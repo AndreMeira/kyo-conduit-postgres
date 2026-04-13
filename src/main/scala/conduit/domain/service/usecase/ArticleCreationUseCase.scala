@@ -59,7 +59,7 @@ class ArticleCreationUseCase[Tx <: Database.Transaction](
    * @param request The article creation request containing the payload.
    * @return A validated Article or validation errors wrapped in Effect context.
    */
-  def parse(request: CreateArticleRequest): Validated[Article] < Effect =
+  private def parse(request: CreateArticleRequest): Validated[Article] < Effect =
     for {
       now  <- Clock.now.map(_.toJava)
       id   <- IdGeneratorService.uuid
@@ -79,6 +79,6 @@ class ArticleCreationUseCase[Tx <: Database.Transaction](
    * @param user The authenticated user whose profile should be retrieved.
    * @return The user profile if found, or aborts with UserProfileMissing error.
    */
-  def findProfile(user: User.Authenticated): UserProfile < (Effect & Env[Tx]) =
+  private def findProfile(user: User.Authenticated): UserProfile < (Effect & Env[Tx]) =
     persistence.users.findByUser(user.userId) ?! UserProfileMissing(user.userId)
 }

@@ -217,10 +217,12 @@ class InMemoryState(
    */
   private def checkEmailUnicity(other: InMemoryState): Unit < (Sync & Abort[InMemoryState.Failure]) =
     for {
-      existing <- credentials.get.map(_.values.map(_.email).toSet)
-      emails   <- other.credentials.get.map(_.values.map(_.email).toSet)
-      _        <- if (existing & emails).isEmpty then Kyo.lift(())
-                  else Abort.fail(InMemoryState.Failure.ConstraintViolation)
+      existing    <- credentials.get
+      created     <- other.credentials.get
+      diff         = created -- existing.keySet
+      intersection = diff.values.map(_.email).toSet & existing.values.map(_.email).toSet
+      _           <- if intersection.isEmpty then Kyo.unit
+                     else Abort.fail(InMemoryState.Failure.ConstraintViolation)
     } yield ()
 
   /**
@@ -231,10 +233,12 @@ class InMemoryState(
    */
   private def checkUsernameUnicity(other: InMemoryState): Unit < (Sync & Abort[InMemoryState.Failure]) =
     for {
-      existing <- profiles.get.map(_.values.map(_.name).toSet)
-      names    <- other.profiles.get.map(_.values.map(_.name).toSet)
-      _        <- if (existing & names).isEmpty then Kyo.lift(())
-                  else Abort.fail(InMemoryState.Failure.ConstraintViolation)
+      existing    <- profiles.get
+      created     <- other.profiles.get
+      diff         = created -- existing.keySet
+      intersection = diff.values.map(_.name).toSet & existing.values.map(_.name).toSet
+      _           <- if intersection.isEmpty then Kyo.unit
+                     else Abort.fail(InMemoryState.Failure.ConstraintViolation)
     } yield ()
 
   /**
@@ -270,6 +274,7 @@ class InMemoryState(
     lock
       .run {
         beforeMerge(other)
+        // Kyo.unit
         // remove deleted rows from the state to prevent them from reappearing in the merged state
           *> other.deleted.flatMap(other => articles.updateAndGet(_ -- other.collect { case ArticleRow(id) => id }))
           *> other.deleted.flatMap(other => comments.updateAndGet(_ -- other.collect { case CommentRow(id) => id }))
@@ -290,7 +295,7 @@ class InMemoryState(
           *> other.changes.get.flatMap(other => changes.updateAndGet(_ ++ other))
           *> changes.get.flatMap(changes => changes.drop(changes.size - 10000)) // Keep only last 10k changes
       }
-      .mapAbort(_ => InMemoryState.Failure.LockFailed)
+      .mapAbort(err => InMemoryState.Failure.LockFailed(err.toString))
       .unit
 
   /**
@@ -314,7 +319,7 @@ class InMemoryState(
 }
 
 object InMemoryState:
-  
+
   /**
    * Creates an empty InMemoryState with initialized atomic references and a lock.
    *
@@ -332,7 +337,7 @@ object InMemoryState:
       tags        <- AtomicRef.init(Map.empty[Article.Id, List[String]])
       changes     <- AtomicRef.init(List.empty[InMemoryState.Changed])
     yield InMemoryState(lock, articles, comments, profiles, favorites, followers, credentials, tags, changes)
-  
+
   /**
    * Companion object for InMemoryState providing reference types and change tracking.
    */
@@ -386,7 +391,7 @@ object InMemoryState:
   enum Failure extends ApplicationError.TransientError:
 
     /** Represents a failure to acquire the lock for state modification. */
-    case LockFailed
+    case LockFailed(error: String)
 
     /** Represents a violation of data constraints during state operations. */
     case ConstraintViolation
@@ -397,5 +402,5 @@ object InMemoryState:
      * @return the error message corresponding to this failure case
      */
     override def message: String = this match
-      case LockFailed          => "Failed to acquire lock"
-      case ConstraintViolation => "Constraint violation"
+      case LockFailed(msg)     => s"Failed to acquire lock: $msg"
+      case ConstraintViolation => "Constraint violation detected during state operation"

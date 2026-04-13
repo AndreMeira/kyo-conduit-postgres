@@ -54,7 +54,7 @@ class ArticleUpdateUseCase[Tx <: Database.Transaction](
    * @param article The article to be updated.
    * @return Unit if authorized, otherwise fails with ArticleUpdateDenied.
    */
-  def authorise(request: UpdateArticleRequest, article: Article): Unit < Abort[Unauthorised] =
+  private def authorise(request: UpdateArticleRequest, article: Article): Unit < Abort[Unauthorised] =
     if article.authorId == request.requester.userId then ()
     else Abort.fail(ArticleUpdateDenied)
 
@@ -64,7 +64,7 @@ class ArticleUpdateUseCase[Tx <: Database.Transaction](
    * @param request The update article request.
    * @return Validated list of patches to apply.
    */
-  def parse(request: UpdateArticleRequest): Validated[List[Patch]] < Any =
+  private def parse(request: UpdateArticleRequest): Validated[List[Patch]] < Any =
     Validation.validateAll:
       List.from(parseBody(request) ++ parseTitle(request) ++ parseDescription(request))
 
@@ -74,7 +74,7 @@ class ArticleUpdateUseCase[Tx <: Database.Transaction](
    * @param request The update article request.
    * @return Optional validated body patch.
    */
-  def parseBody(request: UpdateArticleRequest): Option[Validated[Patch]] =
+  private def parseBody(request: UpdateArticleRequest): Option[Validated[Patch]] =
     request.payload.article.body match
       case Some(body) if body.nonEmpty =>
         Some(ArticleInputValidation.body(body).map(Patch.Body(_)))
@@ -86,7 +86,7 @@ class ArticleUpdateUseCase[Tx <: Database.Transaction](
    * @param request The update article request.
    * @return Optional validated title patch.
    */
-  def parseTitle(request: UpdateArticleRequest): Option[Validated[Patch]] =
+  private def parseTitle(request: UpdateArticleRequest): Option[Validated[Patch]] =
     request.payload.article.title match
       case Some(title) if title.nonEmpty =>
         Some(ArticleInputValidation.title(title).map(Patch.Title(_)))
@@ -98,7 +98,7 @@ class ArticleUpdateUseCase[Tx <: Database.Transaction](
    * @param request The update article request.
    * @return
    */
-  def parseDescription(request: UpdateArticleRequest): Option[Validated[Patch]] =
+  private def parseDescription(request: UpdateArticleRequest): Option[Validated[Patch]] =
     request.payload.article.description match
       case Some(description) if description.nonEmpty =>
         Some(ArticleInputValidation.description(description).map(Patch.Description(_)))
@@ -111,7 +111,7 @@ class ArticleUpdateUseCase[Tx <: Database.Transaction](
    * @param patches List of patches to apply.
    * @return The patched article.
    */
-  def patch(article: Article, patches: List[Patch]): Article < Any =
+  private def patch(article: Article, patches: List[Patch]): Article < Any =
     patches.foldLeft(article) {
       case article -> Patch.Body(body)               => article.copy(body = body)
       case article -> Patch.Title(title)             => article.copy(title = title)
@@ -125,7 +125,7 @@ class ArticleUpdateUseCase[Tx <: Database.Transaction](
    * @param updated The updated article.
    * @return The article with a new slug if needed.
    */
-  def generateNewSlug(old: Article, updated: Article): Article < Sync =
+  private def generateNewSlug(old: Article, updated: Article): Article < Sync =
     if old.title == updated.title then updated
     else IdGeneratorService.slug(updated.title).map(slug => updated.copy(slug = slug))
 
@@ -135,7 +135,7 @@ class ArticleUpdateUseCase[Tx <: Database.Transaction](
    * @param user The authenticated user.
    * @return The user's profile, or fails if missing.
    */
-  def findProfile(user: User.Authenticated): UserProfile < (Effect & Env[Tx]) =
+  private def findProfile(user: User.Authenticated): UserProfile < (Effect & Env[Tx]) =
     persistence.users.findByUser(user.userId) ?! UserProfileMissing(user.userId)
 
   /**
@@ -144,6 +144,6 @@ class ArticleUpdateUseCase[Tx <: Database.Transaction](
    * @param slug The article slug.
    * @return The article, or fails if not found.
    */
-  def findArticle(slug: String): Article < (Effect & Env[Tx]) =
+  private def findArticle(slug: String): Article < (Effect & Env[Tx]) =
     persistence.articles.findBySlug(slug) ?! ArticleNotFound(slug)
 }
