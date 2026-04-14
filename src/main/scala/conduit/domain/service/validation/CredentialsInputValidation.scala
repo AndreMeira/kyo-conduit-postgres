@@ -1,9 +1,10 @@
 package conduit.domain.service.validation
 
-import conduit.domain.request.user.InvalidCredentialsInput.{ InvalidEmailFormat, InvalidPasswordFormat }
+import conduit.domain.error.CredentialsInvalidInput
+import conduit.domain.error.CredentialsInvalidInput.{ EmptyEmail, EmptyPassword, InvalidEmailFormat, InvalidPasswordFormat }
 import conduit.domain.model.Credentials
-import conduit.domain.request.user.InvalidCredentialsInput
 import conduit.domain.syntax.Validated
+import zio.prelude.Validation
 
 /**
  * Validation for credentials-related input data.
@@ -22,9 +23,16 @@ object CredentialsInputValidation {
    * @return a validated email address or InvalidEmailFormat error
    */
   def email(value: String): Validated[Credentials.Email] =
-    CommonValidation
-      .nonEmptyMatch(value.trim, "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$".r)
-      .asError(InvalidEmailFormat(value))
+    Validation
+      .validate(
+        CommonValidation
+          .nonEmptyString(value)
+          .asError(EmptyEmail),
+        CommonValidation
+          .nonEmptyMatch(value.trim, "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$".r)
+          .asError(InvalidEmailFormat(value)),
+      )
+      .flatMap(CommonValidation.sameValues(_, _))
 
   /**
    * Validates a password format.
@@ -33,8 +41,15 @@ object CredentialsInputValidation {
    * @return a validated password or InvalidPasswordFormat error
    */
   def password(value: String): Validated[Credentials.Password] =
-    CommonValidation
-      .length(value.trim, min = 8, max = 20) // @todo add more complex password rules later
-      .asError(InvalidPasswordFormat(value, "Password must be at least 8 characters long"))
+    Validation
+      .validate(
+        CommonValidation
+          .nonEmptyString(value)
+          .asError(EmptyPassword),
+        CommonValidation
+          .length(value.trim, min = 8, max = 20) // @todo add more complex password rules later
+          .asError(InvalidPasswordFormat(value, "Password must be at least 8 characters long")),
+      )
+      .flatMap(CommonValidation.sameValues(_, _))
 
 }

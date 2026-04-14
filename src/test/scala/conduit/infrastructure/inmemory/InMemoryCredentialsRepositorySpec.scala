@@ -37,16 +37,16 @@ object InMemoryCredentialsRepositorySpec extends KyoTestSuite:
           yield assert(found == Maybe.Present(userId), s"Expected $userId but got $found")
       }
 
-      "return Absent for an unknown user ID" in withDatabase { database =>
+      "return Emtpy for an unknown user ID" in withDatabase { database =>
         database.transaction:
           for
             persistence <- makePersistence
             unknownId   <- IdGeneratorService.uuid
             found       <- persistence.credentials.find(unknownId)
-          yield assert(found == Maybe.Absent, s"Expected Absent but got $found")
+          yield assert(found == Maybe.Absent, s"Expected Emtpy but got $found")
       }
 
-      "return Absent for credentials that do not match" in withDatabase { database =>
+      "return Emtpy for credentials that do not match" in withDatabase { database =>
         database.transaction:
           for
             persistence              <- makePersistence
@@ -55,7 +55,7 @@ object InMemoryCredentialsRepositorySpec extends KyoTestSuite:
             wrong: Credentials.Hashed = Credentials.Hashed(s"$userId@test.com", "wrong_hash")
             _                        <- persistence.credentials.save(userId, creds)
             found                    <- persistence.credentials.find(wrong)
-          yield assert(found == Maybe.Absent, s"Expected Absent for wrong password but got $found")
+          yield assert(found == Maybe.Absent, s"Expected Emtpy for wrong password but got $found")
       }
 
       "report email existence before and after save" in withDatabase { database =>
@@ -94,6 +94,6 @@ object InMemoryCredentialsRepositorySpec extends KyoTestSuite:
             _                        <- persistence.credentials.save(userId, creds)
             _                        <- persistence.credentials.delete(userId)
             found                    <- persistence.credentials.find(userId)
-          yield assert(found == Maybe.Absent, s"Expected Absent after delete but got $found")
+          yield assert(found == Maybe.Absent, s"Expected Emtpy after delete but got $found")
       }
     }

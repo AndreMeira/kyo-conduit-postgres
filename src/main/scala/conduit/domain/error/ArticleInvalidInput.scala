@@ -1,4 +1,4 @@
-package conduit.domain.request.article
+package conduit.domain.error
 
 import conduit.domain.error.ValidationError
 
@@ -9,7 +9,7 @@ import conduit.domain.error.ValidationError
  * creating or updating articles in the Conduit application. Each case
  * represents a specific validation constraint violation related to article data.
  */
-enum InvalidInput extends ValidationError.InvalidInput {
+enum ArticleInvalidInput extends ValidationError.InvalidInput {
 
   /**
    * Error indicating that an article tag is empty.
@@ -30,7 +30,7 @@ enum InvalidInput extends ValidationError.InvalidInput {
    * Error indicating that an article title is empty.
    */
   case EmptyTitle
-
+  
   /**
    * Error indicating that an article slug is invalid.
    */

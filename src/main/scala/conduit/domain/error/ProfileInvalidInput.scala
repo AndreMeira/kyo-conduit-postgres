@@ -1,4 +1,4 @@
-package conduit.domain.request.user
+package conduit.domain.error
 
 import conduit.domain.error.ValidationError
 
@@ -10,7 +10,12 @@ import scala.util.matching.compat.Regex
  * This enum covers cases such as username already existing, invalid characters in the username,
  * and username length violations. Each case provides a descriptive error message.
  */
-enum InvalidInput extends ValidationError.InvalidInput {
+enum ProfileInvalidInput extends ValidationError.InvalidInput {
+
+  /**
+   * Indicates that the username field is empty.
+   */
+  case EmptyUsername
 
   /**
    * Indicates that the provided username is already taken by another user.
@@ -47,6 +52,7 @@ enum InvalidInput extends ValidationError.InvalidInput {
    * Returns a human-readable error message for each validation error.
    */
   override def message: String = this match {
+    case EmptyUsername                            => "Username cannot be empty"
     case UsernameAlreadyExists(username)          => s"Username $username already exists"
     case UserNameInvalidChar(_)                   => s"Use name must contain only alphanumeric characters"
     case UserNameLengthViolation(value, min, max) => s"User name must be between $min and $max characters"

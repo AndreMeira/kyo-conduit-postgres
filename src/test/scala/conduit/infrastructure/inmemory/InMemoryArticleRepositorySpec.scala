@@ -62,13 +62,13 @@ object InMemoryArticleRepositorySpec extends KyoTestSuite:
           yield assert(found == Maybe.Present(article), s"Expected $article but got $found")
       }
 
-      "return Absent for unknown id" in withDatabase { database =>
+      "return Emtpy for unknown id" in withDatabase { database =>
         database.transaction:
           for
             persistence <- makePersistence
             unknownId   <- IdGeneratorService.uuid
             found       <- persistence.articles.find(unknownId)
-          yield assert(found == Maybe.Absent, s"Expected Absent but got $found")
+          yield assert(found == Maybe.Absent, s"Expected Emtpy but got $found")
       }
 
       "report existence correctly" in withDatabase { database =>

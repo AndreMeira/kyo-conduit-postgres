@@ -1,4 +1,4 @@
-package conduit.domain.request.user
+package conduit.domain.error
 
 import conduit.domain.error.ValidationError
 import conduit.domain.model.Credentials
@@ -9,7 +9,17 @@ import conduit.domain.model.Credentials
  * This enum covers cases such as invalid email format, email already in use,
  * and invalid password format. Each case provides a descriptive error message.
  */
-enum InvalidCredentialsInput extends ValidationError.InvalidInput {
+enum CredentialsInvalidInput extends ValidationError.InvalidInput {
+
+  /**
+   * Indicates that the email field is empty.
+   */
+  case EmptyEmail
+
+  /**
+   * Indicates that the password field is empty.
+   */
+  case EmptyPassword
 
   /**
    * Indicates that the provided email does not match the expected format.
@@ -34,6 +44,8 @@ enum InvalidCredentialsInput extends ValidationError.InvalidInput {
    * Returns a human-readable error message for each validation error.
    */
   override def message: String = this match {
+    case EmptyEmail                           => "Email cannot be empty."
+    case EmptyPassword                        => "Password cannot be empty."
     case EmailAlreadyInUse(email)             => s"The email address '$email' is already in use."
     case InvalidEmailFormat(email)            => s"The email address '$email' is not in a valid format."
     case InvalidPasswordFormat(pwd, expected) => s"The provided password '$pwd' is invalid. Expected format: $expected"

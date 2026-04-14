@@ -91,7 +91,7 @@ class AuthenticationService(clock: Clock, config: Config) {
 
   /**
    * Extracts the user ID from an optional signed token.
-   * Returns Absent if the token is not present.
+   * Returns Emtpy if the token is not present.
    *
    * @param token The optional signed user token.
    * @return The optional user ID if the token is valid.

@@ -9,6 +9,7 @@ import conduit.domain.service.authentication.AuthenticationService
 import conduit.domain.service.persistence.Database.Transaction
 import conduit.domain.service.persistence.{ Database, Persistence }
 import conduit.domain.service.validation.{ CredentialsInputValidation, StateValidationService }
+import zio.prelude.Validation
 import conduit.domain.syntax.*
 import kyo.*
 
@@ -31,9 +32,10 @@ class UserAuthenticationUseCase[Tx <: Transaction](
 
   private def parse(request: AuthenticateRequest): Validated[Credentials.Clear] < Any =
     Kyo.lift {
-      CredentialsInputValidation
-        .email(request.payload.user.email)
-        .map(Credentials.Clear(_, request.payload.user.password))
+      Validation.validateWith(
+        CredentialsInputValidation.email(request.payload.user.email),
+        CredentialsInputValidation.password(request.payload.user.password),
+      )(Credentials.Clear(_, _))
     }
 
   private def authenticate(credentials: Credentials.Hashed): User.Id < (Effect & Env[Tx]) =

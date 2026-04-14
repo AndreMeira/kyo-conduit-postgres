@@ -1,6 +1,7 @@
 package conduit.domain.request.article
 
 import conduit.domain.model.{ Article, User }
+import conduit.domain.request.Patchable
 
 /**
  * Represents a request to update an article in the Conduit application.
@@ -38,6 +39,7 @@ object UpdateArticleRequest:
     title: Option[String],
     description: Option[String],
     body: Option[String],
+    tagList: Patchable[List[String]],
   )
 
   /**
@@ -61,3 +63,9 @@ object UpdateArticleRequest:
      * @param value the new description
      */
     case Description(value: String)
+
+    /**
+     * Represents an update to the tags of the article.
+     * @param value the new list of tags
+     */
+    case Tags(value: List[String])

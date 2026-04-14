@@ -1,10 +1,11 @@
 package conduit.domain.service.usecase
 
-import conduit.domain.error.{ ApplicationError, Unauthorised }
+import conduit.domain.error.{ ApplicationError, CommonInvalidInput, Unauthorised }
 import conduit.domain.error.MissingEntity.UserProfileMissing
 import conduit.domain.error.NotFound.ArticleNotFound
 import conduit.domain.error.Unauthorised.ArticleUpdateDenied
 import conduit.domain.model.{ Article, User, UserProfile }
+import conduit.domain.request.Patchable
 import conduit.domain.request.article.UpdateArticleRequest
 import conduit.domain.request.article.UpdateArticleRequest.Patch
 import conduit.domain.response.article.GetArticleResponse
@@ -45,6 +46,7 @@ class ArticleUpdateUseCase[Tx <: Database.Transaction](
         updated <- generateNewSlug(article, updated)
         profile <- findProfile(request.requester)
         _       <- persistence.articles.update(updated.data)
+        _       <- updateTags(article, updated)
       } yield GetArticleResponse.make(updated, profile, false, false)
 
   /**
@@ -66,7 +68,7 @@ class ArticleUpdateUseCase[Tx <: Database.Transaction](
    */
   private def parse(request: UpdateArticleRequest): Validated[List[Patch]] < Any =
     Validation.validateAll:
-      List.from(parseBody(request) ++ parseTitle(request) ++ parseDescription(request))
+      List.from(parseBody(request) ++ parseTitle(request) ++ parseDescription(request) ++ parseTags(request))
 
   /**
    * Parses and validates the body patch from the request.
@@ -105,18 +107,32 @@ class ArticleUpdateUseCase[Tx <: Database.Transaction](
       case _                                         => None
 
   /**
+   * Parses and validates the tagList patch from the request.
+   *
+   * @param request The update article request.
+   * @return Optional validated tags patch.
+   */
+  private def parseTags(request: UpdateArticleRequest): Option[Validated[Patch]] =
+    request.payload.article.tagList match
+      case Patchable.Present(tags) => Some(ArticleInputValidation.tags(tags).map(Patch.Tags(_)))
+      case Patchable.Emtpy         => Some(Validation.fail(CommonInvalidInput.EmptyString))
+      case Patchable.Absent        => None
+
+  /**
    * Applies the given patches to the article.
    *
    * @param article The original article.
    * @param patches List of patches to apply.
    * @return The patched article.
    */
-  private def patch(article: Article, patches: List[Patch]): Article < Any =
-    patches.foldLeft(article) {
+  private def patch(article: Article, patches: List[Patch]): Article < Sync = {
+    val patched = patches.foldLeft(article):
       case article -> Patch.Body(body)               => article.copy(body = body)
       case article -> Patch.Title(title)             => article.copy(title = title)
       case article -> Patch.Description(description) => article.copy(description = description)
-    }
+      case article -> Patch.Tags(tags)               => article.copy(tags = tags)
+    Clock.now.map(now => patched.copy(updatedAt = now.toJava))
+  }
 
   /**
    * Generates a new slug for the article if the title has changed.
@@ -144,6 +160,20 @@ class ArticleUpdateUseCase[Tx <: Database.Transaction](
    * @param slug The article slug.
    * @return The article, or fails if not found.
    */
+  /**
+   * Updates the tags for an article if they have changed.
+   *
+   * @param old The original article.
+   * @param updated The updated article.
+   */
+  private def updateTags(old: Article, updated: Article): Unit < (Effect & Env[Tx]) =
+    if old.tags != updated.tags then
+      for
+        _ <- persistence.tags.delete(old.id, old.tags)
+        _ <- persistence.tags.add(updated.id, updated.tags)
+      yield ()
+    else ()
+
   private def findArticle(slug: String): Article < (Effect & Env[Tx]) =
     persistence.articles.findBySlug(slug) ?! ArticleNotFound(slug)
 }

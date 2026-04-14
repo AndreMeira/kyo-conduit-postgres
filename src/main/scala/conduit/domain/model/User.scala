@@ -26,7 +26,7 @@ enum User:
   /**
    * Extract the user id if authenticated
    * 
-   * @return the Present(user id) if authenticated, Absent otherwise
+   * @return the Present(user id) if authenticated, Emtpy otherwise
    */
   def option: Maybe[User.Id] = this match {
     case Anonymous         => Maybe.Absent

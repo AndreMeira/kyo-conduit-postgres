@@ -52,14 +52,14 @@ object InMemoryUserProfileRepositorySpec extends KyoTestSuite:
           yield assert(found == Maybe.Present(profile), s"Expected $profile but got $found")
       }
 
-      "return Absent for unknown id" in withDatabase { database =>
+      "return Emtpy for unknown id" in withDatabase { database =>
         database.transaction:
           for
             persistence <- makePersistence
             unknownId   <- IdGeneratorService.uuid
             found       <- persistence.users.find(unknownId)
             exists      <- persistence.users.exists(unknownId)
-          yield assert(found == Maybe.Absent, s"Expected Absent but got $found") &
+          yield assert(found == Maybe.Absent, s"Expected Emtpy but got $found") &
             assert(!exists, "expected exists(unknown)=false")
       }
 

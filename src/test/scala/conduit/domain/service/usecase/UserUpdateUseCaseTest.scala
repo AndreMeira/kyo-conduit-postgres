@@ -4,14 +4,15 @@ import com.andremeira.test.KyoTestSuite
 import com.andremeira.test.KyoTestSuite.SuiteResult
 import conduit.domain.error.ApplicationError
 import conduit.domain.model.User
+import conduit.domain.request.Patchable
 import conduit.domain.request.user.UpdateUserRequest
 import conduit.domain.service.authentication.AuthenticationService
 import conduit.domain.service.authentication.AuthenticationService.Config
-import conduit.domain.service.persistence.{ IdGeneratorService, Persistence }
+import conduit.domain.service.persistence.{IdGeneratorService, Persistence}
 import conduit.domain.service.validation.StateValidationService
 import conduit.infrastructure.TestFixtures
 import conduit.infrastructure.inmemory.InMemoryTestSupport.withDatabase
-import conduit.infrastructure.inmemory.{ InMemoryTestSupport, InMemoryTransaction }
+import conduit.infrastructure.inmemory.{InMemoryTestSupport, InMemoryTransaction}
 import kyo.*
 
 import java.util.UUID
@@ -43,8 +44,8 @@ object UserUpdateUseCaseTest extends KyoTestSuite {
                                     email = None,
                                     username = None,
                                     password = None,
-                                    bio = Some("updated bio"),
-                                    image = None,
+                                    bio = Patchable.Present("updated bio"),
+                                    image = Patchable.Emtpy,
                                   )
                                 ),
                               )
@@ -72,8 +73,8 @@ object UserUpdateUseCaseTest extends KyoTestSuite {
                                     email = None,
                                     username = None,
                                     password = None,
-                                    bio = Some("new bio"),
-                                    image = None,
+                                    bio = Patchable.Present("new bio"),
+                                    image = Patchable.Emtpy,
                                   )
                                 ),
                               )

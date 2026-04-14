@@ -14,7 +14,7 @@ import zio.prelude.Validation
  */
 object syntax:
   /**
-   * Type alias for validation results with accumulated InvalidInput errors.
+   * Type alias for validation results with accumulated ArticleInvalidInput errors.
    *
    * This type represents the result of validation operations that can either
    * succeed with a value of type A or fail with accumulated validation errors.

@@ -34,15 +34,15 @@ object PostgresCredentialsRepositorySpec extends KyoTestSuite:
               found                    <- persistence.credentials.find(creds)
             yield assert(found == Maybe.Present(userId), s"Expected $userId but got $found")
 
-      "return Absent for an unknown user ID" in
+      "return Emtpy for an unknown user ID" in
         database.withMigration:
           database.transaction:
             for
               unknownId <- IdGeneratorService.uuid
               found     <- persistence.credentials.find(unknownId)
-            yield assert(found == Maybe.Absent, s"Expected Absent but got $found")
+            yield assert(found == Maybe.Absent, s"Expected Emtpy but got $found")
 
-      "return Absent for credentials that do not match" in
+      "return Emtpy for credentials that do not match" in
         database.withMigration:
           database.transaction:
             for
@@ -51,7 +51,7 @@ object PostgresCredentialsRepositorySpec extends KyoTestSuite:
               wrong: Credentials.Hashed = Credentials.Hashed(s"$userId@test.com", "wrong_hash")
               _                        <- persistence.credentials.save(userId, creds)
               found                    <- persistence.credentials.find(wrong)
-            yield assert(found == Maybe.Absent, s"Expected Absent for wrong password but got $found")
+            yield assert(found == Maybe.Absent, s"Expected Emtpy for wrong password but got $found")
 
       "report email existence before and after save" in
         database.withMigration:
@@ -87,5 +87,5 @@ object PostgresCredentialsRepositorySpec extends KyoTestSuite:
               _                        <- persistence.credentials.save(userId, creds)
               _                        <- persistence.credentials.delete(userId)
               found                    <- persistence.credentials.find(userId)
-            yield assert(found == Maybe.Absent, s"Expected Absent after delete but got $found")
+            yield assert(found == Maybe.Absent, s"Expected Emtpy after delete but got $found")
     }

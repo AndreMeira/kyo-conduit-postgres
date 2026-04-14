@@ -1,6 +1,6 @@
 package conduit.domain.service.validation
 
-import conduit.domain.request.comment.InvalidInput as Invalid
+import conduit.domain.error.CommentInvalidInput as Invalid
 import conduit.domain.syntax.Validated
 
 /**

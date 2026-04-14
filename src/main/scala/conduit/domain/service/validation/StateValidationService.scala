@@ -2,8 +2,8 @@ package conduit.domain.service.validation
 
 import zio.prelude.Validation
 import conduit.domain.error.ApplicationError
-import conduit.domain.request.user.InvalidCredentialsInput.EmailAlreadyInUse
-import conduit.domain.request.user.InvalidInput.UsernameAlreadyExists
+import conduit.domain.error.CredentialsInvalidInput.EmailAlreadyInUse
+import conduit.domain.error.ProfileInvalidInput.UsernameAlreadyExists
 import conduit.domain.model.Credentials
 import conduit.domain.service.persistence.Persistence
 import conduit.domain.service.persistence.Database.Transaction

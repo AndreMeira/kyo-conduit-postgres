@@ -1,6 +1,6 @@
 package conduit.domain.service.validation
 
-import conduit.domain.request.user.InvalidInput.{ BiographyIsEmpty, InvalidImageUri, UserNameInvalidChar, UserNameLengthViolation }
+import conduit.domain.error.ProfileInvalidInput.{BiographyIsEmpty, EmptyUsername, InvalidImageUri, UserNameInvalidChar, UserNameLengthViolation}
 import conduit.domain.syntax.Validated
 import zio.prelude.Validation
 
@@ -11,7 +11,7 @@ import scala.util.Try
  * Provides validation logic for user profile requests, including validation for name, bio, and image fields.
  */
 object UserProfileInputValidation {
-  private val allowedChars = "^[a-zA-Z0-9]+$".r
+  private val allowedChars = "^[a-zA-Z0-9_]+$".r
 
   /**
    * Validates the username.
@@ -23,13 +23,16 @@ object UserProfileInputValidation {
     Validation
       .validate(
         CommonValidation
+          .nonEmptyString(value)
+          .asError(EmptyUsername),
+        CommonValidation
           .length(value, 3, 30)
           .asError(UserNameLengthViolation(value, 3, 30)),
         CommonValidation
           .nonEmptyMatch(value, allowedChars)
           .asError(UserNameInvalidChar(allowedChars)),
       )
-      .flatMap(CommonValidation.sameValues(_, _))
+      .flatMap(CommonValidation.sameValues(_, _, _))
 
   /**
    * Validates the biography field.

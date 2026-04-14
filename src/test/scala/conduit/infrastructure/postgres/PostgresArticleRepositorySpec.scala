@@ -37,13 +37,13 @@ object PostgresArticleRepositorySpec extends KyoTestSuite:
               found   <- persistence.articles.findBySlug(article.slug)
             yield assert(found == Maybe.Present(article), s"Expected $article but got $found")
 
-      "return Absent for unknown id" in
+      "return Emtpy for unknown id" in
         database.withMigration:
           database.transaction:
             for
               unknownId <- IdGeneratorService.uuid
               found     <- persistence.articles.find(unknownId)
-            yield assert(found == Maybe.Absent, s"Expected Absent but got $found")
+            yield assert(found == Maybe.Absent, s"Expected Emtpy but got $found")
 
       "report existence correctly" in
         database.withMigration:

@@ -1,6 +1,7 @@
 package conduit.domain.request.user
 
 import conduit.domain.model.{ User, UserProfile }
+import conduit.domain.request.Patchable
 import kyo.Maybe
 
 import java.net.URI
@@ -40,11 +41,11 @@ object UpdateUserRequest:
    * @param image the new image URL of the user (optional)
    */
   case class Data(
-    email: Option[String],
-    username: Option[String],
-    password: Option[String],
-    bio: Option[String],
-    image: Option[String],
+    email: Patchable[String],
+    username: Patchable[String],
+    password: Patchable[String],
+    bio: Patchable[String],
+    image: Patchable[String],
   )
 
   enum Patch:

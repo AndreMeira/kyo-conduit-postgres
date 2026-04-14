@@ -135,6 +135,6 @@ object InMemoryCommentRepositorySpec extends KyoTestSuite:
             saved       <- persistence.comments.save(Comment.Data(article.id, "bye", authorId, ts, ts))
             _           <- persistence.comments.delete(saved.id)
             found       <- persistence.comments.find(saved.id)
-          yield assert(found == Maybe.Absent, s"Expected Absent, got $found")
+          yield assert(found == Maybe.Absent, s"Expected Emtpy, got $found")
       }
     }

@@ -1,6 +1,6 @@
 package conduit.domain.service.validation
 
-import conduit.domain.request.article.InvalidInput as Invalid
+import conduit.domain.error.ArticleInvalidInput as Invalid
 import conduit.domain.syntax.Validated
 import zio.prelude.Validation
 

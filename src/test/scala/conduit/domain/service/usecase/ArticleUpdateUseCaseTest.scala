@@ -4,6 +4,7 @@ import com.andremeira.test.KyoTestSuite
 import com.andremeira.test.KyoTestSuite.SuiteResult
 import conduit.domain.error.ApplicationError
 import conduit.domain.model.User
+import conduit.domain.request.Patchable
 import conduit.domain.request.article.UpdateArticleRequest
 import conduit.domain.service.persistence.{ IdGeneratorService, Persistence }
 import conduit.infrastructure.TestFixtures
@@ -38,6 +39,7 @@ object ArticleUpdateUseCaseTest extends KyoTestSuite {
                                title = Some("Updated Title"),
                                description = Some("Updated description"),
                                body = Some("Updated body content"),
+                               tagList = Patchable.Emtpy,
                              )
                            ),
                          )
@@ -82,7 +84,8 @@ object ArticleUpdateUseCaseTest extends KyoTestSuite {
                                title = Some("Updated Title"),
                                description = Some("Updated description"),
                                body = Some("Updated body content"),
-                             )
+                               tagList = Patchable.Emtpy,
+                             ),
                            ),
                          )
 

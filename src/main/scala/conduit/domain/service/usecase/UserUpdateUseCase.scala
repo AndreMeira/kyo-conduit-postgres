@@ -1,8 +1,9 @@
 package conduit.domain.service.usecase
 
-import conduit.domain.error.ApplicationError
+import conduit.domain.error.{ ApplicationError, CredentialsInvalidInput, ProfileInvalidInput }
 import conduit.domain.error.MissingEntity.{ CredentialsMissing, UserProfileMissing }
 import conduit.domain.model.{ Credentials, User, UserProfile }
+import conduit.domain.request.Patchable
 import conduit.domain.request.user.UpdateUserRequest
 import conduit.domain.request.user.UpdateUserRequest.Patch
 import conduit.domain.response.user.{ AuthenticationResponse, GetProfileResponse }
@@ -87,14 +88,14 @@ class UserUpdateUseCase[Tx <: Database.Transaction](
    */
   private def updateUserCredentials(request: UpdateUserRequest, patches: List[Patch]): Credentials < (Effect & Env[Tx]) =
     val payload = request.payload.user
-    if payload.email.isEmpty && payload.password.isEmpty then findCredentials(request)
+    if payload.email == Patchable.Absent && payload.password == Patchable.Absent then findCredentials(request)
     else
       for {
         creds   <- findCredentials(request)
         patched <- patch(creds, patches)
         _       <- if creds == patched then Kyo.unit
                    else persistence.credentials.update(request.requester.userId, patched)
-      } yield creds
+      } yield patched
 
   /**
    * Finds the user profile for the authenticated user.
@@ -147,8 +148,9 @@ class UserUpdateUseCase[Tx <: Database.Transaction](
    */
   private def parseEmail(request: UpdateUserRequest): Option[Validated[Patch]] < (Effect & Env[Tx]) =
     request.payload.user.email match
-      case None        => None
-      case Some(email) =>
+      case Patchable.Absent         => None
+      case Patchable.Emtpy          => Some(Validation.fail(CredentialsInvalidInput.EmptyEmail))
+      case Patchable.Present(email) =>
         CredentialsInputValidation.email(email).flatTraverse(stateValidation.validateEmailIsFree).map {
           case Validation.Success(_, validEmail) => Some(Validation.succeed(Patch.Email(validEmail)))
           case Validation.Failure(logs, errors)  => Some(Validation.Failure(logs, errors))
@@ -164,8 +166,9 @@ class UserUpdateUseCase[Tx <: Database.Transaction](
    */
   private def parsePassword(request: UpdateUserRequest): Option[Validated[Patch]] < Effect =
     request.payload.user.password match
-      case None           => None
-      case Some(password) =>
+      case Patchable.Absent            => None
+      case Patchable.Emtpy             => Some(Validation.fail(CredentialsInvalidInput.EmptyPassword))
+      case Patchable.Present(password) =>
         CredentialsInputValidation.password(password).traverse(authentication.hashPassword).map {
           case Validation.Success(_, pwd)       => Some(Validation.succeed(Patch.Password(pwd)))
           case Validation.Failure(logs, errors) => Some(Validation.Failure(logs, errors))
@@ -174,16 +177,19 @@ class UserUpdateUseCase[Tx <: Database.Transaction](
   /**
    * Parses and validates the bio field from the request.
    *
-   * Trims the bio and converts empty strings to Absent. Validates non-empty bios.
+   * Trims the bio and converts empty strings to Emtpy. Validates non-empty bios.
    *
    * @param request The update request.
    * @return An optional validated Bio patch, or None if bio is not provided.
    */
   private def parseBio(request: UpdateUserRequest): Option[Validated[Patch]] < Any =
-    request.payload.user.bio.map(_.trim) match
-      case None      => None
-      case Some("")  => Some(Validation.succeed(Patch.Bio(Maybe.Absent)))
-      case Some(bio) => Some(UserProfileInputValidation.bio(bio).map(bio => Patch.Bio(Maybe.Present(bio))))
+    request.payload.user.bio match
+      case Patchable.Absent       => None
+      case Patchable.Emtpy        => Some(Validation.succeed(Patch.Bio(Maybe.Absent)))
+      case Patchable.Present(raw) =>
+        raw.trim match
+          case ""  => Some(Validation.succeed(Patch.Bio(Maybe.Absent)))
+          case bio => Some(UserProfileInputValidation.bio(bio).map(bio => Patch.Bio(Maybe.Present(bio))))
 
   /**
    * Parses and validates the username field from the request.
@@ -195,8 +201,9 @@ class UserUpdateUseCase[Tx <: Database.Transaction](
    */
   private def parseName(request: UpdateUserRequest): Option[Validated[Patch]] < (Effect & Env[Tx]) =
     request.payload.user.username match
-      case None       => None
-      case Some(name) =>
+      case Patchable.Absent        => None
+      case Patchable.Emtpy         => Some(Validation.fail(ProfileInvalidInput.EmptyUsername))
+      case Patchable.Present(name) =>
         UserProfileInputValidation.name(name).flatTraverse(stateValidation.validateUsernameIsFree).map {
           case Validation.Success(_, validName) => Some(Validation.succeed(Patch.Username(validName)))
           case Validation.Failure(logs, errors) => Some(Validation.Failure(logs, errors))
@@ -211,14 +218,17 @@ class UserUpdateUseCase[Tx <: Database.Transaction](
    * @return An optional validated Image patch, or None if image is not provided.
    */
   private def parseImage(request: UpdateUserRequest): Option[Validated[Patch]] < Any =
-    request.payload.user.image.map(_.trim) match
-      case None      => None
-      case Some("")  => Some(Validation.succeed(Patch.Image(Maybe.Absent)))
-      case Some(uri) =>
-        UserProfileInputValidation.image(uri) match {
-          case Validation.Success(_, validUri)  => Some(Validation.succeed(Patch.Image(Maybe.Present(validUri))))
-          case Validation.Failure(logs, errors) => Some(Validation.Failure(logs, errors))
-        }
+    request.payload.user.image match
+      case Patchable.Absent       => None
+      case Patchable.Emtpy        => Some(Validation.succeed(Patch.Image(Maybe.Absent)))
+      case Patchable.Present(raw) =>
+        raw.trim match
+          case ""  => Some(Validation.succeed(Patch.Image(Maybe.Absent)))
+          case uri =>
+            UserProfileInputValidation.image(uri) match {
+              case Validation.Success(_, validUri)  => Some(Validation.succeed(Patch.Image(Maybe.Present(validUri))))
+              case Validation.Failure(logs, errors) => Some(Validation.Failure(logs, errors))
+            }
 
   /**
    * Applies a list of patches to a user profile.
