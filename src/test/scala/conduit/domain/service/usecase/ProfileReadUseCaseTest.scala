@@ -46,8 +46,8 @@ object ProfileReadUseCaseTest extends KyoTestSuite {
                            requester = User.Anonymous,
                            username = "nonexistent-user",
                          )
-          result <- Abort.run(ProfileReadUseCase(database, persistence).apply(request))
-          error   = result.toEither.swap.toOption.collect { case e: ApplicationError => e }.get
+          result      <- Abort.run(ProfileReadUseCase(database, persistence).apply(request))
+          error        = result.toEither.swap.toOption.collect { case e: ApplicationError => e }.get
         yield assert(
           error.message.contains("nonexistent-user"),
           "Expected error message to contain the username",

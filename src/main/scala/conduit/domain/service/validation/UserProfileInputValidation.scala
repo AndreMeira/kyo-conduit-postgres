@@ -1,6 +1,6 @@
 package conduit.domain.service.validation
 
-import conduit.domain.error.ProfileInvalidInput.{BiographyIsEmpty, EmptyUsername, InvalidImageUri, UserNameInvalidChar, UserNameLengthViolation}
+import conduit.domain.error.ProfileInvalidInput.{ BiographyIsEmpty, EmptyUsername, InvalidImageUri, UserNameInvalidChar, UserNameLengthViolation }
 import conduit.domain.syntax.Validated
 import zio.prelude.Validation
 

@@ -53,8 +53,8 @@ object ProfileFollowingUseCaseTest extends KyoTestSuite {
                            requester = User.Authenticated(userId),
                            username = username,
                          )
-          result <- Abort.run(ProfileFollowingUseCase(database, persistence).apply(request))
-          error   = result.toEither.swap.toOption.collect { case e: ApplicationError => e }.get
+          result      <- Abort.run(ProfileFollowingUseCase(database, persistence).apply(request))
+          error        = result.toEither.swap.toOption.collect { case e: ApplicationError => e }.get
         yield assert(
           error.message.contains(username),
           "Expected error message to contain the non-existent username",

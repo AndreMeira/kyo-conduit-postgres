@@ -10,10 +10,10 @@ import java.util.UUID
  * handling of sensitive authentication data throughout the application.
  */
 enum Credentials:
-  
+
   /** The user's email address associated with the credentials. */
   def email: String
-  
+
   /**
    * Represents cleartext credentials as received from user input.
    *

@@ -56,11 +56,9 @@ object PostgresCommentRepositorySpec extends KyoTestSuite:
               _         <- fixtures.makeProfile(authorId)
               article   <- fixtures.makeArticle(authorId)
               ts        <- fixtures.now
-              saved     <- persistence
-                             .comments
-                             .save(
-                               Comment.Data(article.id, "x", authorId, ts, ts)
-                             )
+              saved     <- persistence.comments.save(
+                             Comment.Data(article.id, "x", authorId, ts, ts)
+                           )
               existsYes <- persistence.comments.exists(saved.id)
               existsNo  <- persistence.comments.exists(Long.MaxValue)
             yield assert(existsYes, "expected exists(saved)=true") &
@@ -74,33 +72,27 @@ object PostgresCommentRepositorySpec extends KyoTestSuite:
               _        <- fixtures.makeProfile(authorId)
               article  <- fixtures.makeArticle(authorId)
               ts       <- fixtures.now
-              c1       <- persistence
-                            .comments
-                            .save(
-                              Comment.Data(article.id, "one", authorId, ts, ts)
+              c1       <- persistence.comments.save(
+                            Comment.Data(article.id, "one", authorId, ts, ts)
+                          )
+              c2       <- persistence.comments.save(
+                            Comment.Data(
+                              article.id,
+                              "two",
+                              authorId,
+                              ts.plusMillis(1),
+                              ts.plusMillis(1),
                             )
-              c2       <- persistence
-                            .comments
-                            .save(
-                              Comment.Data(
-                                article.id,
-                                "two",
-                                authorId,
-                                ts.plusMillis(1),
-                                ts.plusMillis(1),
-                              )
+                          )
+              c3       <- persistence.comments.save(
+                            Comment.Data(
+                              article.id,
+                              "three",
+                              authorId,
+                              ts.plusMillis(2),
+                              ts.plusMillis(2),
                             )
-              c3       <- persistence
-                            .comments
-                            .save(
-                              Comment.Data(
-                                article.id,
-                                "three",
-                                authorId,
-                                ts.plusMillis(2),
-                                ts.plusMillis(2),
-                              )
-                            )
+                          )
               all      <- persistence.comments.findByArticleId(article.id)
             yield assert(
               all.map(_.id) == List(c1.id, c2.id, c3.id),
@@ -125,11 +117,9 @@ object PostgresCommentRepositorySpec extends KyoTestSuite:
               _        <- fixtures.makeProfile(authorId)
               article  <- fixtures.makeArticle(authorId)
               ts       <- fixtures.now
-              saved    <- persistence
-                            .comments
-                            .save(
-                              Comment.Data(article.id, "old", authorId, ts, ts)
-                            )
+              saved    <- persistence.comments.save(
+                            Comment.Data(article.id, "old", authorId, ts, ts)
+                          )
               updated   = saved.copy(body = "new", updatedAt = ts.plusSeconds(1))
               _        <- persistence.comments.update(updated)
               found    <- persistence.comments.find(saved.id)
@@ -143,11 +133,9 @@ object PostgresCommentRepositorySpec extends KyoTestSuite:
               _        <- fixtures.makeProfile(authorId)
               article  <- fixtures.makeArticle(authorId)
               ts       <- fixtures.now
-              saved    <- persistence
-                            .comments
-                            .save(
-                              Comment.Data(article.id, "bye", authorId, ts, ts)
-                            )
+              saved    <- persistence.comments.save(
+                            Comment.Data(article.id, "bye", authorId, ts, ts)
+                          )
               _        <- persistence.comments.delete(saved.id)
               found    <- persistence.comments.find(saved.id)
             yield assert(found == Maybe.Absent, s"Expected Emtpy, got $found")

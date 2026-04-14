@@ -21,7 +21,8 @@ object Module:
    * integrating the Postgres infrastructure into the application.
    */
   lazy val all: Layer[Database[PostgresTransaction] & Persistence[PostgresTransaction] & Migration, Env[DatabaseConfig] & Sync & Scope] =
-    datasourceConfig.to(dataSource)
+    datasourceConfig
+      .to(dataSource)
       .and(migrationConfig)
       .to(database.and(database.to(persistence)).and(migration))
 

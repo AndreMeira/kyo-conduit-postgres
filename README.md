@@ -82,6 +82,13 @@ Start PostgreSQL:
 docker compose up -d postgres
 ```
 
+To reset the database (remove all data), stop Postgres and delete the volume:
+
+```bash
+docker compose down
+docker volume rm kyo-conduit-postgres_conduit-data
+```
+
 Run the application:
 
 ```bash

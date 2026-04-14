@@ -39,8 +39,7 @@ object ArticleFeedUseCaseTest extends KyoTestSuite {
                            limit = 20,
                          )
           response    <- ArticleFeedUseCase(database, persistence).apply(request)
-        yield
-          assert(response.articlesCount == 1, "Expected articlesCount to be 1") &
+        yield assert(response.articlesCount == 1, "Expected articlesCount to be 1") &
           assert(response.articles.head.slug == article.slug, "Expected feed to contain the followed author's article")
       }
 
@@ -55,8 +54,7 @@ object ArticleFeedUseCaseTest extends KyoTestSuite {
                            limit = 20,
                          )
           response    <- ArticleFeedUseCase(database, persistence).apply(request)
-        yield
-          assert(response.articlesCount == 0, "Expected articlesCount to be 0") &
+        yield assert(response.articlesCount == 0, "Expected articlesCount to be 0") &
           assert(response.articles.isEmpty, "Expected articles list to be empty")
       }
     }

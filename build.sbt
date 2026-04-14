@@ -38,10 +38,6 @@ lazy val root = project
       // test
       "org.scalameta"     %% "munit"      % "1.2.4"  % Test,
       "org.testcontainers" % "postgresql" % "1.21.4" % Test,
-      // We need this to run the kyo tests with sbt
-      // "dev.zio"       %% "zio-test"     % "2.1.24"  % Test,
-      // "dev.zio"       %% "zio-test-sbt" % "2.1.24"  % Test,
-      // "io.getkyo"     %% "kyo-zio-test" % "1.0-RC1" % Test,
     ),
     Compile / mainClass := Some("conduit.application.http.HttpApplication"),
     testFrameworks := Seq(new TestFramework("com.andremeira.test.KyoFramework")),

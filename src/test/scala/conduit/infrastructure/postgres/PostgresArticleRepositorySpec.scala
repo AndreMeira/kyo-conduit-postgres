@@ -110,8 +110,8 @@ object PostgresArticleRepositorySpec extends KyoTestSuite:
             yield
               val result = after.toOption.get
               assert(result.favoriteCount == 1, s"Expected favoriteCount=1 but got ${result.favoriteCount}") &
-              assert(result.tags.sorted == List("kyo", "scala"), s"Expected tags preserved but got ${result.tags}") &
-              assert(result.title == "New title", s"Expected updated title")
+                assert(result.tags.sorted == List("kyo", "scala"), s"Expected tags preserved but got ${result.tags}") &
+                assert(result.title == "New title", s"Expected updated title")
 
       "search by author username" in
         database.withMigration:
@@ -357,7 +357,7 @@ object PostgresArticleRepositorySpec extends KyoTestSuite:
               otherId       <- fixtures.makeUser
               _             <- fixtures.makeProfile(otherId)
               _             <- persistence.followers.add:
-                                UserProfile.Follower(followerId, authorProfile.id)
+                                 UserProfile.Follower(followerId, authorProfile.id)
               a1            <- fixtures.makeArticle(authorId, "From followee")
               _             <- fixtures.makeArticle(otherId, "From other")
               feed          <- persistence.articles.feedOf(followerId, 0, 10)

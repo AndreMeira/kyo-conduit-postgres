@@ -63,8 +63,7 @@ class PostgresCredentialsRepository extends CredentialsRepository[PostgresTransa
     Transactional:
       val count = sql"""
           INSERT INTO users (id, email, password)
-          VALUES ($userId, ${credentials.email}, ${credentials.password})"""
-        .update
+          VALUES ($userId, ${credentials.email}, ${credentials.password})""".update
         .run()
       require(count == 1, "Failed to insert credentials")
 
@@ -81,8 +80,7 @@ class PostgresCredentialsRepository extends CredentialsRepository[PostgresTransa
           UPDATE users SET
             email    = ${credentials.email},
             password = ${credentials.password}
-          WHERE id = $userId"""
-        .update
+          WHERE id = $userId""".update
         .run()
       require(count == 1, "Failed to update credentials")
 
@@ -94,7 +92,6 @@ class PostgresCredentialsRepository extends CredentialsRepository[PostgresTransa
    */
   override def delete(userId: User.Id): Unit < Effect =
     Transactional {
-      sql"""DELETE FROM users WHERE id = $userId"""
-        .update
+      sql"""DELETE FROM users WHERE id = $userId""".update
         .run()
     }.unit

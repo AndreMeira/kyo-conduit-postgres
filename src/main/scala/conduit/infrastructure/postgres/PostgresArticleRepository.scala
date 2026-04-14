@@ -92,7 +92,6 @@ class PostgresArticleRepository extends ArticleRepository[PostgresTransaction] {
           .run()
       require(count == 1, "Failed to insert article")
 
-
   /**
    * Updates an existing article in the repository using article data.
    *

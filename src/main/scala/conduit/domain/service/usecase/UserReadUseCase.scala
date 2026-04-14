@@ -43,7 +43,7 @@ class UserReadUseCase[Tx <: Database.Transaction](
       for {
         profile <- findProfile(request.requester)
         creds   <- persistence.credentials.find(request.requester.userId)
-                     ?! UserProfileMissing(request.requester.userId) 
+                     ?! UserProfileMissing(request.requester.userId)
         token   <- authentication.encodeToken(request.requester.userId)
       } yield AuthenticationResponse.make(creds.email, profile, token)
 

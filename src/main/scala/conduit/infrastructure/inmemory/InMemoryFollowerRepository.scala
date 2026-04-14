@@ -50,8 +50,7 @@ class InMemoryFollowerRepository extends FollowerRepository[InMemoryTransaction]
    */
   override def add(followed: UserProfile.Follower): Unit < Effect =
     InMemoryTransaction { state =>
-      state
-        .followers
+      state.followers
         .updateAndGet { followers =>
           val currentFollowers = followers.getOrElse(followed.followerId, Nil)
           followers + (followed.followerId -> (currentFollowers :+ followed.profileId))
@@ -77,8 +76,7 @@ class InMemoryFollowerRepository extends FollowerRepository[InMemoryTransaction]
    */
   override def delete(followed: UserProfile.Follower): Unit < Effect =
     InMemoryTransaction { state =>
-      state
-        .followers
+      state.followers
         .updateAndGet { followers =>
           val currentFollowers = followers.getOrElse(followed.followerId, Nil)
           followers + (followed.followerId -> currentFollowers.filterNot(_ == followed.profileId))

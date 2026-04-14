@@ -11,8 +11,7 @@ import kyo.*
  */
 object Module:
 
-  def stateValidationService[Tx <: Database.Transaction: Tag]
-    : Layer[StateValidationService[Tx], Env[Persistence[Tx]]] =
+  def stateValidationService[Tx <: Database.Transaction: Tag]: Layer[StateValidationService[Tx], Env[Persistence[Tx]]] =
     Layer.from { (persistence: Persistence[Tx]) =>
       StateValidationService(persistence)
     }

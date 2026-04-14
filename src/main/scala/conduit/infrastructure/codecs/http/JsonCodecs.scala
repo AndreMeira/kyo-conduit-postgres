@@ -3,7 +3,7 @@ package conduit.infrastructure.codecs.http
 import conduit.domain.request.Patchable
 import conduit.domain.request.article.UpdateArticleRequest
 import conduit.domain.request.user.UpdateUserRequest
-import io.circe.{Decoder, Encoder, HCursor}
+import io.circe.{ Decoder, Encoder, HCursor }
 import sttp.tapir.Schema
 
 /** Custom Circe decoders for request types that need to distinguish between

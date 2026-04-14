@@ -42,10 +42,9 @@ object UserRegistrationUseCaseTest extends KyoTestSuite {
                                 )
                               ),
                             )
-          result <- Abort.run(useCase.apply(request))
-          response = result.toEither.toOption.get
-        yield
-          assert(response.user.email == "test@example.com", "Expected email to match") &
+          result         <- Abort.run(useCase.apply(request))
+          response        = result.toEither.toOption.get
+        yield assert(response.user.email == "test@example.com", "Expected email to match") &
           assert(response.user.username == "testuser", "Expected username to match")
       }
     }

@@ -97,8 +97,7 @@ object DatabaseCodecs:
     def queryRepr: String                                                      = "?"
     def readSingle(rs: ResultSet, pos: Int): List[UUID]                        =
       Option(rs.getArray(pos)).fold(Nil) { arr =>
-        arr
-          .getArray
+        arr.getArray
           .asInstanceOf[Array[Object]]
           .map {
             case u: UUID => u

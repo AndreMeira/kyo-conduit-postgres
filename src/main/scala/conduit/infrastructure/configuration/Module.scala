@@ -9,7 +9,7 @@ object Module {
 
   given ConfigReader[AuthenticationService.Config] = ConfigReader.derived
   given ConfigReader[DatabaseConfig]               = ConfigReader.derived
-  
+
   lazy val all: Layer[AuthenticationService.Config & DatabaseConfig, Abort[ConfigurationLoader.Error] & Sync] =
     authentication.and(database)
 

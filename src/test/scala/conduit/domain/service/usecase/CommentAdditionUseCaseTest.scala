@@ -35,7 +35,7 @@ object CommentAdditionUseCaseTest extends KyoTestSuite {
                            slug = article.slug,
                            payload = AddCommentRequest.Payload(
                              comment = AddCommentRequest.Data(
-                               body = "This is a test comment.",
+                               body = "This is a test comment."
                              )
                            ),
                          )
@@ -57,7 +57,7 @@ object CommentAdditionUseCaseTest extends KyoTestSuite {
                            slug = "nonexistent-article",
                            payload = AddCommentRequest.Payload(
                              comment = AddCommentRequest.Data(
-                               body = "This is a test comment.",
+                               body = "This is a test comment."
                              )
                            ),
                          )

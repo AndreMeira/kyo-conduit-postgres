@@ -28,14 +28,14 @@ object UserReadUseCaseTest extends KyoTestSuite {
     "UserReadUseCase" should {
       "succeed in reading an existing user" in withDatabase { database =>
         for
-          fixtures       <- makeFixtures
-          persistence    <- makePersistence
-          config          = Config(passwordSalt = "test-salt", tokenSalt = "test-token-salt", tokenTtl = 1.hour)
-          authentication  = AuthenticationService(Clock.live, config)
-          userId         <- database.transaction(fixtures.makeUser)
-          profile        <- database.transaction(fixtures.makeProfile(userId))
-          request         = GetUserRequest(User.Authenticated(userId))
-          response       <- UserReadUseCase(database, persistence, authentication).apply(request)
+          fixtures      <- makeFixtures
+          persistence   <- makePersistence
+          config         = Config(passwordSalt = "test-salt", tokenSalt = "test-token-salt", tokenTtl = 1.hour)
+          authentication = AuthenticationService(Clock.live, config)
+          userId        <- database.transaction(fixtures.makeUser)
+          profile       <- database.transaction(fixtures.makeProfile(userId))
+          request        = GetUserRequest(User.Authenticated(userId))
+          response      <- UserReadUseCase(database, persistence, authentication).apply(request)
         yield assert(
           response.user.username == profile.name &&
           response.user.token.nonEmpty,
@@ -45,15 +45,15 @@ object UserReadUseCaseTest extends KyoTestSuite {
 
       "fail to read user when profile doesn't exist" in withDatabase { database =>
         for
-          fixtures       <- makeFixtures
-          persistence    <- makePersistence
-          userId         <- IdGeneratorService.uuid
-          clock           = Clock.live
-          config          = Config(passwordSalt = "test-salt", tokenSalt = "test-token-salt", tokenTtl = 1.hour)
-          authentication  = AuthenticationService(clock, config)
-          request         = GetUserRequest(User.Authenticated(userId))
-          result         <- Abort.run(UserReadUseCase(database, persistence, authentication).apply(request))
-          error           = result.toEither.swap.toOption.collect { case e: ApplicationError => e }.get
+          fixtures      <- makeFixtures
+          persistence   <- makePersistence
+          userId        <- IdGeneratorService.uuid
+          clock          = Clock.live
+          config         = Config(passwordSalt = "test-salt", tokenSalt = "test-token-salt", tokenTtl = 1.hour)
+          authentication = AuthenticationService(clock, config)
+          request        = GetUserRequest(User.Authenticated(userId))
+          result        <- Abort.run(UserReadUseCase(database, persistence, authentication).apply(request))
+          error          = result.toEither.swap.toOption.collect { case e: ApplicationError => e }.get
         yield assert(
           error.message.contains(s"User profile of user $userId is missing"),
           "Expected error message to indicate user profile not found",

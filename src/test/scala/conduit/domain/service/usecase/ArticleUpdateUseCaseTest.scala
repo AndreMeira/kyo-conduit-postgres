@@ -39,7 +39,7 @@ object ArticleUpdateUseCaseTest extends KyoTestSuite {
                                title = Some("Updated Title"),
                                description = Some("Updated description"),
                                body = Some("Updated body content"),
-                               tagList = Patchable.Emtpy,
+                               tagList = Patchable.Absent,
                              )
                            ),
                          )
@@ -84,8 +84,8 @@ object ArticleUpdateUseCaseTest extends KyoTestSuite {
                                title = Some("Updated Title"),
                                description = Some("Updated description"),
                                body = Some("Updated body content"),
-                               tagList = Patchable.Emtpy,
-                             ),
+                               tagList = Patchable.Absent,
+                             )
                            ),
                          )
 

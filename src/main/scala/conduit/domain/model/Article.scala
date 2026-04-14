@@ -32,6 +32,7 @@ case class Article(
   createdAt: Instant,
   updatedAt: Instant,
 ) {
+
   /**
    * Converts the Article to its core data representation, excluding aggregated fields.
    *

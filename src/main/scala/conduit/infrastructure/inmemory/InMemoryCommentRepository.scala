@@ -104,11 +104,8 @@ class InMemoryCommentRepository(lock: Meter) extends CommentRepository[InMemoryT
    * @return Long
    */
   private def nextCommentId(state: InMemoryState): Long < Effect =
-    state
-      .comments
-      .get
-      .map: comments =>
-        comments.keySet.toList.sorted.lastOption.map(_ + 1L).getOrElse(1L)
+    state.comments.get.map: comments =>
+      comments.keySet.toList.sorted.lastOption.map(_ + 1L).getOrElse(1L)
 }
 
 object InMemoryCommentRepository {

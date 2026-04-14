@@ -30,17 +30,17 @@ object ArticleReadUseCaseTest extends KyoTestSuite {
     "ArticleReadUseCase" should {
       "succeed in reading an existing article" in withDatabase { database =>
         for
-          fixtures       <- makeFixtures
-          persistence    <- makePersistence
-          authentication  = makeAuthentication
-          userId         <- database.transaction(fixtures.makeUser)
-          profile        <- database.transaction(fixtures.makeProfile(userId))
-          article        <- database.transaction(fixtures.makeArticle(userId))
-          request         = GetArticleRequest(
-                              requester = User.Anonymous,
-                              slug = article.slug,
-                            )
-          response       <- ArticleReadUseCase(database, persistence, authentication).apply(request)
+          fixtures      <- makeFixtures
+          persistence   <- makePersistence
+          authentication = makeAuthentication
+          userId        <- database.transaction(fixtures.makeUser)
+          profile       <- database.transaction(fixtures.makeProfile(userId))
+          article       <- database.transaction(fixtures.makeArticle(userId))
+          request        = GetArticleRequest(
+                             requester = User.Anonymous,
+                             slug = article.slug,
+                           )
+          response      <- ArticleReadUseCase(database, persistence, authentication).apply(request)
         yield assert(
           response.article.slug == article.slug &&
           response.article.title == article.title &&
@@ -51,12 +51,12 @@ object ArticleReadUseCaseTest extends KyoTestSuite {
 
       "fail with ArticleNotFound when slug does not exist" in withDatabase { database =>
         for
-          persistence    <- makePersistence
-          authentication  = makeAuthentication
-          request         = GetArticleRequest(
-                              requester = User.Anonymous,
-                              slug = "non-existent-slug",
-                            )
+          persistence   <- makePersistence
+          authentication = makeAuthentication
+          request        = GetArticleRequest(
+                             requester = User.Anonymous,
+                             slug = "non-existent-slug",
+                           )
 
           result <- Abort.run(ArticleReadUseCase(database, persistence, authentication).apply(request))
           error   = result.toEither.swap.toOption.collect { case e: ApplicationError => e }.get

@@ -29,8 +29,7 @@ class PostgresUserProfileRepository extends UserProfileRepository[PostgresTransa
             ${profile.image},
             ${profile.createdAt},
             ${profile.updatedAt}
-          )"""
-        .update
+          )""".update
         .run()
       require(count == 1, "Failed to insert user profile")
 
@@ -48,8 +47,7 @@ class PostgresUserProfileRepository extends UserProfileRepository[PostgresTransa
             bio        = ${profile.biography},
             image      = ${profile.image},
             updated_at = ${profile.updatedAt}
-          WHERE id = ${profile.id}"""
-        .update
+          WHERE id = ${profile.id}""".update
         .run()
       require(count == 1, "Failed to update user profile")
 

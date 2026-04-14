@@ -2,8 +2,8 @@ package conduit.infrastructure.inmemory
 
 import conduit.domain.model.Article
 import conduit.domain.service.persistence.TagRepository
-import conduit.infrastructure.inmemory.InMemoryState.Changed.{Deleted, Inserted, Updated}
-import conduit.infrastructure.inmemory.InMemoryState.RowReference.{ArticleRow, TagsRow}
+import conduit.infrastructure.inmemory.InMemoryState.Changed.{ Deleted, Inserted, Updated }
+import conduit.infrastructure.inmemory.InMemoryState.RowReference.{ ArticleRow, TagsRow }
 import kyo.*
 
 /**
@@ -50,17 +50,22 @@ class InMemoryTagRepository extends TagRepository[InMemoryTransaction] {
             else Updated(TagsRow(articleId))
           )
         } *>
-        state.articles.updateAndGet { current =>
-          current.get(articleId).map { article =>
-            val newTags = article.tags ++ tags
-            current.updated(articleId, article.copy(tags = newTags))
-          }.getOrElse(current)
-        }.flatMap { updatedArticles =>
-          if updatedArticles.get(articleId).exists(_.tags.size > tags.size)
-          then state.addChange(Updated(ArticleRow(articleId)))
-          else ()
-        }
-        .unit
+        state.articles
+          .updateAndGet { current =>
+            current
+              .get(articleId)
+              .map { article =>
+                val newTags = article.tags ++ tags
+                current.updated(articleId, article.copy(tags = newTags))
+              }
+              .getOrElse(current)
+          }
+          .flatMap { updatedArticles =>
+            if updatedArticles.get(articleId).exists(_.tags.size > tags.size)
+            then state.addChange(Updated(ArticleRow(articleId)))
+            else ()
+          }
+          .unit
     }
 
   /**

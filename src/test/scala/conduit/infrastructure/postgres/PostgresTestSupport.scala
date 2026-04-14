@@ -102,7 +102,7 @@ object PostgresTestSupport:
       comments = PostgresCommentRepository(),
       tags = PostgresTagRepository(),
     )
-    
+
   /**
    * Provides a `withMigration` method that runs a test body with a clean database.
    *
@@ -111,6 +111,7 @@ object PostgresTestSupport:
    */
   trait WithCleanDatabase {
     extension (database: PostgresDatabase) {
+
       /** 
        * Runs the given body with a clean database. The body is executed inside a
        * transaction, so it can call any repository method directly — just as
@@ -119,7 +120,7 @@ object PostgresTestSupport:
        * @param body the test body to execute with a clean database
        * @return the result of the test body
        */
-      def withMigration[A, Effect <: Async & Abort[ApplicationError]](body: => A < Effect): A < Effect = 
+      def withMigration[A, Effect <: Async & Abort[ApplicationError]](body: => A < Effect): A < Effect =
         Scope.run:
           for
             migration <- Kyo.lift(flyway(database.datasource))

@@ -37,8 +37,7 @@ class PostgresTagRepository extends TagRepository[PostgresTransaction]:
       Transactional {
         sql"""INSERT INTO tags (name, article_id)
               SELECT unnest($tags), $articleId
-              ON CONFLICT (name, article_id) DO NOTHING"""
-          .update
+              ON CONFLICT (name, article_id) DO NOTHING""".update
           .run()
       }.unit
 
@@ -68,7 +67,6 @@ class PostgresTagRepository extends TagRepository[PostgresTransaction]:
       Transactional {
         sql"""DELETE FROM tags
               WHERE article_id = $articleId
-                AND name = ANY($tags)"""
-          .update
+                AND name = ANY($tags)""".update
           .run()
       }.unit

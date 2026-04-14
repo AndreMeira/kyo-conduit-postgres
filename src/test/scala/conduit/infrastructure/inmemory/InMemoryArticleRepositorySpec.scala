@@ -137,10 +137,10 @@ object InMemoryArticleRepositorySpec extends KyoTestSuite:
         yield
           val result = foundById.toOption.get
           assert(result.title == "Cross-tx Updated", s"Expected updated title, got ${result.title}") &
-          assert(result.body == "New body", s"Expected updated body, got ${result.body}") &
-          assert(result.slug == "cross-tx-updated", s"Expected updated slug, got ${result.slug}") &
-          assert(foundBySlug.isDefined, s"Expected to find article by new slug") &
-          assert(oldSlug.isEmpty, s"Expected old slug to no longer resolve")
+            assert(result.body == "New body", s"Expected updated body, got ${result.body}") &
+            assert(result.slug == "cross-tx-updated", s"Expected updated slug, got ${result.slug}") &
+            assert(foundBySlug.isDefined, s"Expected to find article by new slug") &
+            assert(oldSlug.isEmpty, s"Expected old slug to no longer resolve")
       }
 
       "update article data preserves favorite count and tags" in withDatabase { database =>
@@ -161,8 +161,8 @@ object InMemoryArticleRepositorySpec extends KyoTestSuite:
           yield
             val result = after.toOption.get
             assert(result.favoriteCount == 1, s"Expected favoriteCount=1 but got ${result.favoriteCount}") &
-            assert(result.tags.sorted == List("kyo", "scala"), s"Expected tags preserved but got ${result.tags}") &
-            assert(result.title == "New title", s"Expected updated title")
+              assert(result.tags.sorted == List("kyo", "scala"), s"Expected tags preserved but got ${result.tags}") &
+              assert(result.title == "New title", s"Expected updated title")
       }
 
       "search by author username" in withDatabase { database =>

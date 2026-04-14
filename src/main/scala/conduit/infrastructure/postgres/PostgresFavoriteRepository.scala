@@ -60,8 +60,7 @@ class PostgresFavoriteRepository extends FavoriteRepository[PostgresTransaction]
     Transactional {
       sql"""INSERT INTO favorites (user_id, article_id)
             VALUES (${favorite.userId}, ${favorite.articleId})
-            ON CONFLICT (user_id, article_id) DO NOTHING"""
-        .update
+            ON CONFLICT (user_id, article_id) DO NOTHING""".update
         .run()
     }.unit
 
@@ -75,7 +74,6 @@ class PostgresFavoriteRepository extends FavoriteRepository[PostgresTransaction]
     Transactional {
       sql"""DELETE FROM favorites
             WHERE user_id = ${favorite.userId}
-              AND article_id = ${favorite.articleId}"""
-        .update
+              AND article_id = ${favorite.articleId}""".update
         .run()
     }.unit

@@ -30,7 +30,7 @@ enum ArticleInvalidInput extends ValidationError.InvalidInput {
    * Error indicating that an article title is empty.
    */
   case EmptyTitle
-  
+
   /**
    * Error indicating that an article slug is invalid.
    */

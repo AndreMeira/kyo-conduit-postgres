@@ -63,8 +63,7 @@ class PostgresFollowerRepository extends FollowerRepository[PostgresTransaction]
     Transactional {
       sql"""INSERT INTO followers (follower_id, followee_id)
             VALUES (${followed.followerId}, ${followed.profileId})
-            ON CONFLICT (follower_id, followee_id) DO NOTHING"""
-        .update
+            ON CONFLICT (follower_id, followee_id) DO NOTHING""".update
         .run()
     }.unit
 
@@ -78,7 +77,6 @@ class PostgresFollowerRepository extends FollowerRepository[PostgresTransaction]
     Transactional {
       sql"""DELETE FROM followers
             WHERE follower_id = ${followed.followerId}
-              AND followee_id = ${followed.profileId}"""
-        .update
+              AND followee_id = ${followed.profileId}""".update
         .run()
     }.unit
