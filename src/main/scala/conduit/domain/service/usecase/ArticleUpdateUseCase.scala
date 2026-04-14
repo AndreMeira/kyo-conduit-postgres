@@ -155,12 +155,6 @@ class ArticleUpdateUseCase[Tx <: Database.Transaction](
     persistence.users.findByUser(user.userId) ?! UserProfileMissing(user.userId)
 
   /**
-   * Finds the article by its slug.
-   *
-   * @param slug The article slug.
-   * @return The article, or fails if not found.
-   */
-  /**
    * Updates the tags for an article if they have changed.
    *
    * @param old The original article.
@@ -174,6 +168,12 @@ class ArticleUpdateUseCase[Tx <: Database.Transaction](
       yield ()
     else ()
 
+  /**
+   * Finds an article by its slug.
+   *
+   * @param slug The slug of the article to find.
+   * @return The found article, or fails if not found.
+   */
   private def findArticle(slug: String): Article < (Effect & Env[Tx]) =
     persistence.articles.findBySlug(slug) ?! ArticleNotFound(slug)
 }

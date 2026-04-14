@@ -271,15 +271,18 @@ class InMemoryState(
    * @throws LockFailed if the lock cannot be acquired
    */
   def merge(other: InMemoryState): Unit < (Async & Abort[InMemoryState.Failure]) =
-    lock
-      .run {
-        beforeMerge(other)
-          *> removeDeleted(other)
-          *> mergeData(other)
-          *> mergeChanges(other)
-      }
-      .mapAbort(err => InMemoryState.Failure.LockFailed(err.toString))
-      .unit
+    other.changes.get.map:
+      case Nil => () // No changes to merge, skip the lock
+      case _   =>
+        lock
+          .run:
+            Kyo.unit
+              *> beforeMerge(other)
+              *> removeDeleted(other)
+              *> mergeData(other)
+              *> mergeChanges(other)
+          .mapAbort(err => InMemoryState.Failure.LockFailed(err.toString))
+          .unit
 
   /**
    * Removes rows from the current state that were deleted in the other state.

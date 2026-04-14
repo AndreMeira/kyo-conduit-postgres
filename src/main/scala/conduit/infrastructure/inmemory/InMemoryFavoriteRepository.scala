@@ -30,10 +30,9 @@ class InMemoryFavoriteRepository extends FavoriteRepository[InMemoryTransaction]
    */
   override def favoriteOf(userId: User.Id, articleIds: List[Article.Id]): List[Article.Id] < Effect =
     InMemoryTransaction { state =>
-      state.favorites.get.map { favorites =>
+      state.favorites.get.map: favorites =>
         val favoredIds = favorites.getOrElse(userId, Nil).toSet
         articleIds.filter(favoredIds.contains)
-      }
     }
 
   /**
@@ -45,17 +44,15 @@ class InMemoryFavoriteRepository extends FavoriteRepository[InMemoryTransaction]
   override def add(favorite: Article.Favorite): Unit < Effect =
     InMemoryTransaction { state =>
       for {
-        favorites <- state.favorites.updateAndGet { favorites =>
-                       val updatedIds = favorites.getOrElse(favorite.userId, Nil) :+ favorite.articleId
+        favorites <- state.favorites.updateAndGet: favorites =>
+                       val updatedIds = favorite.articleId :: favorites.getOrElse(favorite.userId, Nil)
                        favorites + (favorite.userId -> updatedIds.distinct)
-                     }
-        _         <- state.addChange(
+        _         <- state.addChange:
                        if favorites.get(favorite.userId).exists(_.size == 1)
                        then Inserted(FavoriteRow(favorite.userId))
                        else Updated(FavoriteRow(favorite.userId))
-                     )
         count      = favorites.values.count(_.contains(favorite.articleId))
-        _         <- refreshArticleFavoriteCount(state, count, favorite.articleId)
+        _         <- refreshArticleFavoriteCount(state, favorite.articleId, count)
       } yield ()
     }
 
@@ -68,18 +65,18 @@ class InMemoryFavoriteRepository extends FavoriteRepository[InMemoryTransaction]
   override def delete(favorite: Article.Favorite): Unit < Effect =
     InMemoryTransaction { state =>
       for {
-        favorites <- state.favorites.updateAndGet { favorites =>
-                       favorites.getOrElse(favorite.userId, Nil).filterNot(_ == favorite.articleId) match
+        favorites <- state.favorites.updateAndGet: favorites =>
+                       favorites
+                         .getOrElse(favorite.userId, Nil)
+                         .filterNot(_ == favorite.articleId) match
                          case Nil => favorites - favorite.userId
                          case ids => favorites + (favorite.userId -> ids)
-                     }
-        _         <- state.addChange(
+        _         <- state.addChange:
                        if !favorites.contains(favorite.userId)
                        then Deleted(FavoriteRow(favorite.userId))
                        else Updated(FavoriteRow(favorite.userId))
-                     )
         count      = favorites.values.count(_.contains(favorite.articleId))
-        _         <- refreshArticleFavoriteCount(state, count, favorite.articleId)
+        _         <- refreshArticleFavoriteCount(state, favorite.articleId, count)
       } yield ()
     }
 
@@ -91,13 +88,12 @@ class InMemoryFavoriteRepository extends FavoriteRepository[InMemoryTransaction]
    * @param articleId the article whose favorite count needs refreshing
    * @return Unit after updating the article and recording the change
    */
-  private def refreshArticleFavoriteCount(state: InMemoryState, count: Int, articleId: Article.Id): Unit < kyo.Sync =
+  private def refreshArticleFavoriteCount(state: InMemoryState, articleId: Article.Id, count: Int): Unit < kyo.Sync =
     for {
-      _ <- state.articles.updateAndGet { articles =>
+      _ <- state.articles.updateAndGet: articles =>
              articles.get(articleId) match
                case Some(article) => articles + (articleId -> article.copy(favoriteCount = count))
                case None          => articles
-           }
       _ <- state.addChange(Updated(ArticleRow(articleId)))
     } yield ()
 }
