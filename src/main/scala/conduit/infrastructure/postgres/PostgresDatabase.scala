@@ -39,12 +39,10 @@ class PostgresDatabase(val datasource: HikariDataSource) extends Database[Postgr
    * @return a PostgresTransaction wrapped in an effect that can fail with a connection error
    */
   private def acquireTransaction: PostgresTransaction < (Sync & Abort[PostgresTransaction.Error]) =
-    Kyo.defer(Abort.catching(datasource.getConnection)).map { connection =>
-      Abort
-        .catching:
-          PostgresTransaction(connection)
-        .mapAbort(PostgresTransaction.Error.ConnectionError.apply)
-    }
+    Kyo
+      .defer(Kyo.attempt(datasource.getConnection))
+      .map(connection => Kyo.attempt(PostgresTransaction(connection)))
+      .mapAbort(PostgresTransaction.Error.ConnectionError.apply)
 
   /**
    * Releases a database transaction by closing the underlying connection.

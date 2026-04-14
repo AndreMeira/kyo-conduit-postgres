@@ -88,8 +88,7 @@ class PostgresArticleRepository extends ArticleRepository[PostgresTransaction] {
             ${article.authorId},
             ${article.createdAt},
             ${article.updatedAt}
-          )""".update
-          .run()
+          )""".update.run()
       require(count == 1, "Failed to insert article")
 
   /**
@@ -109,8 +108,7 @@ class PostgresArticleRepository extends ArticleRepository[PostgresTransaction] {
             author_id = ${article.authorId},
             created_at = ${article.createdAt},
             updated_at = ${article.updatedAt}
-          WHERE id = ${article.id}""".update
-        .run()
+          WHERE id = ${article.id}""".update.run()
       require(count == 1, "Failed to update article")
 
   /**
@@ -156,10 +154,8 @@ class PostgresArticleRepository extends ArticleRepository[PostgresTransaction] {
            WHERE fav.article_id = a.id
            AND fp.name = ${params.favoriteBy.getOrElse("")}
          ))
-         ORDER BY a.created_at DESC LIMIT $limit OFFSET $offset"""
-        .query[Article]
-        .run()
-        .toList
+         ORDER BY a.created_at DESC LIMIT $limit OFFSET $offset
+       """.query[Article].run().toList
 
   /**
    * Counts the total number of articles matching the given search parameters.
@@ -185,11 +181,8 @@ class PostgresArticleRepository extends ArticleRepository[PostgresTransaction] {
              JOIN profiles fp ON fav.user_id = fp.user_id
              WHERE fav.article_id = a.id
              AND fp.name = ${params.favoriteBy.getOrElse("")}
-           ))"""
-        .query[Int]
-        .run()
-        .headOption
-        .getOrElse(0)
+           ))
+         """.query[Int].run().headOption.getOrElse(0)
 
   /**
    * Retrieves a feed of articles for a specific user.
@@ -214,10 +207,8 @@ class PostgresArticleRepository extends ArticleRepository[PostgresTransaction] {
            JOIN followers fol ON p.id = fol.followee_id
            WHERE fol.follower_id = $userId
            ORDER BY a.created_at DESC
-           OFFSET $offset LIMIT $limit"""
-        .query[Article]
-        .run()
-        .toList
+           OFFSET $offset LIMIT $limit
+         """.query[Article].run().toList
 
   /**
    * Counts the total number of articles in a user's feed.
@@ -231,11 +222,8 @@ class PostgresArticleRepository extends ArticleRepository[PostgresTransaction] {
             FROM articles a
             JOIN profiles p ON a.author_id = p.user_id
             JOIN followers fol ON p.id = fol.followee_id
-            WHERE fol.follower_id = $userId"""
-        .query[Int]
-        .run()
-        .headOption
-        .getOrElse(0)
+            WHERE fol.follower_id = $userId
+          """.query[Int].run().headOption.getOrElse(0)
 
   /**
    * Extension methods for extracting search parameters from a list of SearchParam instances.

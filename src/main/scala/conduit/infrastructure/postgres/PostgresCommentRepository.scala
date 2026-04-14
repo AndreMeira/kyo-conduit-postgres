@@ -20,10 +20,8 @@ class PostgresCommentRepository extends CommentRepository[PostgresTransaction]:
       Maybe.fromOption:
         sql"""SELECT c.id, c.article_id, c.body, c.author_id, c.created_at, c.updated_at
               FROM comments c
-              WHERE c.id = $id"""
-          .query[Comment]
-          .run()
-          .headOption
+              WHERE c.id = $id
+            """.query[Comment].run().headOption
 
   /**
    * Checks if a comment with the given ID exists in the repository.
@@ -58,10 +56,8 @@ class PostgresCommentRepository extends CommentRepository[PostgresTransaction]:
               ${data.createdAt},
               ${data.updatedAt}
             )
-            RETURNING id, article_id, body, author_id, created_at, updated_at"""
-        .returning[Comment]
-        .run()
-        .head
+            RETURNING id, article_id, body, author_id, created_at, updated_at
+          """.returning[Comment].run().head
 
   /**
    * Updates an existing comment in the repository.
@@ -75,8 +71,7 @@ class PostgresCommentRepository extends CommentRepository[PostgresTransaction]:
           UPDATE comments SET
             body       = ${comment.body},
             updated_at = ${comment.updatedAt}
-          WHERE id = ${comment.id}""".update
-        .run()
+          WHERE id = ${comment.id}""".update.run()
       require(count == 1, "Failed to update comment")
 
   /**
@@ -90,10 +85,8 @@ class PostgresCommentRepository extends CommentRepository[PostgresTransaction]:
       sql"""SELECT c.id, c.article_id, c.body, c.author_id, c.created_at, c.updated_at
             FROM comments c
             WHERE c.article_id = $articleId
-            ORDER BY c.created_at ASC"""
-        .query[Comment]
-        .run()
-        .toList
+            ORDER BY c.created_at ASC
+          """.query[Comment].run().toList
 
   /**
    * Deletes a comment from the repository.
@@ -103,6 +96,5 @@ class PostgresCommentRepository extends CommentRepository[PostgresTransaction]:
    */
   override def delete(id: Comment.Id): Unit < Effect =
     Transactional {
-      sql"""DELETE FROM comments WHERE id = $id""".update
-        .run()
+      sql"""DELETE FROM comments WHERE id = $id""".update.run()
     }.unit

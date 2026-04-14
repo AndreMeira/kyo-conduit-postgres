@@ -18,10 +18,8 @@ class PostgresCredentialsRepository extends CredentialsRepository[PostgresTransa
     Transactional:
       Maybe.fromOption:
         sql"""SELECT id FROM users
-              WHERE email = ${creds.email} AND password = ${creds.password}"""
-          .query[User.Id]
-          .run()
-          .headOption
+              WHERE email = ${creds.email} AND password = ${creds.password}
+            """.query[User.Id].run().headOption
 
   /**
    * Finds hashed credentials by user ID.
@@ -63,8 +61,8 @@ class PostgresCredentialsRepository extends CredentialsRepository[PostgresTransa
     Transactional:
       val count = sql"""
           INSERT INTO users (id, email, password)
-          VALUES ($userId, ${credentials.email}, ${credentials.password})""".update
-        .run()
+          VALUES ($userId, ${credentials.email}, ${credentials.password})
+        """.update.run()
       require(count == 1, "Failed to insert credentials")
 
   /**
@@ -80,8 +78,8 @@ class PostgresCredentialsRepository extends CredentialsRepository[PostgresTransa
           UPDATE users SET
             email    = ${credentials.email},
             password = ${credentials.password}
-          WHERE id = $userId""".update
-        .run()
+          WHERE id = $userId
+        """.update.run()
       require(count == 1, "Failed to update credentials")
 
   /**
