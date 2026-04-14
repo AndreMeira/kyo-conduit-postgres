@@ -55,12 +55,7 @@ class InMemoryFavoriteRepository extends FavoriteRepository[InMemoryTransaction]
                        else Updated(FavoriteRow(favorite.userId))
                      )
         count      = favorites.values.count(_.contains(favorite.articleId))
-        _         <- state.articles.updateAndGet { articles =>
-                       articles.get(favorite.articleId) match
-                         case Some(article) => articles + (favorite.articleId -> article.copy(favoriteCount = count))
-                         case None          => articles
-                     }
-        _         <- state.addChange(Updated(ArticleRow(favorite.articleId)))
+        _         <- refreshArticleFavoriteCount(state, count, favorite.articleId)
       } yield ()
     }
 
@@ -84,12 +79,25 @@ class InMemoryFavoriteRepository extends FavoriteRepository[InMemoryTransaction]
                        else Updated(FavoriteRow(favorite.userId))
                      )
         count      = favorites.values.count(_.contains(favorite.articleId))
-        _         <- state.articles.updateAndGet { articles =>
-                       articles.get(favorite.articleId) match
-                         case Some(article) => articles + (favorite.articleId -> article.copy(favoriteCount = count))
-                         case None          => articles
-                     }
-        _         <- state.addChange(Updated(ArticleRow(favorite.articleId)))
+        _         <- refreshArticleFavoriteCount(state, count, favorite.articleId)
       } yield ()
     }
+
+  /**
+   * Recomputes the favorite count for an article and records the change.
+   *
+   * @param state the current in-memory state
+   * @param count the new favorite count for the article
+   * @param articleId the article whose favorite count needs refreshing
+   * @return Unit after updating the article and recording the change
+   */
+  private def refreshArticleFavoriteCount(state: InMemoryState, count: Int, articleId: Article.Id): Unit < kyo.Sync =
+    for {
+      _ <- state.articles.updateAndGet { articles =>
+             articles.get(articleId) match
+               case Some(article) => articles + (articleId -> article.copy(favoriteCount = count))
+               case None          => articles
+           }
+      _ <- state.addChange(Updated(ArticleRow(articleId)))
+    } yield ()
 }

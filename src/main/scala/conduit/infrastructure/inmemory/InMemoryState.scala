@@ -274,29 +274,54 @@ class InMemoryState(
     lock
       .run {
         beforeMerge(other)
-        // Kyo.unit
-        // remove deleted rows from the state to prevent them from reappearing in the merged state
-          *> other.deleted.flatMap(other => articles.updateAndGet(_ -- other.collect { case ArticleRow(id) => id }))
-          *> other.deleted.flatMap(other => comments.updateAndGet(_ -- other.collect { case CommentRow(id) => id }))
-          *> other.deleted.flatMap(other => profiles.updateAndGet(_ -- other.collect { case ProfileRow(id) => id }))
-          *> other.deleted.flatMap(other => favorites.updateAndGet(_ -- other.collect { case FavoriteRow(id) => id }))
-          *> other.deleted.flatMap(other => followers.updateAndGet(_ -- other.collect { case FollowerRow(id) => id }))
-          *> other.deleted.flatMap(other => credentials.updateAndGet(_ -- other.collect { case CredentialsRow(id) => id }))
-          *> other.deleted.flatMap(other => tags.updateAndGet(_ -- other.collect { case TagsRow(id) => id }))
-          // merge all data from the other state into the current state
-          *> other.articles.get.flatMap(other => articles.updateAndGet(_ ++ other))
-          *> other.comments.get.flatMap(other => comments.updateAndGet(_ ++ other))
-          *> other.profiles.get.flatMap(other => profiles.updateAndGet(_ ++ other))
-          *> other.favorites.get.flatMap(other => favorites.updateAndGet(_ ++ other))
-          *> other.followers.get.flatMap(other => followers.updateAndGet(_ ++ other))
-          *> other.credentials.get.flatMap(other => credentials.updateAndGet(_ ++ other))
-          *> other.tags.get.flatMap(other => tags.updateAndGet(_ ++ other))
-          // merge changes from the other state into the current state, keeping only the last 10k changes to prevent unbounded growth
-          *> other.changes.get.flatMap(other => changes.updateAndGet(_ ++ other))
-          *> changes.get.flatMap(changes => changes.drop(changes.size - 10000)) // Keep only last 10k changes
+          *> removeDeleted(other)
+          *> mergeData(other)
+          *> mergeChanges(other)
       }
       .mapAbort(err => InMemoryState.Failure.LockFailed(err.toString))
       .unit
+
+  /**
+   * Removes rows from the current state that were deleted in the other state.
+   *
+   * @param other the state whose deletions should be applied to the current state
+   * @return Unit after removing all deleted rows
+   */
+  private def removeDeleted(other: InMemoryState): Unit < Sync =
+    other.deleted.flatMap { deleted =>
+      articles.updateAndGet(_ -- deleted.collect { case ArticleRow(id) => id })
+        *> comments.updateAndGet(_ -- deleted.collect { case CommentRow(id) => id })
+        *> profiles.updateAndGet(_ -- deleted.collect { case ProfileRow(id) => id })
+        *> favorites.updateAndGet(_ -- deleted.collect { case FavoriteRow(id) => id })
+        *> followers.updateAndGet(_ -- deleted.collect { case FollowerRow(id) => id })
+        *> credentials.updateAndGet(_ -- deleted.collect { case CredentialsRow(id) => id })
+        *> tags.updateAndGet(_ -- deleted.collect { case TagsRow(id) => id })
+    }.unit
+
+  /**
+   * Merges all data from the other state into the current state.
+   *
+   * @param other the state whose data should be merged into the current state
+   * @return Unit after merging all data
+   */
+  private def mergeData(other: InMemoryState): Unit < Sync =
+    other.articles.get.flatMap(other => articles.updateAndGet(_ ++ other))
+      *> other.comments.get.flatMap(other => comments.updateAndGet(_ ++ other))
+      *> other.profiles.get.flatMap(other => profiles.updateAndGet(_ ++ other))
+      *> other.favorites.get.flatMap(other => favorites.updateAndGet(_ ++ other))
+      *> other.followers.get.flatMap(other => followers.updateAndGet(_ ++ other))
+      *> other.credentials.get.flatMap(other => credentials.updateAndGet(_ ++ other))
+      *> other.tags.get.flatMap(other => tags.updateAndGet(_ ++ other)).unit
+
+  /**
+   * Merges changes from the other state, keeping only the last 10k changes to prevent unbounded growth.
+   *
+   * @param other the state whose changes should be merged into the current state
+   * @return Unit after merging changes
+   */
+  private def mergeChanges(other: InMemoryState): Unit < Sync =
+    other.changes.get.flatMap(other => changes.updateAndGet(_ ++ other))
+      *> changes.get.flatMap(changes => changes.drop(changes.size - 10000)).unit
 
   /**
    * Clears all data from the state, resetting it to an empty state.
