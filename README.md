@@ -82,13 +82,6 @@ Start PostgreSQL:
 docker compose up -d postgres
 ```
 
-To reset the database (remove all data), stop Postgres and delete the volume:
-
-```bash
-docker compose down
-docker volume rm kyo-conduit-postgres_conduit-data
-```
-
 Run the application:
 
 ```bash
@@ -113,6 +106,15 @@ curl -s -X POST http://localhost:8080/api/users/login \
 # List tags
 curl -s http://localhost:8080/api/tags
 ```
+
+
+To reset the database (remove all data), stop Postgres and delete the volume:
+
+```bash
+docker compose down
+docker volume rm kyo-conduit-postgres_conduit-data
+```
+
 
 ## Testing
 
