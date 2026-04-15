@@ -1,6 +1,6 @@
 package conduit.domain.model
 
-import java.util.UUID
+import conduit.domain.types
 
 /**
  * Represents user authentication credentials in different states.
@@ -12,7 +12,7 @@ import java.util.UUID
 enum Credentials:
 
   /** The user's email address associated with the credentials. */
-  def email: String
+  def email: types.Email
 
   /**
    * Represents cleartext credentials as received from user input.
@@ -23,7 +23,7 @@ enum Credentials:
    * @param email the user's email address
    * @param password the user's password in plaintext
    */
-  case Clear(email: String, password: String)
+  case Clear(email: types.Email, password: types.Password)
 
   /**
    * Represents hashed credentials as stored in the database.
@@ -34,9 +34,9 @@ enum Credentials:
    * @param email the user's email address
    * @param password the user's password after secure hashing
    */
-  case Hashed(email: String, password: String)
+  case Hashed(email: types.Email, password: types.Password)
 
 object Credentials:
   /** Type alias for email addresses and password */
-  type Email    = String
-  type Password = String
+  type Email    = types.Email
+  type Password = types.Password

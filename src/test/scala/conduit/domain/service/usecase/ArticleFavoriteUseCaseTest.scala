@@ -6,6 +6,7 @@ import conduit.domain.error.ApplicationError
 import conduit.domain.model.User
 import conduit.domain.request.article.AddFavoriteArticleRequest
 import conduit.domain.service.persistence.{ IdGeneratorService, Persistence }
+import conduit.domain.types.*
 import conduit.infrastructure.TestFixtures
 import conduit.infrastructure.inmemory.InMemoryTestSupport.withDatabase
 import conduit.infrastructure.inmemory.{ InMemoryTestSupport, InMemoryTransaction }
@@ -47,7 +48,7 @@ object ArticleFavoriteUseCaseTest extends KyoTestSuite {
         for
           fixtures    <- makeFixtures
           persistence <- makePersistence
-          userId      <- IdGeneratorService.uuid
+          userId      <- IdGeneratorService.uuid.map(UserId(_))
           slug         = "non-existent-article"
           request      = AddFavoriteArticleRequest(
                            requester = User.Authenticated(userId),

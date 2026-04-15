@@ -1,7 +1,7 @@
 package conduit.domain.service.persistence
 
 import conduit.domain.error.ApplicationError
-import conduit.domain.model.UserProfile
+import conduit.domain.model.{ User, UserProfile }
 import conduit.domain.service.persistence.Database.Transaction
 import kyo.*
 
@@ -41,7 +41,7 @@ trait FollowerRepository[Tx <: Transaction] {
    * @param followedIds the list of followed user IDs to check
    * @return List of follower relationships found
    */
-  def followedBy(followerId: UserProfile.Id, followedIds: List[UserProfile.Id]): List[UserProfile.Id] < Effect
+  def followedBy(followerId: User.Id, followedIds: List[UserProfile.Id]): List[UserProfile.Id] < Effect
 
   /**
    * Adds a new follower relationship.

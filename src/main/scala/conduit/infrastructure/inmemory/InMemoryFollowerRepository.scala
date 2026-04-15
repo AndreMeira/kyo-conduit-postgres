@@ -1,6 +1,6 @@
 package conduit.infrastructure.inmemory
 
-import conduit.domain.model.UserProfile
+import conduit.domain.model.{ User, UserProfile }
 import conduit.domain.service.persistence.FollowerRepository
 import conduit.infrastructure.inmemory.InMemoryState.Changed.{ Deleted, Inserted, Updated }
 import conduit.infrastructure.inmemory.InMemoryState.RowReference.FollowerRow
@@ -31,11 +31,11 @@ class InMemoryFollowerRepository extends FollowerRepository[InMemoryTransaction]
       }
     }
 
-  override def followedBy(profileId: UserProfile.Id, followerIds: List[UserProfile.Id]): List[UserProfile.Id] < Effect =
+  override def followedBy(followerId: User.Id, followedIds: List[UserProfile.Id]): List[UserProfile.Id] < Effect =
     InMemoryTransaction { state =>
       state.followers.get.map { followers =>
-        val followerSet = followers.getOrElse(profileId, Nil).toSet
-        followerIds.filter(followerSet.contains)
+        val followedSet = followers.getOrElse(followerId, Nil).toSet
+        followedIds.filter(followedSet.contains)
       }
     }
 

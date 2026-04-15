@@ -3,6 +3,7 @@ package conduit.infrastructure.postgres
 import com.andremeira.test.KyoTestSuite
 import com.andremeira.test.KyoTestSuite.SuiteResult
 import conduit.domain.model.{ Article, UserProfile }
+import conduit.domain.types.*
 import conduit.domain.service.persistence.ArticleRepository.SearchParam
 import conduit.domain.service.persistence.IdGeneratorService
 import PostgresTestSupport.withDatabase
@@ -41,7 +42,7 @@ object PostgresArticleRepositorySpec extends KyoTestSuite:
         database.withMigration:
           database.transaction:
             for
-              unknownId <- IdGeneratorService.uuid
+              unknownId <- IdGeneratorService.uuid.map(ArticleId(_))
               found     <- persistence.articles.find(unknownId)
             yield assert(found == Maybe.Absent, s"Expected Emtpy but got $found")
 
@@ -52,7 +53,7 @@ object PostgresArticleRepositorySpec extends KyoTestSuite:
               userId    <- fixtures.makeUser
               _         <- fixtures.makeProfile(userId)
               article   <- fixtures.makeArticle(userId)
-              unknownId <- IdGeneratorService.uuid
+              unknownId <- IdGeneratorService.uuid.map(ArticleId(_))
               existsYes <- persistence.articles.exists(article.id)
               existsNo  <- persistence.articles.exists(unknownId)
             yield assert(existsYes, "expected exists(saved)=true") &
@@ -64,14 +65,23 @@ object PostgresArticleRepositorySpec extends KyoTestSuite:
             for
               userId    <- fixtures.makeUser
               _         <- fixtures.makeProfile(userId)
-              articleId <- IdGeneratorService.uuid
-              slug      <- IdGeneratorService.slug("Data Save Test")
+              articleId <- IdGeneratorService.uuid.map(ArticleId(_))
+              slug      <- IdGeneratorService.slug("Data Save Test").map(ArticleSlug(_))
               ts        <- fixtures.now
-              data       = Article.Data(articleId, slug, "Data Save Test", "desc", "body", userId, ts, ts)
+              data       = Article.Data(
+                             articleId,
+                             slug,
+                             ArticleTitle("Data Save Test"),
+                             ArticleDescription("desc"),
+                             ArticleBody("body"),
+                             userId,
+                             CreatedAt(ts),
+                             UpdatedAt(ts),
+                           )
               _         <- persistence.articles.save(data)
               found     <- persistence.articles.find(articleId)
             yield
-              val expected = data.toArticle(favoriteCount = 0, tags = List.empty)
+              val expected = data.toArticle(favoriteCount = FavoriteCount(0), tags = List.empty)
               assert(found == Maybe.Present(expected), s"Expected $expected but got $found")
 
       "update article data" in
@@ -83,9 +93,9 @@ object PostgresArticleRepositorySpec extends KyoTestSuite:
               article <- fixtures.makeArticle(userId, "Original")
               ts      <- fixtures.now
               updated  = article.data.copy(
-                           title = "Updated title",
-                           body = "New body",
-                           updatedAt = ts,
+                           title = ArticleTitle("Updated title"),
+                           body = ArticleBody("New body"),
+                           updatedAt = UpdatedAt(ts),
                          )
               _       <- persistence.articles.update(updated)
               found   <- persistence.articles.find(article.id)
@@ -104,7 +114,7 @@ object PostgresArticleRepositorySpec extends KyoTestSuite:
               _       <- persistence.favorites.add(Article.Favorite(userId, article.id))
               before  <- persistence.articles.find(article.id)
               ts      <- fixtures.now
-              updated  = article.data.copy(title = "New title", updatedAt = ts)
+              updated  = article.data.copy(title = ArticleTitle("New title"), updatedAt = UpdatedAt(ts))
               _       <- persistence.articles.update(updated)
               after   <- persistence.articles.find(article.id)
             yield

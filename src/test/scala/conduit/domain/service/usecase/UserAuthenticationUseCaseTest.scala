@@ -7,6 +7,7 @@ import conduit.domain.model.{ Credentials, User }
 import conduit.domain.request.user.AuthenticateRequest
 import conduit.domain.service.authentication.AuthenticationService
 import conduit.domain.service.persistence.{ IdGeneratorService, Persistence }
+import conduit.domain.types.*
 import conduit.infrastructure.TestFixtures
 import conduit.infrastructure.inmemory.InMemoryTestSupport.withDatabase
 import conduit.infrastructure.inmemory.{ InMemoryTestSupport, InMemoryTransaction }
@@ -36,8 +37,8 @@ object UserAuthenticationUseCaseTest extends KyoTestSuite {
       "succeed in authenticating a user with valid credentials" in withDatabase { database =>
         for
           persistence <- makePersistence
-          userId      <- IdGeneratorService.uuid
-          hashed      <- authentication.hash(Credentials.Clear("test@example.com", "password123"))
+          userId      <- IdGeneratorService.uuid.map(UserId(_))
+          hashed      <- authentication.hash(Credentials.Clear(Email("test@example.com"), Password("password123")))
           _           <- database.transaction(persistence.credentials.save(userId, hashed))
           _           <- database.transaction(TestFixtures(persistence).makeProfile(userId))
           request      = AuthenticateRequest(

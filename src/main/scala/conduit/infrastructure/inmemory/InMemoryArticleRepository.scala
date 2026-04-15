@@ -1,9 +1,9 @@
 package conduit.infrastructure.inmemory
 
-import conduit.domain.model.Article.Id
-import conduit.domain.model.{ Article, UserProfile }
+import conduit.domain.model.{ Article, User, UserProfile }
 import conduit.domain.service.persistence.ArticleRepository
 import conduit.domain.service.persistence.ArticleRepository.SearchParam
+import conduit.domain.types.*
 import conduit.infrastructure.inmemory.InMemoryState.Changed.{ Inserted, Updated }
 import conduit.infrastructure.inmemory.InMemoryState.Failure
 import conduit.infrastructure.inmemory.InMemoryState.RowReference.ArticleRow
@@ -26,7 +26,7 @@ class InMemoryArticleRepository extends ArticleRepository[InMemoryTransaction] {
    * @param id the article ID to search for
    * @return a Maybe containing the article if found, or None otherwise
    */
-  override def find(id: Id): Maybe[Article] < Effect =
+  override def find(id: Article.Id): Maybe[Article] < Effect =
     InMemoryTransaction { state =>
       state.articles.get.map(_.get(id)).map(Maybe.fromOption)
     }
@@ -37,7 +37,7 @@ class InMemoryArticleRepository extends ArticleRepository[InMemoryTransaction] {
    * @param id the article ID to check
    * @return true if the article exists, false otherwise
    */
-  override def exists(id: Id): Boolean < Effect =
+  override def exists(id: Article.Id): Boolean < Effect =
     InMemoryTransaction { state =>
       state.articles.get.map(_.contains(id))
     }
@@ -50,7 +50,7 @@ class InMemoryArticleRepository extends ArticleRepository[InMemoryTransaction] {
    */
   override def save(article: Article.Data): Unit < Effect =
     InMemoryTransaction { state =>
-      val created = article.toArticle(favoriteCount = 0, tags = List.empty)
+      val created = article.toArticle(favoriteCount = FavoriteCount(0), tags = List.empty[TagName])
       state.articles.updateAndGet(_ + (article.id -> created))
         *> state.addChange(Inserted(ArticleRow(article.id)))
     }
@@ -201,7 +201,7 @@ class InMemoryArticleRepository extends ArticleRepository[InMemoryTransaction] {
    * @param limit  the maximum number of articles to return
    * @return a list of articles in the user's feed
    */
-  override def feedOf(userId: Id, offset: Int, limit: Int): List[Article] < Effect =
+  override def feedOf(userId: User.Id, offset: Int, limit: Int): List[Article] < Effect =
     InMemoryTransaction { state =>
       for {
         followed <- state.followers.get
@@ -223,7 +223,7 @@ class InMemoryArticleRepository extends ArticleRepository[InMemoryTransaction] {
    * @param userId the ID of the user whose feed articles to count
    * @return the total count of articles in the user's feed
    */
-  override def countFeedOf(userId: Id): Int < Effect =
+  override def countFeedOf(userId: User.Id): Int < Effect =
     InMemoryTransaction { state =>
       for {
         followed <- state.followers.get

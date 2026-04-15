@@ -4,6 +4,7 @@ import conduit.domain.error.CredentialsInvalidInput
 import conduit.domain.error.CredentialsInvalidInput.{ EmptyEmail, EmptyPassword, InvalidEmailFormat, InvalidPasswordFormat }
 import conduit.domain.model.Credentials
 import conduit.domain.syntax.Validated
+import conduit.domain.types.*
 import zio.prelude.Validation
 
 /**
@@ -33,6 +34,7 @@ object CredentialsInputValidation {
           .asError(InvalidEmailFormat(value)),
       )
       .flatMap(CommonValidation.sameValues(_, _))
+      .map(Email.apply)
 
   /**
    * Validates a password format.
@@ -51,5 +53,6 @@ object CredentialsInputValidation {
           .asError(InvalidPasswordFormat(value, "Password must be at least 8 characters long")),
       )
       .flatMap(CommonValidation.sameValues(_, _))
+      .map(Password.apply)
 
 }

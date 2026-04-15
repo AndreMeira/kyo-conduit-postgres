@@ -7,8 +7,6 @@ import conduit.domain.response.article.ArticleListResponse
 import conduit.domain.service.persistence.{ ArticleRepository, Database, Persistence }
 import kyo.*
 
-import java.util.UUID
-
 /**
  * Use case for listing articles with optional filtering and pagination.
  *
@@ -81,9 +79,9 @@ class ListArticlesUseCase[Tx <: Database.Transaction](
    * @param articles  The list of articles to check for favorites.
    * @return An effect that produces a set of article IDs that are favorited by the requester.
    */
-  private def favoritesOf(requester: User, articles: List[Article]): Set[UUID] < (Effect & Env[Tx]) =
+  private def favoritesOf(requester: User, articles: List[Article]): Set[Article.Id] < (Effect & Env[Tx]) =
     requester match {
-      case User.Anonymous          => Set.empty[UUID]
+      case User.Anonymous          => Set.empty[Article.Id]
       case User.Authenticated(uid) => persistence.favorites.favoriteOf(uid, articles.map(_.id)).map(_.toSet)
     }
 
@@ -99,9 +97,9 @@ class ListArticlesUseCase[Tx <: Database.Transaction](
    * @param authors   The list of author profiles to check for following status.
    * @return An effect that produces a set of author IDs that are followed by the requester.
    */
-  private def followedBy(requester: User, authors: List[UserProfile]): Set[UUID] < (Effect & Env[Tx]) =
+  private def followedBy(requester: User, authors: List[UserProfile]): Set[UserProfile.Id] < (Effect & Env[Tx]) =
     requester match {
-      case User.Anonymous          => Set.empty[UUID]
+      case User.Anonymous          => Set.empty[UserProfile.Id]
       case User.Authenticated(uid) => persistence.followers.followedBy(uid, authors.map(_.id)).map(_.toSet)
     }
 }

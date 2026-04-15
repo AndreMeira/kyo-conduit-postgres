@@ -3,6 +3,7 @@ package conduit.infrastructure.inmemory
 import conduit.domain.error.ApplicationError
 import conduit.domain.model.{ Article, Comment }
 import conduit.domain.service.persistence.CommentRepository
+import conduit.domain.types.*
 import conduit.infrastructure.inmemory.InMemoryState.Changed.{ Deleted, Inserted, Updated }
 import conduit.infrastructure.inmemory.InMemoryState.RowReference.CommentRow
 import kyo.*
@@ -103,9 +104,9 @@ class InMemoryCommentRepository(lock: Meter) extends CommentRepository[InMemoryT
    * 
    * @return Long
    */
-  private def nextCommentId(state: InMemoryState): Long < Effect =
+  private def nextCommentId(state: InMemoryState): CommentId < Effect =
     state.comments.get.map: comments =>
-      comments.keySet.toList.sorted.lastOption.map(_ + 1L).getOrElse(1L)
+      CommentId(comments.keySet.toList.sorted.lastOption.map(_ + 1L).getOrElse(1L))
 }
 
 object InMemoryCommentRepository {

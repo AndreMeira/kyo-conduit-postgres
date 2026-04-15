@@ -9,10 +9,9 @@ import conduit.domain.service.authentication.AuthenticationService
 import conduit.domain.service.persistence.Database.Transaction
 import conduit.domain.service.persistence.{ Database, IdGeneratorService, Persistence }
 import conduit.domain.service.validation.{ CredentialsInputValidation, StateValidationService, UserProfileInputValidation }
+import conduit.domain.types.*
 import kyo.*
 import zio.prelude.Validation
-
-import java.util.UUID
 
 /**
  * Use case for registering a new user.
@@ -70,7 +69,7 @@ class UserRegistrationUseCase[Tx <: Transaction](
    * @param request The registration request containing user input.
    * @return A validated tuple of username and credentials, or validation errors.
    */
-  private def parse(request: RegistrationRequest): Validated[(String, Credentials)] < (Effect & Env[Tx]) =
+  private def parse(request: RegistrationRequest): Validated[(ProfileName, Credentials)] < (Effect & Env[Tx]) =
     for {
       email    <- CredentialsInputValidation.email(request.payload.user.email).lift
       email    <- email.flatTraverse(stateValidation.validateEmailIsFree)
@@ -78,7 +77,7 @@ class UserRegistrationUseCase[Tx <: Transaction](
       name     <- UserProfileInputValidation.name(request.payload.user.username).lift
       name     <- name.flatTraverse(stateValidation.validateUsernameIsFree)
     } yield Validation.validateWith(name, email, password) { (name, email, password) =>
-      name -> Credentials.Clear(email, password)
+      ProfileName(name) -> Credentials.Clear(email, password)
     }
 
   /**
@@ -90,11 +89,12 @@ class UserRegistrationUseCase[Tx <: Transaction](
    * @param name The username for the new profile.
    * @return The newly created user profile wrapped in Effect context.
    */
-  private def createProfile(name: String): UserProfile < (Effect & Env[Tx]) =
+  private def createProfile(name: ProfileName): UserProfile < (Effect & Env[Tx]) =
     for {
-      now           <- Clock.now.map(_.toJava)
-      userId        <- IdGeneratorService.uuid
-      userProfileId <- IdGeneratorService.uuid
-    } yield UserProfile(userProfileId, userId, name, Maybe.Absent, Maybe.Absent, now, now)
+      now                   <- Clock.now.map(_.toJava)
+      userId                <- IdGeneratorService.uuid.map(UserId(_))
+      userProfileId         <- IdGeneratorService.uuid.map(UserProfileId(_))
+      (createdAt, updatedAt) = (CreatedAt(now), UpdatedAt(now))
+    } yield UserProfile(userProfileId, userId, name, Maybe.Absent, Maybe.Absent, createdAt, updatedAt)
 
 }

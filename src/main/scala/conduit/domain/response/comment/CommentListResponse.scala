@@ -2,7 +2,6 @@ package conduit.domain.response.comment
 
 import conduit.domain.model.{ Article, Comment, User, UserProfile }
 
-import java.util.UUID
 import scala.util.chaining.scalaUtilChainingOps
 
 /**
@@ -24,7 +23,7 @@ object CommentListResponse:
   def make(
     comments: List[Comment],
     profiles: List[UserProfile],
-    followed: Set[UUID],
+    followed: Set[UserProfile.Id],
   ): CommentListResponse =
     CommentListResponse(payload(comments, profiles, followed))
 
@@ -39,7 +38,7 @@ object CommentListResponse:
   def payload(
     comments: List[Comment],
     profiles: List[UserProfile],
-    followed: Set[UUID],
+    followed: Set[UserProfile.Id],
   ): List[GetCommentResponse.Payload] = {
     val profileByUserId = profiles.map(profile => profile.userId -> profile).toMap
     for {

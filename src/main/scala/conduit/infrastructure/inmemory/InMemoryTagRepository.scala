@@ -2,6 +2,7 @@ package conduit.infrastructure.inmemory
 
 import conduit.domain.model.Article
 import conduit.domain.service.persistence.TagRepository
+import conduit.domain.types.*
 import conduit.infrastructure.inmemory.InMemoryState.Changed.{ Deleted, Inserted, Updated }
 import conduit.infrastructure.inmemory.InMemoryState.RowReference.{ ArticleRow, TagsRow }
 import kyo.*
@@ -55,7 +56,7 @@ class InMemoryTagRepository extends TagRepository[InMemoryTransaction] {
             current
               .get(articleId)
               .map { article =>
-                val newTags = article.tags ++ tags
+                val newTags = article.tags ++ tags.map(TagName(_))
                 current.updated(articleId, article.copy(tags = newTags))
               }
               .getOrElse(current)

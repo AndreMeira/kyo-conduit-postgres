@@ -11,6 +11,7 @@ import conduit.domain.service.authentication.AuthenticationService
 import conduit.domain.service.persistence.{ Database, Persistence }
 import conduit.domain.service.validation.{ CredentialsInputValidation, StateValidationService, UserProfileInputValidation }
 import conduit.domain.syntax.*
+import conduit.domain.types.*
 import kyo.*
 import zio.prelude.Validation
 
@@ -168,7 +169,7 @@ class UserUpdateUseCase[Tx <: Database.Transaction](
       case Patchable.Emtpy             => Some(Validation.fail(CredentialsInvalidInput.EmptyPassword))
       case Patchable.Present(password) =>
         CredentialsInputValidation.password(password).traverse(authentication.hashPassword).map {
-          case Validation.Success(_, pwd)       => Some(Validation.succeed(Patch.Password(pwd)))
+          case Validation.Success(_, pwd)       => Some(Validation.succeed(Patch.Password(Password(pwd))))
           case Validation.Failure(logs, errors) => Some(Validation.Failure(logs, errors))
         }
 
@@ -203,7 +204,7 @@ class UserUpdateUseCase[Tx <: Database.Transaction](
       case Patchable.Emtpy         => Some(Validation.fail(ProfileInvalidInput.EmptyUsername))
       case Patchable.Present(name) =>
         UserProfileInputValidation.name(name).flatTraverse(stateValidation.validateUsernameIsFree).map {
-          case Validation.Success(_, validName) => Some(Validation.succeed(Patch.Username(validName)))
+          case Validation.Success(_, validName) => Some(Validation.succeed(Patch.Username(ProfileName(validName))))
           case Validation.Failure(logs, errors) => Some(Validation.Failure(logs, errors))
         }
 
@@ -224,7 +225,7 @@ class UserUpdateUseCase[Tx <: Database.Transaction](
           case ""  => Some(Validation.succeed(Patch.Image(Maybe.Absent)))
           case uri =>
             UserProfileInputValidation.image(uri) match {
-              case Validation.Success(_, validUri)  => Some(Validation.succeed(Patch.Image(Maybe.Present(validUri))))
+              case Validation.Success(_, uri)       => Some(Validation.succeed(Patch.Image(Maybe.Present(uri))))
               case Validation.Failure(logs, errors) => Some(Validation.Failure(logs, errors))
             }
 

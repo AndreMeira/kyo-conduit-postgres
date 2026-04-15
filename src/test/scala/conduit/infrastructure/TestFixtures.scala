@@ -2,6 +2,7 @@ package conduit.infrastructure
 
 import conduit.domain.error.ApplicationError
 import conduit.domain.model.*
+import conduit.domain.types.*
 import conduit.domain.service.persistence.{ Database, IdGeneratorService, Persistence }
 import kyo.*
 
@@ -35,10 +36,10 @@ class TestFixtures[Tx <: Database.Transaction](persistence: Persistence[Tx]):
    */
   def makeUser: User.Id < Effect =
     for
-      userId <- IdGeneratorService.uuid
+      userId <- IdGeneratorService.uuid.map(UserId(_))
       _      <- persistence.credentials.save(
                   userId,
-                  Credentials.Hashed(s"$userId@test.com", "hashed_password"),
+                  Credentials.Hashed(Email(s"$userId@test.com"), Password("hashed_password")),
                 )
     yield userId
 
@@ -49,16 +50,16 @@ class TestFixtures[Tx <: Database.Transaction](persistence: Persistence[Tx]):
    */
   def makeProfile(userId: User.Id, name: Option[String] = None): UserProfile < Effect =
     for
-      profileId <- IdGeneratorService.uuid
+      profileId <- IdGeneratorService.uuid.map(UserProfileId(_))
       ts        <- now
       profile    = UserProfile(
                      id = profileId,
                      userId = userId,
-                     name = name.getOrElse(s"user-$profileId"),
-                     biography = Maybe.Present("a bio"),
+                     name = ProfileName(name.getOrElse(s"user-$profileId")),
+                     biography = Maybe.Present(ProfileBiography("a bio")),
                      image = Maybe.Absent,
-                     createdAt = ts,
-                     updatedAt = ts,
+                     createdAt = CreatedAt(ts),
+                     updatedAt = UpdatedAt(ts),
                    )
       _         <- persistence.users.save(profile)
     yield profile
@@ -69,20 +70,20 @@ class TestFixtures[Tx <: Database.Transaction](persistence: Persistence[Tx]):
    */
   def makeArticle(authorId: User.Id, title: String = "Hello World"): Article < Effect =
     for
-      articleId <- IdGeneratorService.uuid
-      slug      <- IdGeneratorService.slug(title)
+      articleId <- IdGeneratorService.uuid.map(ArticleId(_))
+      slug      <- IdGeneratorService.slug(title).map(ArticleSlug(_))
       ts        <- now
       article    = Article(
                      id = articleId,
                      slug = slug,
-                     title = title,
-                     description = "A short description",
-                     body = "The body of the article",
+                     title = ArticleTitle(title),
+                     description = ArticleDescription("A short description"),
+                     body = ArticleBody("The body of the article"),
                      authorId = authorId,
-                     favoriteCount = 0,
+                     favoriteCount = FavoriteCount(0),
                      tags = List.empty,
-                     createdAt = ts,
-                     updatedAt = ts,
+                     createdAt = CreatedAt(ts),
+                     updatedAt = UpdatedAt(ts),
                    )
       _         <- persistence.articles.save(article.data)
     yield article

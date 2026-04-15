@@ -12,6 +12,7 @@ import conduit.domain.response.article.GetArticleResponse
 import conduit.domain.service.persistence.{ Database, IdGeneratorService, Persistence }
 import conduit.domain.service.validation.ArticleInputValidation
 import conduit.domain.syntax.*
+import conduit.domain.types.*
 import kyo.*
 import zio.prelude.Validation
 
@@ -131,7 +132,7 @@ class ArticleUpdateUseCase[Tx <: Database.Transaction](
       case article -> Patch.Title(title)             => article.copy(title = title)
       case article -> Patch.Description(description) => article.copy(description = description)
       case article -> Patch.Tags(tags)               => article.copy(tags = tags)
-    Clock.now.map(now => patched.copy(updatedAt = now.toJava))
+    Clock.now.map(now => patched.copy(updatedAt = UpdatedAt(now.toJava)))
   }
 
   /**
@@ -143,7 +144,7 @@ class ArticleUpdateUseCase[Tx <: Database.Transaction](
    */
   private def generateNewSlug(old: Article, updated: Article): Article < Sync =
     if old.title == updated.title then updated
-    else IdGeneratorService.slug(updated.title).map(slug => updated.copy(slug = slug))
+    else IdGeneratorService.slug(updated.title).map(slug => updated.copy(slug = ArticleSlug(slug)))
 
   /**
    * Finds the user profile for the given authenticated user.

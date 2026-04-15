@@ -2,6 +2,7 @@ package conduit.domain.request.article
 
 import conduit.domain.model.{ Article, User }
 import conduit.domain.request.Patchable
+import conduit.domain.types.*
 
 /**
  * Represents a request to update an article in the Conduit application.
@@ -50,22 +51,22 @@ object UpdateArticleRequest:
      * Represents an update to the body of the article.
      * @param value the new body content
      */
-    case Body(value: String)
+    case Body(value: ArticleBody)
 
     /**
      * Represents an update to the title of the article.
      * @param value the new title
      */
-    case Title(value: String)
+    case Title(value: ArticleTitle)
 
     /**
      * Represents an update to the description of the article.
      * @param value the new description
      */
-    case Description(value: String)
+    case Description(value: ArticleDescription)
 
     /**
      * Represents an update to the tags of the article.
      * @param value the new list of tags
      */
-    case Tags(value: List[String])
+    case Tags(value: List[TagName])

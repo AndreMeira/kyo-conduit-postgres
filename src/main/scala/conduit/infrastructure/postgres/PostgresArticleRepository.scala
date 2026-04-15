@@ -3,7 +3,7 @@ package conduit.infrastructure.postgres
 import com.augustnagro.magnum.*
 import com.augustnagro.magnum.MagnumInterop.syntax.*
 import com.augustnagro.magnum.MagnumInterop.syntax.{ when, concat }
-import conduit.domain.model.Article
+import conduit.domain.model.{ Article, User }
 import conduit.domain.model.Article.Id
 import conduit.domain.service.persistence.ArticleRepository
 import conduit.infrastructure.codecs.database.DatabaseCodecs.given
@@ -194,7 +194,7 @@ class PostgresArticleRepository extends ArticleRepository[PostgresTransaction] {
    * @param limit  the maximum number of articles to return
    * @return a list of articles in the user's feed
    */
-  override def feedOf(userId: Id, offset: Int, limit: Int): List[Article] < Effect =
+  override def feedOf(userId: User.Id, offset: Int, limit: Int): List[Article] < Effect =
     Transactional:
       sql"""SELECT
            a.id,
@@ -216,7 +216,7 @@ class PostgresArticleRepository extends ArticleRepository[PostgresTransaction] {
    * @param userId the ID of the user whose feed articles to count
    * @return the total count of articles in the user's feed
    */
-  override def countFeedOf(userId: Id): Int < Effect =
+  override def countFeedOf(userId: User.Id): Int < Effect =
     Transactional:
       sql"""SELECT count(*)
             FROM articles a

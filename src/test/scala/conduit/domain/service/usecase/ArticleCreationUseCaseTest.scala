@@ -6,6 +6,7 @@ import conduit.domain.error.ApplicationError
 import conduit.domain.model.User
 import conduit.domain.request.article.CreateArticleRequest
 import conduit.domain.service.persistence.{ IdGeneratorService, Persistence }
+import conduit.domain.types.*
 import conduit.infrastructure.TestFixtures
 import conduit.infrastructure.inmemory.InMemoryTestSupport.withDatabase
 import conduit.infrastructure.inmemory.{ InMemoryTestSupport, InMemoryTransaction }
@@ -64,7 +65,7 @@ object ArticleCreationUseCaseTest extends KyoTestSuite {
         for
           fixtures    <- makeFixtures
           persistence <- makePersistence
-          userId      <- IdGeneratorService.uuid
+          userId      <- IdGeneratorService.uuid.map(UserId(_))
           request      = CreateArticleRequest(
                            requester = User.Authenticated(userId),
                            payload = CreateArticleRequest.Payload(

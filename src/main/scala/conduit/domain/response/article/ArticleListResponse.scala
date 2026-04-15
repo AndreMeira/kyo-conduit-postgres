@@ -3,8 +3,6 @@ package conduit.domain.response.article
 import conduit.domain.model.{ Article, UserProfile }
 import conduit.domain.response.user.GetProfileResponse
 
-import java.util.UUID
-
 /**
  * Response model for retrieving a list of articles.
  *
@@ -56,8 +54,8 @@ object ArticleListResponse:
     count: Int,
     articles: List[Article],
     profiles: List[UserProfile],
-    favorites: Set[UUID],
-    followed: Set[UUID],
+    favorites: Set[Article.Id],
+    followed: Set[UserProfile.Id],
   ): ArticleListResponse = {
     val profilesByUserId = profiles.map(profile => profile.userId -> profile).toMap
     ArticleListResponse(

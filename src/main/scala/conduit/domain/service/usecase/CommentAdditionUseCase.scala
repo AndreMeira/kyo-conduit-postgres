@@ -9,6 +9,7 @@ import conduit.domain.response.comment.GetCommentResponse
 import conduit.domain.service.persistence.{ Database, Persistence }
 import conduit.domain.service.validation.CommentInputValidation
 import conduit.domain.syntax.*
+import conduit.domain.types.*
 import kyo.*
 
 /**
@@ -57,7 +58,7 @@ class CommentAdditionUseCase[Tx <: Database.Transaction](
     Clock.now.map(_.toJava).map { now =>
       CommentInputValidation
         .body(request.payload.comment.body)
-        .map(body => Comment.Data(article.id, body, request.requester.userId, now, now))
+        .map(body => Comment.Data(article.id, body, request.requester.userId, CreatedAt(now), UpdatedAt(now)))
     }
 
   /**

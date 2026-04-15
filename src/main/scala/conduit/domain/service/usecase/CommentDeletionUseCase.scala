@@ -8,6 +8,7 @@ import conduit.domain.request.comment.DeleteCommentRequest
 import conduit.domain.response.comment.DeleteCommentResponse
 import conduit.domain.service.persistence.{ Database, Persistence }
 import conduit.domain.syntax.*
+import conduit.domain.types.*
 import kyo.*
 
 /**
@@ -38,7 +39,7 @@ class CommentDeletionUseCase[Tx <: Database.Transaction](
     database.transaction:
       for {
         _       <- findArticle(request.slug)
-        comment <- findComment(request.commentId)
+        comment <- findComment(CommentId(request.commentId))
         _       <- authorise(request.requester, comment)
         _       <- persistence.comments.delete(comment.id)
       } yield DeleteCommentResponse(comment.id)

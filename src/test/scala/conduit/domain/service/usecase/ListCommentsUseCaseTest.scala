@@ -6,6 +6,7 @@ import conduit.domain.error.ApplicationError
 import conduit.domain.model.{ Comment, User }
 import conduit.domain.request.comment.ListCommentsRequest
 import conduit.domain.service.persistence.{ IdGeneratorService, Persistence }
+import conduit.domain.types.*
 import conduit.infrastructure.TestFixtures
 import conduit.infrastructure.inmemory.InMemoryTestSupport.withDatabase
 import conduit.infrastructure.inmemory.{ InMemoryTestSupport, InMemoryTransaction }
@@ -31,7 +32,7 @@ object ListCommentsUseCaseTest extends KyoTestSuite {
           _           <- database.transaction(fixtures.makeProfile(userId))
           article     <- database.transaction(fixtures.makeArticle(userId))
           now         <- Clock.now.map(_.toJava)
-          commentData  = Comment.Data(article.id, "A test comment", userId, now, now)
+          commentData  = Comment.Data(article.id, CommentBody("A test comment"), userId, CreatedAt(now), UpdatedAt(now))
           _           <- database.transaction(persistence.comments.save(commentData))
           request      = ListCommentsRequest(
                            requester = User.Anonymous,

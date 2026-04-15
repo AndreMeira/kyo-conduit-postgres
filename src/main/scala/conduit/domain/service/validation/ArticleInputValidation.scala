@@ -2,6 +2,7 @@ package conduit.domain.service.validation
 
 import conduit.domain.error.ArticleInvalidInput as Invalid
 import conduit.domain.syntax.Validated
+import conduit.domain.types.*
 import zio.prelude.Validation
 
 import java.util.UUID
@@ -23,10 +24,11 @@ object ArticleInputValidation {
    * @param value the string representation of the article ID
    * @return a validated UUID or InvalidId error
    */
-  def id(value: String): Validated[UUID] =
+  def id(value: String): Validated[ArticleId] =
     CommonValidation
       .uuid(value.trim)
       .asError(Invalid.InvalidId)
+      .map(ArticleId.apply)
 
   /**
    * Validates an article title is non-empty.
@@ -34,10 +36,11 @@ object ArticleInputValidation {
    * @param value the article title to validate
    * @return a validated title string or EmptyTitle error
    */
-  def title(value: String): Validated[String] =
+  def title(value: String): Validated[ArticleTitle] =
     CommonValidation
       .nonEmptyString(value.trim)
       .asError(Invalid.EmptyTitle)
+      .map(ArticleTitle.apply)
 
   /**
    * Validates an article description is non-empty.
@@ -45,10 +48,11 @@ object ArticleInputValidation {
    * @param value the article description to validate
    * @return a validated description string or EmptyDescription error
    */
-  def description(value: String): Validated[String] =
+  def description(value: String): Validated[ArticleDescription] =
     CommonValidation
       .nonEmptyString(value.trim)
       .asError(Invalid.EmptyDescription)
+      .map(ArticleDescription.apply)
 
   /**
    * Validates an article body is non-empty.
@@ -56,10 +60,11 @@ object ArticleInputValidation {
    * @param value the article body to validate
    * @return a validated body string or EmptyBody error
    */
-  def body(value: String): Validated[String] =
+  def body(value: String): Validated[ArticleBody] =
     CommonValidation
       .nonEmptyString(value.trim)
       .asError(Invalid.EmptyBody)
+      .map(ArticleBody.apply)
 
   /**
    * Validates an author ID string and converts it to UUID.
@@ -67,10 +72,11 @@ object ArticleInputValidation {
    * @param value the string representation of the author ID
    * @return a validated UUID or InvalidId error
    */
-  def authorId(value: String): Validated[UUID] =
+  def authorId(value: String): Validated[UserId] =
     CommonValidation
       .uuid(value.trim)
       .asError(Invalid.InvalidId)
+      .map(UserId.apply)
 
   /**
    * Validates that favorite count is positive.
@@ -78,10 +84,11 @@ object ArticleInputValidation {
    * @param value the favorite count to validate
    * @return a validated positive integer or CountMustBePositive error
    */
-  def favoriteCount(value: Int): Validated[Int] =
+  def favoriteCount(value: Int): Validated[FavoriteCount] =
     CommonValidation
       .positive(value)
       .asError(Invalid.CountMustBePositive)
+      .map(FavoriteCount.apply)
 
   /**
    * Validates a list of tags, ensuring each tag is non-empty.
@@ -89,8 +96,8 @@ object ArticleInputValidation {
    * @param tagList the list of tag strings to validate
    * @return a validated list of non-empty tags or EmptyTag errors
    */
-  def tags(tagList: List[String]): Validated[List[String]] =
+  def tags(tagList: List[String]): Validated[List[TagName]] =
     tagList
-      .map(CommonValidation.nonEmptyString(_).asError(Invalid.EmtpyTag))
+      .map(CommonValidation.nonEmptyString(_).asError(Invalid.EmtpyTag).map(TagName.apply))
       .pipe(Validation.validateAll(_))
 }

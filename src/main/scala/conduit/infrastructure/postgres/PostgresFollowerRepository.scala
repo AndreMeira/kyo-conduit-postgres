@@ -1,7 +1,7 @@
 package conduit.infrastructure.postgres
 
 import com.augustnagro.magnum.*
-import conduit.domain.model.UserProfile
+import conduit.domain.model.{ User, UserProfile }
 import conduit.domain.service.persistence.FollowerRepository
 import conduit.infrastructure.codecs.database.DatabaseCodecs.given
 import conduit.infrastructure.postgres.PostgresTransaction.Transactional
@@ -39,7 +39,7 @@ class PostgresFollowerRepository extends FollowerRepository[PostgresTransaction]
    * @param followedIds the list of followee IDs to check
    * @return the subset of followedIds that the follower is following
    */
-  override def followedBy(followerId: UserProfile.Id, followedIds: List[UserProfile.Id]): List[UserProfile.Id] < Effect =
+  override def followedBy(followerId: User.Id, followedIds: List[UserProfile.Id]): List[UserProfile.Id] < Effect =
     if followedIds.isEmpty then List.empty
     else
       Transactional:

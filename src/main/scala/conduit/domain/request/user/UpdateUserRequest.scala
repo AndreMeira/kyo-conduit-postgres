@@ -2,6 +2,7 @@ package conduit.domain.request.user
 
 import conduit.domain.model.{ User, UserProfile }
 import conduit.domain.request.Patchable
+import conduit.domain.types.*
 import kyo.Maybe
 
 import java.net.URI
@@ -49,8 +50,8 @@ object UpdateUserRequest:
   )
 
   enum Patch:
-    case Email(email: String)
-    case Username(username: String)
-    case Password(password: String)
-    case Bio(bio: Maybe[String])
-    case Image(image: Maybe[URI])
+    case Email(email: conduit.domain.types.Email)
+    case Username(username: ProfileName)
+    case Password(password: conduit.domain.types.Password)
+    case Bio(bio: Maybe[ProfileBiography])
+    case Image(image: Maybe[ProfileImage])

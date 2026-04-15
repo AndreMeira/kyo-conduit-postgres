@@ -6,6 +6,7 @@ import conduit.domain.error.ApplicationError
 import conduit.domain.model.{ Comment, User }
 import conduit.domain.request.comment.DeleteCommentRequest
 import conduit.domain.service.persistence.{ IdGeneratorService, Persistence }
+import conduit.domain.types.*
 import conduit.infrastructure.TestFixtures
 import conduit.infrastructure.inmemory.InMemoryTestSupport.withDatabase
 import conduit.infrastructure.inmemory.{ InMemoryTestSupport, InMemoryTransaction }
@@ -31,7 +32,7 @@ object CommentDeletionUseCaseTest extends KyoTestSuite {
           userId      <- database.transaction(fixtures.makeUser)
           _           <- database.transaction(fixtures.makeProfile(userId))
           article     <- database.transaction(fixtures.makeArticle(userId))
-          commentData  = Comment.Data(article.id, "A comment", userId, now, now)
+          commentData  = Comment.Data(article.id, CommentBody("A comment"), userId, CreatedAt(now), UpdatedAt(now))
           comment     <- database.transaction(persistence.comments.save(commentData))
           request      = DeleteCommentRequest(
                            requester = User.Authenticated(userId),
@@ -49,7 +50,7 @@ object CommentDeletionUseCaseTest extends KyoTestSuite {
         for
           fixtures    <- makeFixtures
           persistence <- makePersistence
-          userId      <- IdGeneratorService.uuid
+          userId      <- IdGeneratorService.uuid.map(UserId(_))
           request      = DeleteCommentRequest(
                            requester = User.Authenticated(userId),
                            slug = "nonexistent-article",

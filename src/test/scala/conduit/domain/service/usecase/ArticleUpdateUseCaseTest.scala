@@ -7,6 +7,7 @@ import conduit.domain.model.User
 import conduit.domain.request.Patchable
 import conduit.domain.request.article.UpdateArticleRequest
 import conduit.domain.service.persistence.{ IdGeneratorService, Persistence }
+import conduit.domain.types.*
 import conduit.infrastructure.TestFixtures
 import conduit.infrastructure.inmemory.InMemoryTestSupport.withDatabase
 import conduit.infrastructure.inmemory.{ InMemoryTestSupport, InMemoryTransaction }
@@ -74,7 +75,7 @@ object ArticleUpdateUseCaseTest extends KyoTestSuite {
         for
           fixtures    <- makeFixtures
           persistence <- makePersistence
-          userId      <- IdGeneratorService.uuid
+          userId      <- IdGeneratorService.uuid.map(UserId(_))
           slug         = "non-existent-slug"
           request      = UpdateArticleRequest(
                            requester = User.Authenticated(userId),

@@ -9,8 +9,6 @@ import conduit.domain.service.persistence.{ Database, Persistence }
 import conduit.domain.syntax.*
 import kyo.*
 
-import java.util.UUID
-
 /**
  * Use case for listing the comments attached to an article.
  *
@@ -69,9 +67,9 @@ class ListCommentsUseCase[Tx <: Database.Transaction](
    * @param authors   The author profiles to check.
    * @return The set of author profile ids that the requester follows.
    */
-  private def followedBy(requester: User, authors: List[UserProfile]): Set[UUID] < (Effect & Env[Tx]) =
+  private def followedBy(requester: User, authors: List[UserProfile]): Set[UserProfile.Id] < (Effect & Env[Tx]) =
     requester match {
-      case User.Anonymous          => Set.empty[UUID]
+      case User.Anonymous          => Set.empty[UserProfile.Id]
       case User.Authenticated(uid) => persistence.followers.followedBy(uid, authors.map(_.id)).map(_.toSet)
     }
 }

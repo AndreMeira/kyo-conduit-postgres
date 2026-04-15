@@ -6,6 +6,7 @@ import conduit.domain.error.ApplicationError
 import conduit.domain.model.User
 import conduit.domain.request.comment.AddCommentRequest
 import conduit.domain.service.persistence.{ IdGeneratorService, Persistence }
+import conduit.domain.types.*
 import conduit.infrastructure.TestFixtures
 import conduit.infrastructure.inmemory.InMemoryTestSupport.withDatabase
 import conduit.infrastructure.inmemory.{ InMemoryTestSupport, InMemoryTransaction }
@@ -51,7 +52,7 @@ object CommentAdditionUseCaseTest extends KyoTestSuite {
         for
           fixtures    <- makeFixtures
           persistence <- makePersistence
-          userId      <- IdGeneratorService.uuid
+          userId      <- IdGeneratorService.uuid.map(UserId(_))
           request      = AddCommentRequest(
                            requester = User.Authenticated(userId),
                            slug = "nonexistent-article",

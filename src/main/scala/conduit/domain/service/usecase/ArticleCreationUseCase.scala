@@ -8,6 +8,7 @@ import conduit.domain.response.article.GetArticleResponse
 import conduit.domain.service.persistence.{ Database, IdGeneratorService, Persistence }
 import conduit.domain.service.validation.ArticleInputValidation
 import conduit.domain.syntax.*
+import conduit.domain.types.*
 import kyo.*
 import zio.prelude.Validation
 
@@ -62,15 +63,16 @@ class ArticleCreationUseCase[Tx <: Database.Transaction](
   private def parse(request: CreateArticleRequest): Validated[Article] < Effect =
     for {
       now  <- Clock.now.map(_.toJava)
-      id   <- IdGeneratorService.uuid
-      slug <- IdGeneratorService.slug(request.payload.article.title)
+      id   <- IdGeneratorService.uuid.map(ArticleId(_))
+      slug <- IdGeneratorService.slug(request.payload.article.title).map(ArticleSlug(_))
     } yield Validation.validateWith(
       ArticleInputValidation.body(request.payload.article.body),
       ArticleInputValidation.title(request.payload.article.title),
       ArticleInputValidation.description(request.payload.article.description),
       ArticleInputValidation.tags(request.payload.article.tagList.getOrElse(List.empty)),
     ) { (body, title, description, tags) =>
-      Article(id, slug, title, description, body, request.requester.userId, favoriteCount = 0, tags, now, now)
+      val (favorite, createdAt, updatedAt) = (FavoriteCount(0), CreatedAt(now), UpdatedAt(now))
+      Article(id, slug, title, description, body, request.requester.userId, favorite, tags, createdAt, updatedAt)
     }
 
   /**

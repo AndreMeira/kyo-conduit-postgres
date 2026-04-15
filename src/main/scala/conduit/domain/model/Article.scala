@@ -1,5 +1,7 @@
 package conduit.domain.model
 
+import conduit.domain.types.*
+
 import java.time.Instant
 import java.util.UUID
 
@@ -22,15 +24,15 @@ import java.util.UUID
  */
 case class Article(
   id: Article.Id,
-  slug: String,
-  title: String,
-  description: String,
-  body: String,
+  slug: ArticleSlug,
+  title: ArticleTitle,
+  description: ArticleDescription,
+  body: ArticleBody,
   authorId: User.Id,
-  favoriteCount: Int,
-  tags: List[String],
-  createdAt: Instant,
-  updatedAt: Instant,
+  favoriteCount: FavoriteCount,
+  tags: List[TagName],
+  createdAt: CreatedAt,
+  updatedAt: UpdatedAt,
 ) {
 
   /**
@@ -56,8 +58,8 @@ case class Article(
 }
 
 object Article:
-  /** Type alias for article identifiers using UUID */
-  type Id = UUID
+  /** Type alias for article identifiers */
+  type Id = ArticleId
 
   /**
    * Represents the core data of an article, excluding aggregated fields.
@@ -75,13 +77,13 @@ object Article:
    */
   case class Data(
     id: Article.Id,
-    slug: String,
-    title: String,
-    description: String,
-    body: String,
+    slug: ArticleSlug,
+    title: ArticleTitle,
+    description: ArticleDescription,
+    body: ArticleBody,
     authorId: User.Id,
-    createdAt: Instant,
-    updatedAt: Instant,
+    createdAt: CreatedAt,
+    updatedAt: UpdatedAt,
   ) {
 
     /**
@@ -95,7 +97,7 @@ object Article:
      * @param tags a list of tags associated with the article for categorization
      * @return a complete Article object with all fields populated
      */
-    def toArticle(favoriteCount: Int, tags: List[String]): Article =
+    def toArticle(favoriteCount: FavoriteCount, tags: List[TagName]): Article =
       Article(
         id = id,
         slug = slug,

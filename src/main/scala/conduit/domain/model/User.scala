@@ -1,9 +1,7 @@
 package conduit.domain.model
 
-import conduit.domain.syntax.*
+import conduit.domain.types.*
 import kyo.Maybe
-
-import java.util.UUID
 
 /**
  * Represents the authentication state of a user in the Conduit application.
@@ -34,8 +32,8 @@ enum User:
   }
 
 object User:
-  /** Type alias for user identifiers using UUID */
-  type Id = UUID
+  /** Type alias for user identifiers */
+  type Id = UserId
 
   /**
    * Represents a signed authentication token for a user.

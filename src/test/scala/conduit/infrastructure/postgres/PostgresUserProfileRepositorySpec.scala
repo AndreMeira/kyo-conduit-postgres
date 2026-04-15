@@ -2,6 +2,7 @@ package conduit.infrastructure.postgres
 
 import com.andremeira.test.KyoTestSuite
 import com.andremeira.test.KyoTestSuite.SuiteResult
+import conduit.domain.types.*
 import conduit.domain.service.persistence.IdGeneratorService
 import PostgresTestSupport.withDatabase
 import conduit.infrastructure.TestFixtures
@@ -47,7 +48,7 @@ object PostgresUserProfileRepositorySpec extends KyoTestSuite:
         database.withMigration:
           database.transaction:
             for
-              unknownId <- IdGeneratorService.uuid
+              unknownId <- IdGeneratorService.uuid.map(UserProfileId(_))
               found     <- persistence.users.find(unknownId)
               exists    <- persistence.users.exists(unknownId)
             yield assert(found == Maybe.Absent, s"Expected Emtpy but got $found") &
@@ -91,8 +92,8 @@ object PostgresUserProfileRepositorySpec extends KyoTestSuite:
               profile <- fixtures.makeProfile(userId)
               ts      <- fixtures.now
               updated  = profile.copy(
-                           biography = Maybe.Present("an updated bio"),
-                           updatedAt = ts,
+                           biography = Maybe.Present(ProfileBiography("an updated bio")),
+                           updatedAt = UpdatedAt(ts),
                          )
               _       <- persistence.users.update(updated)
               found   <- persistence.users.find(profile.id)

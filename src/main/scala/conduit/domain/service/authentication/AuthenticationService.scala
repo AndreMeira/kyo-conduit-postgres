@@ -2,6 +2,7 @@ package conduit.domain.service.authentication
 
 import conduit.domain.error.Unauthorised
 import conduit.domain.model.{ Credentials, User }
+import conduit.domain.types.*
 import conduit.domain.service.authentication.AuthenticationService.Config
 import kyo.*
 import org.apache.commons.codec.digest.DigestUtils
@@ -42,7 +43,7 @@ class AuthenticationService(clock: Clock, config: Config) {
    */
   def hash(credentials: Credentials.Clear): Credentials.Hashed < Any =
     hashPassword(credentials.password)
-      .map(hashedPassword => Credentials.Hashed(credentials.email, hashedPassword))
+      .map(hashedPassword => Credentials.Hashed(credentials.email, Password(hashedPassword)))
 
   /**
    * Hashes a password string using SHA-256 and the configured password salt.
@@ -153,7 +154,7 @@ class AuthenticationService(clock: Clock, config: Config) {
    */
   private def parseUserId(claim: JwtClaim): User.Id < Abort[Unauthorised] =
     claim.subject.flatMap(userId => Try(UUID.fromString(userId)).toOption) match {
-      case Some(uuid) => uuid
+      case Some(uuid) => UserId(uuid)
       case None       => Abort.fail(Unauthorised.InvalidTokenSubject)
     }
 }

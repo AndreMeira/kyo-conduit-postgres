@@ -1,5 +1,6 @@
 package conduit.domain.model
 
+import conduit.domain.types.*
 import kyo.Maybe
 
 import java.net.URI
@@ -25,16 +26,16 @@ import java.util.UUID
 case class UserProfile(
   id: UserProfile.Id,
   userId: User.Id,
-  name: String,
-  biography: Maybe[String],
-  image: Maybe[URI],
-  createdAt: Instant,
-  updatedAt: Instant,
+  name: ProfileName,
+  biography: Maybe[ProfileBiography],
+  image: Maybe[ProfileImage],
+  createdAt: CreatedAt,
+  updatedAt: UpdatedAt,
 )
 
 object UserProfile:
-  /** Type alias for user profile identifiers using UUID */
-  type Id = UUID
+  /** Type alias for user profile identifiers */
+  type Id = UserProfileId
 
   /**
    * Represents a follower relationship between users.

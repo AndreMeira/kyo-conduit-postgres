@@ -2,6 +2,7 @@ package conduit.infrastructure.inmemory
 
 import conduit.domain.model.{ Article, User }
 import conduit.domain.service.persistence.FavoriteRepository
+import conduit.domain.types.*
 import conduit.infrastructure.inmemory.InMemoryState.Changed.{ Deleted, Inserted, Updated }
 import conduit.infrastructure.inmemory.InMemoryState.RowReference.{ ArticleRow, FavoriteRow }
 import kyo.*
@@ -92,7 +93,7 @@ class InMemoryFavoriteRepository extends FavoriteRepository[InMemoryTransaction]
     for {
       _ <- state.articles.updateAndGet: articles =>
              articles.get(articleId) match
-               case Some(article) => articles + (articleId -> article.copy(favoriteCount = count))
+               case Some(article) => articles + (articleId -> article.copy(favoriteCount = FavoriteCount(count)))
                case None          => articles
       _ <- state.addChange(Updated(ArticleRow(articleId)))
     } yield ()

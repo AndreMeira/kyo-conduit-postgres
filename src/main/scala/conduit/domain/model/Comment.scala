@@ -3,6 +3,7 @@ package conduit.domain.model
 import conduit.domain.error.ValidationError
 import conduit.domain.service.validation.CommonValidation
 import conduit.domain.syntax.*
+import conduit.domain.types.*
 
 import java.time.Instant
 import java.util.UUID
@@ -24,24 +25,24 @@ import java.util.UUID
 case class Comment(
   id: Comment.Id,
   articleId: Article.Id,
-  body: String,
-  authorId: UUID,
-  createdAt: Instant,
-  updatedAt: Instant,
+  body: CommentBody,
+  authorId: UserId,
+  createdAt: CreatedAt,
+  updatedAt: UpdatedAt,
 )
 
 object Comment:
-  /** Type alias for comment identifiers using Long */
-  type Id = Long
+  /** Type alias for comment identifiers */
+  type Id = CommentId
 
   case class Data(
     articleId: Article.Id,
-    body: String,
-    authorId: UUID,
-    createdAt: Instant,
-    updatedAt: Instant,
+    body: CommentBody,
+    authorId: UserId,
+    createdAt: CreatedAt,
+    updatedAt: UpdatedAt,
   ) {
-    def withId(id: Long): Comment =
+    def withId(id: CommentId): Comment =
       Comment(
         id = id,
         articleId = articleId,

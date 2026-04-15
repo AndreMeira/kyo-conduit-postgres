@@ -2,6 +2,7 @@ package conduit.infrastructure.inmemory
 
 import com.andremeira.test.KyoTestSuite
 import com.andremeira.test.KyoTestSuite.SuiteResult
+import conduit.domain.types.*
 import conduit.domain.service.persistence.{ IdGeneratorService, Persistence }
 import conduit.infrastructure.inmemory.InMemoryTestSupport.withDatabase
 import conduit.infrastructure.TestFixtures
@@ -56,7 +57,7 @@ object InMemoryUserProfileRepositorySpec extends KyoTestSuite:
         database.transaction:
           for
             persistence <- makePersistence
-            unknownId   <- IdGeneratorService.uuid
+            unknownId   <- IdGeneratorService.uuid.map(UserProfileId(_))
             found       <- persistence.users.find(unknownId)
             exists      <- persistence.users.exists(unknownId)
           yield assert(found == Maybe.Absent, s"Expected Emtpy but got $found") &
@@ -107,7 +108,7 @@ object InMemoryUserProfileRepositorySpec extends KyoTestSuite:
             userId      <- fixtures.makeUser
             profile     <- fixtures.makeProfile(userId)
             ts          <- fixtures.now
-            updated      = profile.copy(biography = Maybe.Present("an updated bio"), updatedAt = ts)
+            updated      = profile.copy(biography = Maybe.Present(ProfileBiography("an updated bio")), updatedAt = UpdatedAt(ts))
             _           <- persistence.users.update(updated)
             found       <- persistence.users.find(profile.id)
           yield assert(found == Maybe.Present(updated), s"Expected $updated but got $found")

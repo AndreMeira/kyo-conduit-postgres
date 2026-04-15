@@ -8,6 +8,7 @@ import conduit.domain.request.user.GetUserRequest
 import conduit.domain.service.authentication.AuthenticationService
 import conduit.domain.service.authentication.AuthenticationService.Config
 import conduit.domain.service.persistence.{ IdGeneratorService, Persistence }
+import conduit.domain.types.*
 import conduit.infrastructure.TestFixtures
 import conduit.infrastructure.inmemory.InMemoryTestSupport.withDatabase
 import conduit.infrastructure.inmemory.{ InMemoryTestSupport, InMemoryTransaction }
@@ -47,7 +48,7 @@ object UserReadUseCaseTest extends KyoTestSuite {
         for
           fixtures      <- makeFixtures
           persistence   <- makePersistence
-          userId        <- IdGeneratorService.uuid
+          userId        <- IdGeneratorService.uuid.map(UserId(_))
           clock          = Clock.live
           config         = Config(passwordSalt = "test-salt", tokenSalt = "test-token-salt", tokenTtl = 1.hour)
           authentication = AuthenticationService(clock, config)

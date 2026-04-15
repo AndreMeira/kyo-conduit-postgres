@@ -3,6 +3,8 @@ package conduit.infrastructure.postgres
 import com.augustnagro.magnum.*
 import conduit.domain.model.{ Credentials, User }
 import conduit.domain.service.persistence.CredentialsRepository
+import conduit.domain.types.*
+import conduit.infrastructure.codecs.database.DatabaseCodecs.given
 import conduit.infrastructure.postgres.PostgresTransaction.Transactional
 import kyo.*
 
@@ -31,7 +33,7 @@ class PostgresCredentialsRepository extends CredentialsRepository[PostgresTransa
     Transactional:
       Maybe.fromOption:
         sql"""SELECT email, password FROM users WHERE id = $userId"""
-          .query[(String, String)]
+          .query[(Email, Password)]
           .run()
           .headOption
           .map(Credentials.Hashed.apply)
