@@ -47,26 +47,7 @@ object UpdateArticleRequest:
    * Represents a patch operation for updating specific fields of an article.
    */
   enum Patch:
-    /**
-     * Represents an update to the body of the article.
-     * @param value the new body content
-     */
     case Body(value: ArticleBody)
-
-    /**
-     * Represents an update to the title of the article.
-     * @param value the new title
-     */
     case Title(value: ArticleTitle)
-
-    /**
-     * Represents an update to the description of the article.
-     * @param value the new description
-     */
     case Description(value: ArticleDescription)
-
-    /**
-     * Represents an update to the tags of the article.
-     * @param value the new list of tags
-     */
     case Tags(value: List[TagName])

@@ -1,6 +1,6 @@
 package conduit.domain.model
 
-import conduit.domain.types
+import conduit.domain.types.{ Email as UserEmail, Password as UserPassword }
 
 /**
  * Represents user authentication credentials in different states.
@@ -12,7 +12,7 @@ import conduit.domain.types
 enum Credentials:
 
   /** The user's email address associated with the credentials. */
-  def email: types.Email
+  def email: UserEmail
 
   /**
    * Represents cleartext credentials as received from user input.
@@ -23,7 +23,7 @@ enum Credentials:
    * @param email the user's email address
    * @param password the user's password in plaintext
    */
-  case Clear(email: types.Email, password: types.Password)
+  case Clear(email: UserEmail, password: UserPassword)
 
   /**
    * Represents hashed credentials as stored in the database.
@@ -34,9 +34,9 @@ enum Credentials:
    * @param email the user's email address
    * @param password the user's password after secure hashing
    */
-  case Hashed(email: types.Email, password: types.Password)
+  case Hashed(email: UserEmail, password: UserPassword)
 
 object Credentials:
   /** Type alias for email addresses and password */
-  type Email    = types.Email
-  type Password = types.Password
+  type Email    = UserEmail
+  type Password = UserPassword

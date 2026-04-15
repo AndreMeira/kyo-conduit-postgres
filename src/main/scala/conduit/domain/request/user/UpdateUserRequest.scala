@@ -2,7 +2,7 @@ package conduit.domain.request.user
 
 import conduit.domain.model.{ User, UserProfile }
 import conduit.domain.request.Patchable
-import conduit.domain.types.*
+import conduit.domain.types.{ Email as UserEmail, Password as UserPassword, * }
 import kyo.Maybe
 
 import java.net.URI
@@ -49,9 +49,14 @@ object UpdateUserRequest:
     image: Patchable[String],
   )
 
+  /** 
+   * Represents the individual fields that can be updated in a user's profile.
+   *
+   * This enum is used to identify which specific field is being updated in the request.
+   */
   enum Patch:
-    case Email(email: conduit.domain.types.Email)
+    case Email(email: UserEmail)
     case Username(username: ProfileName)
-    case Password(password: conduit.domain.types.Password)
+    case Password(password: UserPassword)
     case Bio(bio: Maybe[ProfileBiography])
     case Image(image: Maybe[ProfileImage])
