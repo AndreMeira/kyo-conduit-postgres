@@ -95,13 +95,13 @@ class HttpRoutes(useCases: UseCases[?], authentication: AuthenticationService) e
   // ---------------------------------------------------------------------------
 
   /** GET /api/articles */
-  val listArticles: Unit < Routes = Routes.add(Endpoint.listArticles) { (tag, author, favorited, offset, limit) =>
+  val listArticles: Unit < Routes = Routes.add(Endpoint.listArticles) { (tag, author, favoritedBy, offset, limit) =>
     for
       user     <- authenticateOptional
       filters   = List(
                     tag.map(ListArticlesRequest.Filter.Tag.apply),
                     author.map(ListArticlesRequest.Filter.Author.apply),
-                    favorited.map(ListArticlesRequest.Filter.FavoriteOf.apply),
+                    favoritedBy.map(ListArticlesRequest.Filter.FavoriteOf.apply),
                   ).flatten
       request   = ListArticlesRequest(user, offset.getOrElse(0), limit.getOrElse(20), filters)
       response <- useCases.listArticles(request).mapAbort(ErrorResponse.encode)

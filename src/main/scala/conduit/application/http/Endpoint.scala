@@ -114,7 +114,7 @@ object Endpoint:
 
   /** GET /api/articles — List articles with optional filters. Auth optional. */
   val listArticles
-    : Endpoint[Option[BearerToken], (Option[String], Option[String], Option[String], Option[Int], Option[Int]), ErrorResponse, ArticleListResponse, Any] =
+    : Endpoint[Option[BearerToken], Search, ErrorResponse, ArticleListResponse, Any] =
     api.get
       .securityIn(anyone)
       .in("articles")
@@ -126,7 +126,7 @@ object Endpoint:
       .out(jsonBody[ArticleListResponse])
 
   /** GET /api/articles/feed — Get articles from followed users. Auth required. */
-  val feedArticles: Endpoint[Option[BearerToken], (Option[Int], Option[Int]), ErrorResponse, ArticleListResponse, Any] =
+  val feedArticles: Endpoint[Option[BearerToken], Page, ErrorResponse, ArticleListResponse, Any] =
     api.get
       .securityIn(authenticated)
       .in("articles" / "feed")
