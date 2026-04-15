@@ -247,12 +247,16 @@ class HttpRoutes(useCases: UseCases[?], authentication: AuthenticationService) e
   // ---------------------------------------------------------------------------
 
   private def authenticateRequired: User.Authenticated < (Async & Env[Option[BearerToken]] & Abort[ErrorResponse]) =
-    Env.get[Option[BearerToken]].flatMap:
-      case None        => Abort.fail(ErrorResponse(Unauthorized, Map("token" -> List("is missing"))))
-      case Some(token) => authentication.authenticate(User.SignedToken(token)).mapAbort(ErrorResponse.encode)
+    Env
+      .get[Option[BearerToken]]
+      .flatMap:
+        case None        => Abort.fail(ErrorResponse(Unauthorized, Map("token" -> List("is missing"))))
+        case Some(token) => authentication.authenticate(User.SignedToken(token)).mapAbort(ErrorResponse.encode)
 
   private def authenticateOptional: User < (Async & Env[Option[BearerToken]] & Abort[ErrorResponse]) =
-    Env.get[Option[BearerToken]].flatMap: maybeToken =>
-      val maybeSignedToken = Maybe.fromOption(maybeToken.map(token => User.SignedToken(token)))
-      authentication.authenticate(maybeSignedToken).mapAbort(ErrorResponse.encode)
+    Env
+      .get[Option[BearerToken]]
+      .flatMap: maybeToken =>
+        val maybeSignedToken = Maybe.fromOption(maybeToken.map(token => User.SignedToken(token)))
+        authentication.authenticate(maybeSignedToken).mapAbort(ErrorResponse.encode)
 }
