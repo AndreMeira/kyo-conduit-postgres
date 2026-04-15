@@ -1,6 +1,7 @@
 package conduit.infrastructure.codecs.database
 
 import com.augustnagro.magnum.DbCodec
+import conduit.domain.types.*
 import kyo.Maybe
 
 import java.net.URI
@@ -90,6 +91,57 @@ object DatabaseCodecs:
    */
   given [A](using DbCodec[Option[A]]): DbCodec[Maybe[A]] =
     DbCodec[Option[A]].biMap(Maybe.fromOption, _.toOption)
+
+  // ---------------------------------------------------------------------------
+  // Opaque domain types — derived from their underlying codecs
+  // ---------------------------------------------------------------------------
+
+  // UUID-based identifiers
+  given DbCodec[ArticleId]     = DbCodec[UUID].biMap(ArticleId.apply, identity)
+  given DbCodec[UserId]        = DbCodec[UUID].biMap(UserId.apply, identity)
+  given DbCodec[UserProfileId] = DbCodec[UUID].biMap(UserProfileId.apply, identity)
+
+  // Long-based identifiers
+  given DbCodec[CommentId] = DbCodec[Long].biMap(CommentId.apply, identity)
+
+  // Numeric fields
+  given DbCodec[FavoriteCount] = DbCodec[Int].biMap(FavoriteCount.apply, identity)
+
+  // Timestamps (shared)
+  given DbCodec[CreatedAt] = DbCodec[Instant].biMap(CreatedAt.apply, identity)
+  given DbCodec[UpdatedAt] = DbCodec[Instant].biMap(UpdatedAt.apply, identity)
+
+  // String-based article fields
+  given DbCodec[ArticleSlug]        = DbCodec[String].biMap(ArticleSlug.apply, identity)
+  given DbCodec[ArticleTitle]       = DbCodec[String].biMap(ArticleTitle.apply, identity)
+  given DbCodec[ArticleDescription] = DbCodec[String].biMap(ArticleDescription.apply, identity)
+  given DbCodec[ArticleBody]        = DbCodec[String].biMap(ArticleBody.apply, identity)
+
+  // String-based comment fields
+  given DbCodec[CommentBody] = DbCodec[String].biMap(CommentBody.apply, identity)
+
+  // String-based profile fields
+  given DbCodec[ProfileName]      = DbCodec[String].biMap(ProfileName.apply, identity)
+  given DbCodec[ProfileBiography] = DbCodec[String].biMap(ProfileBiography.apply, identity)
+  given DbCodec[ProfileImage]     = DbCodec[URI].biMap(ProfileImage.apply, identity)
+
+  // String-based tag fields
+  given DbCodec[TagName] = DbCodec[String].biMap(TagName.apply, identity)
+
+  // String-based credentials fields
+  given DbCodec[Email]    = DbCodec[String].biMap(Email.apply, identity)
+  given DbCodec[Password] = DbCodec[String].biMap(Password.apply, identity)
+
+  // String-based auth fields
+  given DbCodec[SignedToken] = DbCodec[String].biMap(SignedToken.apply, identity)
+
+  // UUID-based identifier lists — derived from listUUID
+  given listArticleId: DbCodec[List[ArticleId]]         = listUUID.biMap(_.map(ArticleId.apply), identity)
+  given listUserId: DbCodec[List[UserId]]               = listUUID.biMap(_.map(UserId.apply), identity)
+  given listUserProfileId: DbCodec[List[UserProfileId]] = listUUID.biMap(_.map(UserProfileId.apply), identity)
+
+  // String-based list — derived from DbCodec[List[String]]
+  given listTagName: DbCodec[List[TagName]] = DbCodec[List[String]].biMap(_.map(TagName.apply), identity)
 
   /** A codec for PostgreSQL UUID array columns, used with = ANY(?) queries. */
   given listUUID: DbCodec[List[UUID]] with {
