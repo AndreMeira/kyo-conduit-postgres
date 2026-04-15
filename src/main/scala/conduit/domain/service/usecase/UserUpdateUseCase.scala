@@ -88,14 +88,12 @@ class UserUpdateUseCase[Tx <: Database.Transaction](
    */
   private def updateUserCredentials(request: UpdateUserRequest, patches: List[Patch]): Credentials < (Effect & Env[Tx]) =
     val payload = request.payload.user
-    if payload.email == Patchable.Absent && payload.password == Patchable.Absent then findCredentials(request)
-    else
-      for {
-        creds   <- findCredentials(request)
-        patched <- patch(creds, patches)
-        _       <- if creds == patched then Kyo.unit
-                   else persistence.credentials.update(request.requester.userId, patched)
-      } yield patched
+    for {
+      creds   <- findCredentials(request)
+      patched <- patch(creds, patches)
+      _       <- if creds == patched then Kyo.unit
+                 else persistence.credentials.update(request.requester.userId, patched)
+    } yield patched
 
   /**
    * Finds the user profile for the authenticated user.
