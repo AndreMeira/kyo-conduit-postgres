@@ -2,7 +2,7 @@ package conduit.application.http
 
 import conduit.application.http.errors.ErrorResponse
 import conduit.application.http.types.*
-import conduit.domain.types.{ ArticleSlug, ProfileName }
+import conduit.domain.types.{ ArticleSlug, ProfileName, TagName }
 import conduit.domain.request.article.{ CreateArticleRequest, UpdateArticleRequest }
 import conduit.domain.request.comment.AddCommentRequest
 import conduit.domain.request.user.{ AuthenticateRequest, RegistrationRequest, UpdateUserRequest }
@@ -118,11 +118,11 @@ object Endpoint:
     api.get
       .securityIn(anyone)
       .in("articles")
-      .in(query[Option[String]]("tag"))
-      .in(query[Option[String]]("author"))
-      .in(query[Option[String]]("favorited"))
-      .in(query[Option[Int]]("offset"))
-      .in(query[Option[Int]]("limit"))
+      .in(query[Option[TagName]]("tag"))
+      .in(query[Option[Author]]("author"))
+      .in(query[Option[FavoritedBy]]("favorited"))
+      .in(query[Option[Offset]]("offset"))
+      .in(query[Option[Limit]]("limit"))
       .out(jsonBody[ArticleListResponse])
 
   /** GET /api/articles/feed — Get articles from followed users. Auth required. */
