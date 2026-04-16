@@ -3,8 +3,10 @@ package conduit.infrastructure.codecs.http
 import conduit.domain.request.Patchable
 import conduit.domain.request.article.UpdateArticleRequest
 import conduit.domain.request.user.UpdateUserRequest
-import io.circe.{ Decoder, Encoder, HCursor }
-import sttp.tapir.Schema
+import conduit.domain.types.{ArticleSlug, ProfileName}
+import io.circe.{Decoder, Encoder, HCursor}
+import sttp.tapir.CodecFormat.TextPlain
+import sttp.tapir.{Codec, DecodeResult, Schema}
 
 /** Custom Circe decoders for request types that need to distinguish between
   * JSON `null` and missing fields.
@@ -47,6 +49,12 @@ object JsonCodecs:
     yield UpdateArticleRequest.Data(title, description, body, tagList)
   }
 
+  given Codec[String, ProfileName, TextPlain] =
+    Codec.string.mapDecode(raw => DecodeResult.Value(ProfileName(raw)))(profileName => profileName)
+
+  given Codec[String, ArticleSlug, TextPlain] =
+    Codec.string.mapDecode(raw => DecodeResult.Value(ArticleSlug(raw)))(articleSlug => articleSlug)
+  
   extension (cursor: HCursor)
     private def patchable[A](field: String)(using d: Decoder[A]): Decoder.Result[Patchable[A]] =
       cursor

@@ -5,10 +5,8 @@ package conduit.application.http.types
 
 type Offset      = Int
 type Limit       = Int
-type Slug        = String
 type Tag         = String
 type Author      = String
 type FavoritedBy = String
-type UserName    = String
 type Page        = (Option[Offset], Option[Limit])
 type Search      = (Option[Tag], Option[Author], Option[FavoritedBy], Option[Int], Option[Int])
