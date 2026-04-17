@@ -2,7 +2,6 @@ package com.andremeira.test
 
 import kyo.*
 import kyo.Ansi.*
-import playground.KyoTestDesignTest.TestName
 import KyoTestSuite.*
 
 import scala.util.control.NoStackTrace
