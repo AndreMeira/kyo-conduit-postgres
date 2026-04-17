@@ -246,6 +246,13 @@ class HttpRoutes(useCases: UseCases[?], authentication: AuthenticationService) e
   // Helpers
   // ---------------------------------------------------------------------------
 
+  /**
+   * Helper to authenticate the user from the bearer token in the request context.
+   * If the token is missing or invalid, it aborts with a 401 Unauthorized error.
+   *
+   * @return the authenticated user, or aborts if authentication fails
+   * @see AuthenticationService for the actual token validation logic
+   */
   private def authenticateRequired: User.Authenticated < (Async & Env[Option[BearerToken]] & Abort[ErrorResponse]) =
     Env
       .get[Option[BearerToken]]
@@ -253,6 +260,14 @@ class HttpRoutes(useCases: UseCases[?], authentication: AuthenticationService) e
         case None        => Abort.fail(ErrorResponse(Unauthorized, Map("token" -> List("is missing"))))
         case Some(token) => authentication.authenticate(User.SignedToken(token)).mapAbort(ErrorResponse.encode)
 
+  /**
+   * Helper to optionally authenticate the user from the bearer token in the request context.
+   * If the token is missing, it returns `User.Anonymous`.
+   * If the token is present but invalid, it aborts with a 401 Unauthorized error.
+   *
+   * @return the authenticated user if a valid token is provided,
+   *         `User.Anonymous` if no token is provided, or aborts if the token is invalid
+   */
   private def authenticateOptional: User < (Async & Env[Option[BearerToken]] & Abort[ErrorResponse]) =
     Env
       .get[Option[BearerToken]]
