@@ -45,17 +45,17 @@ object ErrorResponse {
    * @return a tuple containing the error key and the corresponding error message for the given invalid input
    */
   def encode(invalid: ValidationError.InvalidInput): (String, String) = invalid match {
-    case ArticleInvalidInput.EmptyTitle               => ("title", "can't be blank")
-    case ArticleInvalidInput.EmptyBody                => ("body", "can't be blank")
-    case ArticleInvalidInput.EmptyDescription         => ("description", "can't be blank")
-    case CommentInvalidInput.EmptyBody                => ("body", "can't be blank")
-    case ProfileInvalidInput.EmptyUsername            => ("username", "can't be blank")
-    case CredentialsInvalidInput.EmptyEmail           => ("email", "can't be blank")
-    case CredentialsInvalidInput.EmptyPassword        => ("password", "can't be blank")
-    case _: ProfileInvalidInput.UsernameAlreadyExists => ("username", "has already been taken")
-    case _: CredentialsInvalidInput.EmailAlreadyInUse => ("email", "has already been taken")
-    case invalid: ArticleInvalidInput                 => ("article", invalid.message)
-    case invalid                                      => (invalid.kind, invalid.message)
+    case ArticleInvalidInput.EmptyTitle               => "title"       -> "can't be blank"
+    case ArticleInvalidInput.EmptyBody                => "body"        -> "can't be blank"
+    case ArticleInvalidInput.EmptyDescription         => "description" -> "can't be blank"
+    case CommentInvalidInput.EmptyBody                => "body"        -> "can't be blank"
+    case ProfileInvalidInput.EmptyUsername            => "username"    -> "can't be blank"
+    case CredentialsInvalidInput.EmptyEmail           => "email"       -> "can't be blank"
+    case CredentialsInvalidInput.EmptyPassword        => "password"    -> "can't be blank"
+    case _: ProfileInvalidInput.UsernameAlreadyExists => "username"    -> "has already been taken"
+    case _: CredentialsInvalidInput.EmailAlreadyInUse => "email"       -> "has already been taken"
+    case invalid: ArticleInvalidInput                 => "article"     -> invalid.message
+    case invalid                                      => invalid.kind  -> invalid.message
   }
 
   /**

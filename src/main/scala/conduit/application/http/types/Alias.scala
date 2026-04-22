@@ -10,4 +10,4 @@ type Limit       = Int
 type Author      = ProfileName
 type FavoritedBy = ProfileName
 type Page        = (Option[Offset], Option[Limit])
-type Search      = (Option[TagName], Option[ProfileName], Option[FavoritedBy], Option[Offset], Option[Limit])
+type Search      = (Option[TagName], Option[Author], Option[FavoritedBy], Option[Offset], Option[Limit])
