@@ -1,7 +1,7 @@
 package conduit.application.http
 
 import conduit.application.http.errors.ErrorResponse
-import conduit.application.http.types.*
+import conduit.application.http.auth.*
 import conduit.domain.types.{ ArticleSlug, ProfileName, TagName }
 import conduit.domain.request.article.{ CreateArticleRequest, UpdateArticleRequest }
 import conduit.domain.request.comment.AddCommentRequest
@@ -31,6 +31,12 @@ import sttp.tapir.json.circe.*
   *   - Tags (list)
   */
 object Endpoint:
+  type Offset      = Int
+  type Limit       = Int
+  type Author      = ProfileName
+  type FavoritedBy = ProfileName
+  type Page        = (Option[Offset], Option[Limit])
+  type Search      = (Option[TagName], Option[Author], Option[FavoritedBy], Option[Offset], Option[Limit])
 
   // ---------------------------------------------------------------------------
   // Base endpoints

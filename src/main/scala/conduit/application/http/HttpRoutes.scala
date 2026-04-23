@@ -1,7 +1,7 @@
 package conduit.application.http
 
 import conduit.application.http.errors.ErrorResponse
-import conduit.application.http.types.BearerToken
+import conduit.application.http.auth.BearerToken
 import conduit.domain.model.User
 import conduit.domain.request.article.*
 import conduit.domain.request.comment.*

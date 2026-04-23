@@ -1,4 +1,4 @@
-package conduit.application.http.types
+package conduit.application.http.auth
 
 import sttp.tapir.{ Codec, DecodeResult }
 import sttp.tapir.CodecFormat.TextPlain
