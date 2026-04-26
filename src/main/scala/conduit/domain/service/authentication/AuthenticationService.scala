@@ -138,11 +138,10 @@ class AuthenticationService(clock: Clock, config: Config) {
    * @param claim The JWT claim to check.
    * @throws Unauthorised if the claim is expired.
    */
-  def verifyExpiration(claim: JwtClaim): Unit < (Sync & Abort[Unauthorised]) =
+  private def verifyExpiration(claim: JwtClaim): Unit < (Sync & Abort[Unauthorised]) =
     clock.now.map { now =>
-      claim.expiration.exists(_ > now.toJava.getEpochSecond) match
-        case true  => ()
-        case false => Abort.fail(Unauthorised.TokenExpired)
+      if claim.expiration.exists(_ > now.toJava.getEpochSecond) then ()
+      else Abort.fail(Unauthorised.TokenExpired)
     }
 
   /**
