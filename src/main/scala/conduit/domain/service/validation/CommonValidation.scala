@@ -19,6 +19,19 @@ import scala.util.matching.Regex
 object CommonValidation {
 
   /**
+   * Attempts to execute a block of code that may throw an exception and maps any thrown
+   * exception to a ValidationError using the provided mapping function.
+   *
+   * @param value the block of code to execute
+   * @param mapError a function that maps a Throwable to a ValidationError.InvalidInput
+   * @return a Validated containing the result of the block or a validation error
+   */
+  def attempt[A](value: => A)(mapError: Throwable => ValidationError.InvalidInput): Validated[A] =
+    Validation
+      .fromTry(Try(value))
+      .mapError(mapError)
+
+  /**
    * Validates that an integer value is positive (>= 0).
    *
    * @param value the integer to validate
@@ -45,9 +58,8 @@ object CommonValidation {
    * @return a validated UUID or InvalidUUID error
    */
   def uuid(id: String): Validated[UUID] =
-    Validation
-      .fromTry(Try(UUID.fromString(id)))
-      .asError(Invalid.InvalidUUID(id))
+    attempt(UUID.fromString(id)): _ =>
+      Invalid.InvalidUUID(id)
 
   /**
    * Validates that a string is non-empty after trimming whitespace.
