@@ -124,7 +124,7 @@ class AuthenticationService(clock: Clock, config: Config) {
    * @return The decoded JWT claim.
    * @throws Unauthorised if the token is invalid.
    */
-  def decodeToken(token: User.SignedToken): JwtClaim < Abort[Unauthorised] =
+  private def decodeToken(token: User.SignedToken): JwtClaim < Abort[Unauthorised] =
     Abort.get {
       JwtCirce
         .decode(token.value, config.tokenSalt, Seq(JwtAlgorithm.HS256))
