@@ -75,7 +75,6 @@ object JsonCodecs:
   extension (cursor: HCursor)
     /** Decodes `field` as [[Patchable]]: present value → `Present`, explicit null → `Emtpy`, absent → `Absent`. */
     private def patchable[A](field: String)(using d: Decoder[A]): Decoder.Result[Patchable[A]] =
-      cursor.get[Option[A]](field).map {
+      cursor.get[Option[A]](field).map:
         case Some(value) => Patchable.Present(value)
         case None        => if cursor.downField(field).succeeded then Patchable.Emtpy else Patchable.Absent
-      }
