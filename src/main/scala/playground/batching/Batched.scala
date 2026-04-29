@@ -3,17 +3,12 @@ package playground.batching
 case class Batched[+A](elements: List[Batched.Element[A]]) {
   def isEmpty: Boolean = elements.isEmpty
 
-  def reverse: Batched[A] = Batched(elements.reverse)
-
   def indices: List[Int] = elements.map(_.index)
 
   def values: List[A] = elements.map(_.value)
 
   def map[B](fn: A => B): Batched[B] =
     Batched(elements.map(element => element.map(fn)))
-
-  def sortedBy[B: Ordering](fn: A => B): Batched[A] =
-    Batched(elements.sortBy(element => fn(element.value)))
 
   def distinctBy[B](fn: A => B): Batched[A] =
     Batched(elements.distinctBy(element => fn(element.value)))

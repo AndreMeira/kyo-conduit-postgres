@@ -12,18 +12,13 @@ object BatchExperiment extends KyoApp {
   // Using 'Batch.sourceMap' for processing the entire sequence at once, returning a 'Map'
   val source2 = Batch.sourceMap[Int, String, Sync] { seq =>
     // Source functions can perform arbitrary effects like 'Sync' before returning the results
-    Sync.defer {
-      seq.map(i => i -> i.toString).toMap
-    }
+    Sync.defer { seq.map(i => i -> i.toString).toMap }
   }
 
   // Using 'Batch.source' for individual effect suspensions
   // This is a more generic method that allows effects for each of the inputs
   val source3 = Batch.source[Int, String, Sync] { seq =>
-    val map = seq.map { i =>
-      i -> Sync.defer((i * 2).toString)
-    }.toMap
-    (i: Int) => map(i)
+    seq.map { i => i -> Sync.defer((i * 2).toString) }.toMap.apply
   }
 
   // Example usage
