@@ -4,6 +4,7 @@ import sttp.tapir.{ Codec, DecodeResult }
 import sttp.tapir.CodecFormat.TextPlain
 
 type BearerToken = BearerToken.Type
+
 object BearerToken {
   opaque type Type <: String = String
   def apply(value: String): BearerToken = value

@@ -66,7 +66,7 @@ object ErrorResponse {
    * @return a map where each key is an error key and the corresponding value is a list of error messages associated with that key
    */
   def encode(errors: List[ValidationError.InvalidInput]): Map[String, List[String]] =
-    errors.map(encode).groupMap((key, _) => key)((_, message) => message)
+    errors.map(encode).groupMap(_._1)(_._2)
 
   /**
    * Determines if a given ValidationError contains any errors that should be treated as conflicts (HTTP 409).

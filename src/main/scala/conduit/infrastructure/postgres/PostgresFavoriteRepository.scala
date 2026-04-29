@@ -19,15 +19,13 @@ class PostgresFavoriteRepository extends FavoriteRepository[PostgresTransaction]
    */
   override def exists(favorite: Article.Favorite): Boolean < Effect =
     Transactional:
-      sql"""SELECT EXISTS(
-              SELECT 1 FROM favorites
-              WHERE user_id = ${favorite.userId}
-                AND article_id = ${favorite.articleId}
-            )"""
-        .query[Boolean]
+      sql"""SELECT 1 FROM favorites
+            WHERE user_id = ${favorite.userId}
+            AND article_id = ${favorite.articleId}"""
+        .query[Int]
         .run()
         .headOption
-        .contains(true)
+        .contains(1)
 
   /**
    * Finds which of the given article IDs have been favorited by the specified user.
