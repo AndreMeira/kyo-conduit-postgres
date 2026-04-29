@@ -29,10 +29,9 @@ abstract class KyoTestSuite extends KyoApp {
           result.collect:
             case TestResult(suite, test, Result.Failure(_)) => s"$suite should $test"
         .map: failedTests =>
-          Clock.now.map { end =>
+          Clock.now.map: end =>
             val duration = end - instant
             Console.printLine(s"\nTest suite completed in ${duration.toMillis}ms".bold) *> failedTests
-          }
         .map:
           case Nil         => printSuiteResult(Nil) *> Kyo.unit
           case failedTests => printSuiteResult(failedTests) *> Abort.fail(TestFailed)
