@@ -109,7 +109,7 @@ object PostgresTestSupport:
    * The body is executed inside a transaction, so it can call any repository
    * method directly — just as the Postgres spec bodies do.
    */
-  trait WithCleanDatabase {
+  trait WithDatabaseExtension {
     extension (database: PostgresDatabase) {
 
       /** 
@@ -146,11 +146,11 @@ object PostgresTestSupport:
    * @return the result of the test body
    */
   def withDatabase[A](
-    test: WithCleanDatabase ?=> PostgresDatabase => A < (Async & Scope)
+    test: WithDatabaseExtension ?=> PostgresDatabase => A < (Async & Scope)
   ): A < (Async & Scope) =
     for
       container  <- Scope.acquireRelease(startContainer)(stopContainer)
       datasource <- Scope.acquireRelease(createDatasource(container))(closeDatasource)
       database    = PostgresDatabase(datasource)
-      result     <- test(using new WithCleanDatabase {})(database)
+      result     <- test(using new WithDatabaseExtension {})(database)
     yield result
