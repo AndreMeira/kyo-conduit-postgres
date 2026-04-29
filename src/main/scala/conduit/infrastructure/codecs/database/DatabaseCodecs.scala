@@ -151,12 +151,12 @@ object DatabaseCodecs:
       Option(rs.getArray(pos)).fold(Nil) { arr =>
         arr.getArray
           .asInstanceOf[Array[Object]]
-          .map {
+          .map:
             case u: UUID => u
             case other   => DecodeError.raise(s"Expected UUID but got ${other.getClass.getName}")
-          }
           .toList
       }
+
     def writeSingle(entity: List[UUID], ps: PreparedStatement, pos: Int): Unit =
       ps.setArray(pos, ps.getConnection.createArrayOf("uuid", entity.toArray))
   }

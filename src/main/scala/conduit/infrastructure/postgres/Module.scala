@@ -22,9 +22,8 @@ object Module:
    */
   lazy val all: Layer[Database[PostgresTransaction] & Persistence[PostgresTransaction] & Migration, Env[DatabaseConfig] & Sync & Scope] =
     datasourceConfig
-      .to(dataSource)
-      .and(migrationConfig)
-      .to(database.and(database.to(persistence)).and(migration))
+      .to(dataSource and migrationConfig)
+      .to(database and database.to(persistence) and migration)
 
   /**
    * Extracts the DatasourceConfig from the loaded DatabaseConfig. This allows
@@ -32,7 +31,7 @@ object Module:
    * rather than the entire DatabaseConfig.
    */
   lazy val datasourceConfig: Layer[DatasourceConfig, Env[DatabaseConfig] & Sync] =
-    Layer.from((dbConfig: DatabaseConfig) => dbConfig.datasource)
+    Layer.from { (dbConfig: DatabaseConfig) => dbConfig.datasource }
 
   /**
    * Extracts the MigrationConfig from the loaded DatabaseConfig. This allows
@@ -40,7 +39,7 @@ object Module:
    * rather than the entire DatabaseConfig.
    */
   lazy val migrationConfig: Layer[MigrationConfig, Env[DatabaseConfig] & Sync] =
-    Layer.from((dbConfig: DatabaseConfig) => dbConfig.migration)
+    Layer.from { (dbConfig: DatabaseConfig) => dbConfig.migration }
 
   /**
    * Provides a HikariDataSource connection pool based on the provided DatasourceConfig.
@@ -48,9 +47,8 @@ object Module:
    * connections are closed when no longer needed.
    */
   lazy val dataSource: Layer[HikariDataSource, Env[DatasourceConfig] & Sync & Scope] =
-    Layer.from { (config: DatasourceConfig) =>
+    Layer.from: (config: DatasourceConfig) =>
       Kyo.acquireRelease(HikariDataSource(config.toHikariConfig))(ds => ds.close())
-    }
 
   /**
    * Provides a PostgresDatabase instance that implements the Database trait using
@@ -58,21 +56,20 @@ object Module:
    * database service to the application.
    */
   lazy val database: Layer[Database[PostgresTransaction], Env[HikariDataSource]] =
-    Layer.from { (ds: HikariDataSource) =>
+    Layer.from: (ds: HikariDataSource) =>
       PostgresDatabase(ds): Database[PostgresTransaction]
-    }
 
   /**
    * Provides a [[Migration]] instance configured with Flyway, using the
    * [[MigrationConfig]] for Flyway settings and [[HikariDataSource]] as the
    * database connection.
    */
-  lazy val migration: Layer[Migration, Env[MigrationConfig] & Env[HikariDataSource]] =
+  lazy val migration: Layer[Migration, Env[MigrationConfig] & Env[HikariDataSource] & Sync] =
     Layer {
       for
         config     <- Env.get[MigrationConfig]
         dataSource <- Env.get[HikariDataSource]
-      yield
+      yield Kyo.defer:
         val flyway = config.toFlywayConfig.dataSource(dataSource).load()
         Migration(flyway)
     }
