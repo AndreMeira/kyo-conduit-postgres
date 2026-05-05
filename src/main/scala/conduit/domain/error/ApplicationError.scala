@@ -110,3 +110,22 @@ object ApplicationError:
     * application to prevent further damage.
     */
   trait UnrecoverableError extends ApplicationError
+  
+  /**
+   * Trait for network-related errors.
+   *
+   * Network errors represent issues that occur during network communication,
+   * such as timeouts, connection failures, or protocol errors. These errors
+   * may be transient and could potentially be resolved by retrying the operation
+   * after a delay.
+   */
+  trait NetworkError extends ApplicationError
+  
+  /**
+   * Trait for persistence-related errors.
+   *
+   * Persistence errors represent issues that arise during interactions with
+   * persistent storage systems, such as databases or file systems. These errors
+   * may include connection failures, query errors, or data integrity violations.
+   */
+  trait PersistenceError extends ApplicationError

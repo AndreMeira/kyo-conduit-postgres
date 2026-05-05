@@ -44,6 +44,7 @@ trait Database[Tx <: Transaction] {
 }
 
 object Database:
+
   /**
    * Nominal type representing a database transaction.
    *
