@@ -21,11 +21,6 @@ case class ValidationError(errors: NonEmptyChunk[ValidationError.InvalidInput]) 
   override def message: String = errors.map(_.toString).mkString(", ")
 
 object ValidationError:
-  def single(invalidInput: InvalidInput): ValidationError =
-    ValidationError(NonEmptyChunk(invalidInput))
-
-  def many(head: InvalidInput, rest: InvalidInput*): ValidationError =
-    ValidationError(NonEmptyChunk(head, rest*))
 
   /**
    * Trait for individual validation input errors.
