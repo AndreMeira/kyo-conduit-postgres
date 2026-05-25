@@ -12,6 +12,8 @@ import conduit.domain.types.*
 import kyo.*
 import zio.prelude.Validation
 
+import java.time.temporal.ChronoUnit
+
 /**
  * Use case for creating a new article.
  *
@@ -62,7 +64,7 @@ class ArticleCreationUseCase[Tx <: Database.Transaction](
    */
   private def parse(request: CreateArticleRequest): Validated[Article] < Effect =
     for {
-      now  <- Clock.now.map(_.toJava)
+      now  <- Clock.now.map(_.toJava).map(_.truncatedTo(ChronoUnit.MICROS))
       id   <- IdGeneratorService.uuid.map(ArticleId(_))
       slug <- IdGeneratorService.slug(request.payload.article.title).map(ArticleSlug(_))
     } yield Validation.validateWith(

@@ -49,7 +49,7 @@ object CredentialsInputValidation {
           .nonEmptyString(value)
           .asError(EmptyPassword),
         CommonValidation
-          .length(value.trim, min = 8, max = 20) // @todo add more complex password rules later
+          .length(value.trim, min = 8, max = 64) // @todo add more complex password rules later
           .asError(InvalidPasswordFormat(value, "Password must be at least 8 characters long")),
       )
       .flatMap(CommonValidation.sameValues(_, _))
