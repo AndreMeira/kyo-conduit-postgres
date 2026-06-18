@@ -7,12 +7,11 @@ import conduit.domain.service.validation.Module as ValidationModule
 import conduit.infrastructure.configuration.Module as ConfigurationModule
 import conduit.infrastructure.postgres.{ Migration, PostgresTransaction, Module as PostgresModule }
 import kyo.*
-import sttp.tapir.server.netty.*
 
 /** Entry point for the Conduit HTTP application.
   *
   * Composes all layers (Postgres infrastructure, authentication, validation,
-  * use cases, HTTP routes) and starts a Netty server exposing the Conduit API.
+  * use cases, HTTP routes) and starts a kyo-http server exposing the Conduit API.
   */
 object HttpApplication extends KyoApp:
 
@@ -42,19 +41,10 @@ object HttpApplication extends KyoApp:
           httpRoutes <- Env.get[HttpRoutes]
           waiting    <- Promise.init[Unit, Any]
           _          <- migration.applyMigrations
-          _          <- Scope.acquireRelease(Routes.run(server)(httpRoutes.all))(_.stop())
+          _          <- HttpServer.init(8080, "0.0.0.0")(httpRoutes.all*)
           _          <- waiting.get
         yield ()
     }
-
-  /**
-   * Defines the Netty server configuration and options.
-   */
-  private val server: NettyKyoServer = {
-    val options = NettyKyoServerOptions.default(enableLogging = true).forkExecution(false)
-    val config  = NettyConfig.default.withSocketKeepAlive.copy(lingerTimeout = None)
-    NettyKyoServer(options, config).host("0.0.0.0").port(8080)
-  }
 
   /**
    * Composes all the necessary layers for the application, including configuration,

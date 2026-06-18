@@ -5,8 +5,7 @@ import conduit.domain.request.article.UpdateArticleRequest
 import conduit.domain.request.user.UpdateUserRequest
 import conduit.domain.types.{ ArticleSlug, ProfileName, TagName }
 import io.circe.{ Decoder, Encoder, HCursor }
-import sttp.tapir.CodecFormat.TextPlain
-import sttp.tapir.{ Codec, DecodeResult, Schema }
+import kyo.HttpCodec
 
 /**
  * Custom Circe decoders for request types that need to distinguish between
@@ -16,12 +15,6 @@ import sttp.tapir.{ Codec, DecodeResult, Schema }
  * because they are defined as explicit givens in scope.
  */
 object JsonCodecs:
-
-  /** Tapir schema — treat Patchable[A] as optional A for OpenAPI documentation. */
-  given [A](using s: Schema[A]): Schema[Patchable[A]] =
-    s.asOption.map(option => option.map(Patchable.Present(_))):
-      case Patchable.Present(value) => Some(value)
-      case _                        => None
 
   /** Circe codec — treat Patchable[A] as optional A. */
   given [A: Encoder]: Encoder[Patchable[A]] = Encoder[Option[A]].contramap:
@@ -55,17 +48,14 @@ object JsonCodecs:
     yield UpdateArticleRequest.Data(title, description, body, tagList)
   }
 
-  /** Tapir path/query codec for [[ProfileName]]. */
-  given Codec[String, ProfileName, TextPlain] =
-    Codec.string.mapDecode(raw => DecodeResult.Value(ProfileName(raw)))(profileName => profileName)
+  /** kyo-http path/query codec for [[ProfileName]]. */
+  given HttpCodec[ProfileName] = HttpCodec(profileName => profileName, raw => ProfileName(raw))
 
-  /** Tapir path/query codec for [[ArticleSlug]]. */
-  given Codec[String, ArticleSlug, TextPlain] =
-    Codec.string.mapDecode(raw => DecodeResult.Value(ArticleSlug(raw)))(articleSlug => articleSlug)
+  /** kyo-http path/query codec for [[ArticleSlug]]. */
+  given HttpCodec[ArticleSlug] = HttpCodec(articleSlug => articleSlug, raw => ArticleSlug(raw))
 
-  /** Tapir path/query codec for [[TagName]]. */
-  given Codec[String, TagName, TextPlain] =
-    Codec.string.mapDecode(raw => DecodeResult.Value(TagName(raw)))(tagName => tagName)
+  /** kyo-http path/query codec for [[TagName]]. */
+  given HttpCodec[TagName] = HttpCodec(tagName => tagName, raw => TagName(raw))
 
   /** Maps `Present` to `Some` and absent/empty to `None`. */
   private def toOption[A](p: Patchable[A]): Option[A] = p match

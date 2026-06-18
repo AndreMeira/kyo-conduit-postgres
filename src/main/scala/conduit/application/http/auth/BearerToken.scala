@@ -1,7 +1,6 @@
 package conduit.application.http.auth
 
-import sttp.tapir.{ Codec, DecodeResult }
-import sttp.tapir.CodecFormat.TextPlain
+import kyo.{ Absent, Maybe, Present }
 
 type BearerToken = BearerToken.Type
 
@@ -10,15 +9,18 @@ object BearerToken {
   def apply(value: String): BearerToken = value
 
   /**
-   * Tapir codec that decodes the `Authorization: Token <jwt>` scheme
-   * used by the RealWorld spec. The prefix check is case-insensitive.
+   * Parses the `Authorization: Token <jwt>` scheme used by the RealWorld spec.
+   * The prefix check is case-sensitive on the `Token` keyword, matching the
+   * previous Tapir codec behaviour.
    *
-   * Encoding prepends the `Token ` prefix back for round-tripping.
+   * Returns the extracted token when the header is present and well-formed,
+   * `Absent` when the header is missing or does not use the `Token` scheme.
    */
-  given Codec[String, BearerToken, TextPlain] =
-    Codec.string.mapDecode { raw =>
-      raw.trim.split(" ", 2) match
-        case Array("Token", token) => DecodeResult.Value(BearerToken(token.trim))
-        case _                     => DecodeResult.Mismatch("Token <jwt>", raw)
-    }(token => s"Token $token")
+  def fromHeader(header: Maybe[String]): Maybe[BearerToken] =
+    header match
+      case Present(raw) =>
+        raw.trim.split(" ", 2) match
+          case Array("Token", token) => Present(BearerToken(token.trim))
+          case _                     => Absent
+      case Absent => Absent
 }

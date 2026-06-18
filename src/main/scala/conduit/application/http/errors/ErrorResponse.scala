@@ -3,8 +3,8 @@ package conduit.application.http.errors
 import conduit.domain.error.NotFound.*
 import conduit.domain.error.Unauthorised.*
 import conduit.domain.error.{ NotFound => NotFoundError, * }
-import sttp.model.StatusCode
-import sttp.model.StatusCode.*
+import kyo.HttpStatus
+import kyo.HttpStatus.*
 
 /**
  * Represents an error response to be sent to the client.
@@ -12,7 +12,7 @@ import sttp.model.StatusCode.*
  * @param status the HTTP status code of the error response
  * @param errors a map of error keys to lists of error messages, representing the details of the error.
  */
-case class ErrorResponse(status: StatusCode, errors: Map[String, List[String]])
+case class ErrorResponse(status: HttpStatus, errors: Map[String, List[String]])
 
 object ErrorResponse {
 
@@ -66,7 +66,7 @@ object ErrorResponse {
    * @return a map where each key is an error key and the corresponding value is a list of error messages associated with that key
    */
   def encode(errors: List[ValidationError.InvalidInput]): Map[String, List[String]] =
-    errors.map(encode).groupMap(_._1)(_._2)
+    errors.map(encode).groupMap((key, _) => key)((_, value) => value)
 
   /**
    * Determines if a given ValidationError contains any errors that should be treated as conflicts (HTTP 409).

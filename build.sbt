@@ -11,10 +11,10 @@ lazy val root = project
     libraryDependencies ++= Seq(
       // core
       "dev.zio"              %% "zio-prelude"     % "1.0.0-RC47",
-      "io.getkyo"            %% "kyo-prelude"     % "1.0-RC1",
-      "io.getkyo"            %% "kyo-core"        % "1.0-RC1",
-      "io.getkyo"            %% "kyo-tapir"       % "1.0-RC1",
-      "io.getkyo"            %% "kyo-combinators" % "1.0-RC1",
+      "io.getkyo"            %% "kyo-prelude"     % "1.0.0-RC3",
+      "io.getkyo"            %% "kyo-core"        % "1.0.0-RC3",
+      "io.getkyo"            %% "kyo-http"        % "1.0.0-RC3",
+      "io.getkyo"            %% "kyo-combinators" % "1.0.0-RC3",
       "ch.qos.logback"        % "logback-classic" % "1.5.32",
       "commons-codec"         % "commons-codec"   % "1.21.0",
       "com.github.jwt-scala" %% "jwt-circe"       % "11.0.4",
@@ -30,10 +30,9 @@ lazy val root = project
       "com.github.pureconfig" %% "pureconfig-core"            % "0.17.10",
 
       // json
-      "io.circe"                    %% "circe-generic"     % "0.14.15",
-      "io.circe"                    %% "circe-core"        % "0.14.15",
-      "io.circe"                    %% "circe-parser"      % "0.14.15",
-      "com.softwaremill.sttp.tapir" %% "tapir-json-circe"  % "1.11.34",
+      "io.circe" %% "circe-generic" % "0.14.15",
+      "io.circe" %% "circe-core"    % "0.14.15",
+      "io.circe" %% "circe-parser"  % "0.14.15",
 
       // test
       "org.scalameta"     %% "munit"      % "1.2.4"  % Test,

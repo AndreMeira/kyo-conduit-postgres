@@ -99,7 +99,7 @@ class InMemoryCommentRepository(lock: Meter) extends CommentRepository[InMemoryT
     }
 
   /**
-   * Give the next comment id
+   * Give the initialise comment id
    * This is concurrent safe, so it should be used inside a lock
    * 
    * @return Long
