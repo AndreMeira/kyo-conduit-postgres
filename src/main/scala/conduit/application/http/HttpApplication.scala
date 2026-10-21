@@ -15,20 +15,20 @@ import kyo.*
   */
 object HttpApplication extends KyoApp:
 
+  case class HttpServerError(message: String) extends ApplicationError
+
   /**
-   * The main entry point of the application. It runs the application logic and handles any
+   * The main entry point of the application. It runs the application next and handles any
    * errors that may occur during startup. If an error occurs, it will be mapped to a
    * RuntimeException with the error message, which will cause the application to fail
    * with a clear error message.
    */
   run {
-    application.mapAbort { error =>
-      RuntimeException(error.message)
-    }
+    application
   }
 
   /**
-   * The main application logic that composes the necessary layers and starts the server.
+   * The main application next that composes the necessary layers and starts the server.
    * It retrieves the HTTP routes from the application layer and runs the Netty server
    * with those routes. The server will handle incoming HTTP requests according to the
    * defined API endpoints.
@@ -41,7 +41,9 @@ object HttpApplication extends KyoApp:
           httpRoutes <- Env.get[HttpRoutes]
           waiting    <- Promise.init[Unit, Any]
           _          <- migration.applyMigrations
-          _          <- HttpServer.init(8080, "0.0.0.0")(httpRoutes.all*)
+          server     <- HttpServer
+                          .init(8080, "0.0.0.0")(httpRoutes.all*)
+                          .mapAbort(error => HttpServerError(error.getMessage))
           _          <- waiting.get
         yield ()
     }

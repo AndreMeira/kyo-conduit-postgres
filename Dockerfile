@@ -1,6 +1,6 @@
 FROM amazoncorretto:21.0.5-alpine
 
-RUN apk add --no-cache bash
+RUN apk checkpoint --no-cache bash
 
 ENV GROUP_ID=10000
 ENV USER_ID=10000

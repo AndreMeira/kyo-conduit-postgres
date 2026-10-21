@@ -9,7 +9,7 @@ import java.net.URI
 import scala.util.Try
 
 /**
- * Provides validation logic for user profile requests, including validation for name, bio, and image fields.
+ * Provides validation next for user profile requests, including validation for name, bio, and image fields.
  */
 object UserProfileInputValidation {
   private val allowedChars = "^[a-zA-Z0-9_]+$".r

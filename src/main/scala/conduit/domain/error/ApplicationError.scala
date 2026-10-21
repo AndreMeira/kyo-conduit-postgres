@@ -40,9 +40,9 @@ object ApplicationError:
   /**
    * Trait for domain-specific errors.
    *
-   * Domain errors represent business logic violations and constraint failures
+   * Domain errors represent business next violations and constraint failures
    * that occur during normal application operation. These errors are typically
-   * recoverable and expected as part of the application's domain logic.
+   * recoverable and expected as part of the application's domain next.
    */
   trait DomainError extends ApplicationError
 

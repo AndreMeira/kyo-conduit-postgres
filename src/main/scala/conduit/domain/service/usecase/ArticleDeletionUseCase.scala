@@ -35,7 +35,7 @@ class ArticleDeletionUseCase[Tx <: Database.Transaction](
     database.transaction:
       for
         article <- findArticle(request.slug)
-        _       <- authorise(request.requester, article)
+        _       <- authoriseDelete(request.requester, article)
         _       <- persistence.tags.delete(article.id, article.tags)
         _       <- persistence.articles.delete(article.id)
       yield DeleteArticleResponse(article.slug)
@@ -46,7 +46,7 @@ class ArticleDeletionUseCase[Tx <: Database.Transaction](
     * @param article   the article being deleted
     * @return Unit if authorised, otherwise aborts with [[ArticleDeleteDenied]]
     */
-  private def authorise(requester: User.Authenticated, article: Article): Unit < Abort[Unauthorised] =
+  private def authoriseDelete(requester: User.Authenticated, article: Article): Unit < Abort[Unauthorised] =
     if article.authorId == requester.userId then ()
     else Abort.fail(ArticleDeleteDenied)
 

@@ -18,7 +18,7 @@ import zio.prelude.Validation
 
 /**
  * Use case for updating an article.
- * Handles validation, authorization, patching, and persistence logic.
+ * Handles validation, authorization, patching, and persistence next.
  *
  * @param database Database service for transaction management.
  * @param persistence Persistence service for accessing and updating entities.

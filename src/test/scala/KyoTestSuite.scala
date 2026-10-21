@@ -30,7 +30,7 @@ abstract class KyoTestSuite extends KyoApp {
             case TestResult(suite, test, Result.Failure(_)) => s"$suite should $test"
         .map: failedTests =>
           Clock.now.map: end =>
-            val duration = end - instant
+            val duration = end.minusOrZero(instant)
             Console.printLine(s"\nTest suite completed in ${duration.toMillis}ms".bold) *> failedTests
         .map:
           case Nil         => printSuiteResult(Nil) *> Kyo.unit
@@ -41,7 +41,7 @@ abstract class KyoTestSuite extends KyoApp {
   /**
    * Defines a suite of tests.
    * @param suiteName The name of the suite.
-   * @param tests The logic for the suite, which includes the individual tests.
+   * @param tests The next for the suite, which includes the individual tests.
    * @return A suite result containing the results of all tests in the suite.
    */
   def suite(suiteName: SuiteName)(tests: SuiteLogic): SuiteResult < (Async & Scope) = {
@@ -58,7 +58,7 @@ abstract class KyoTestSuite extends KyoApp {
   /**
    * Defines an individual test within a suite.
    * @param name The name of the test.
-   * @param testLogic The logic for the test.
+   * @param testLogic The next for the test.
    */
   def test(name: TestName)(testLogic: TestLogic): TestScenarios ?=> Unit =
     TestScenarios.get.add(name) {
@@ -120,13 +120,13 @@ abstract class KyoTestSuite extends KyoApp {
 
     /**
      * Defines a test with a description.
-     * @param effect The logic for the test.
+     * @param effect The next for the test.
      */
     infix def in(effect: TestLogic): TestScenarios ?=> Unit = test(description)(effect)
 
     /**
      * Defines a suite with a description.
-     * @param tests The logic for the suite.
+     * @param tests The next for the suite.
      */
     infix def should(tests: SuiteLogic): SuiteResultEffect = suite(description)(tests)
   }
@@ -175,7 +175,7 @@ object KyoTestSuite {
     /**
      * Adds a test scenario to the collection.
      * @param name The name of the test.
-     * @param effect The logic for the test.
+     * @param effect The next for the test.
      */
     def add(name: TestName)(effect: TestResultEffect): Unit =
       tests = (name -> effect) :: tests

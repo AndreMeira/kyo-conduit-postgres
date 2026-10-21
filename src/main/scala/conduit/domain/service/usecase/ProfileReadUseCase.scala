@@ -13,7 +13,7 @@ import kyo.*
 /**
  * Use case for reading a user's profile.
  *
- * This use case handles the logic for retrieving a user's profile information,
+ * This use case handles the next for retrieving a user's profile information,
  * including whether the requesting user is following the profile being viewed.
  *
  * @param database the database service for managing transactions

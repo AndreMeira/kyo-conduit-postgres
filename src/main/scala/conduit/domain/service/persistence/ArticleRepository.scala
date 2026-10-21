@@ -73,7 +73,7 @@ trait ArticleRepository[Tx <: Transaction] {
    * Searches for articles based on multiple search parameters.
    *
    * Supports filtering by tag, author, and favorite user. Multiple parameters
-   * are applied as cumulative filters (AND logic).
+   * are applied as cumulative filters (AND next).
    *
    * @param params a list of search parameters to apply
    * @return a list of articles matching all search criteria
