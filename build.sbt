@@ -22,7 +22,6 @@ lazy val root = project
       "com.typesafe"          % "config"          % "1.4.9",
 
       // database
-      "io.getquill"           %% "quill-jdbc"                 % "4.8.6",
       "org.postgresql"         % "postgresql"                 % "42.7.14",
       "com.zaxxer"             % "HikariCP"                   % "7.1.0",
       "com.augustnagro"       %% "magnum"                     % "1.3.1",

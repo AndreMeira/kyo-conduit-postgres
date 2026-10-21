@@ -45,11 +45,12 @@ object PostgresTestSupport:
   // Container lifecycle
   // ---------------------------------------------------------------------------
 
-  private def startContainer: PostgreSQLContainer[?] < Sync =
-    Kyo.defer:
+  private def startContainer: PostgreSQLContainer[?] < Sync = Kyo.defer:
+    withTestClassLoader {
       val container = PostgreSQLContainer(postgresImageName)
       container.start()
       container
+    }
 
   private def stopContainer(container: PostgreSQLContainer[?]): Unit < Sync =
     Kyo.defer(container.stop())
@@ -61,6 +62,7 @@ object PostgresTestSupport:
   private def createDatasource(container: PostgreSQLContainer[?]): HikariDataSource < Sync =
     Kyo.defer:
       val config = HikariConfig()
+      config.setDriverClassName("org.postgresql.Driver")
       config.setJdbcUrl(container.getJdbcUrl)
       config.setUsername(container.getUsername)
       config.setPassword(container.getPassword)
@@ -154,3 +156,19 @@ object PostgresTestSupport:
       database    = PostgresDatabase(datasource)
       result     <- test(using new WithDatabaseExtension {})(database)
     yield result
+
+  /**
+   * Runs `thunk` with the test classpath as the thread's context classloader, then restores it.
+   * Testcontainers discovers its Docker strategies through the context classloader, and a Kyo
+   * scheduler thread's does not see the test classpath, so discovery finds nothing.
+   *
+   * @param thunk the code to run
+   * @tparam A the result
+   * @return what `thunk` returns
+   */
+  private def withTestClassLoader[A](thunk: => A): A =
+    val thread   = Thread.currentThread()
+    val previous = thread.getContextClassLoader
+    thread.setContextClassLoader(getClass.getClassLoader)
+    try thunk
+    finally thread.setContextClassLoader(previous)

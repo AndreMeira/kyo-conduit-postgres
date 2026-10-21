@@ -16,11 +16,10 @@ object BearerToken {
    * Returns the extracted token when the header is present and well-formed,
    * `Absent` when the header is missing or does not use the `Token` scheme.
    */
-  def fromHeader(header: Maybe[String]): Maybe[BearerToken] =
-    header match
-      case Present(raw) =>
-        raw.trim.split(" ", 2) match
-          case Array("Token", token) => Present(BearerToken(token.trim))
-          case _                     => Absent
-      case Absent => Absent
+  def fromHeader(header: Maybe[String]): Maybe[BearerToken] = header match
+    case Absent       => Absent
+    case Present(raw) =>
+      raw.trim.split(" ", 2) match
+        case Array("Token", token) => Present(BearerToken(token.trim))
+        case _                     => Absent
 }

@@ -2,6 +2,7 @@
 import sbt.*
 import sbt.Keys.*
 import complete.DefaultParsers.*
+import CacheImplicits.given
 
 object TestTask {
   lazy val runTest = inputKey[Unit]("Run a main class from test sources")
@@ -14,7 +15,7 @@ object TestTask {
       val classpath = (runTest / fullClasspath).value
       val run       = (runTest / runner).value
       val log       = streams.value.log
-      run.run(mainClass, classpath.files, Seq.empty, log).get
+      run.run(mainClass, classpath, Seq.empty, log).get
     },
   )
 }

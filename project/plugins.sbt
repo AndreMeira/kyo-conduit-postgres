@@ -1,3 +1,3 @@
-addSbtPlugin("com.github.sbt" % "sbt-native-packager" % "1.9.16")
-addSbtPlugin("org.scalameta"  % "sbt-scalafmt"        % "2.5.0")
-addSbtPlugin("com.github.sbt" % "sbt-javaagent"       % "0.1.8")
+addSbtPlugin("com.github.sbt" % "sbt-native-packager" % "1.13.0")
+addSbtPlugin("org.scalameta"  % "sbt-scalafmt"        % "2.6.2")
+addSbtPlugin("com.github.sbt" % "sbt-javaagent"       % "0.3.0")
