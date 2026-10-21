@@ -79,11 +79,12 @@ object PostgresTestSupport:
 
   /**
    * Builds a Flyway instance configured against the given datasource, with
-   * clean enabled so tests can reset the schema between runs.
+   * clean enabled so tests can reset the schema between runs. Migrations are
+   * scanned through the test classpath's classloader, not the calling thread's.
    */
   private def flyway(datasource: HikariDataSource): Flyway =
     Flyway
-      .configure()
+      .configure(getClass.getClassLoader)
       .dataSource(datasource)
       .locations(migrationLocation)
       .cleanDisabled(false)
