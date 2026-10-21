@@ -12,7 +12,8 @@ object TestTask {
     runTest / fullClasspath := (Test / fullClasspath).value,
     runTest                 := {
       val mainClass = spaceDelimited("<main class>").parsed.head
-      val classpath = (runTest / fullClasspath).value
+      val converter = fileConverter.value
+      val classpath = (runTest / fullClasspath).value.map(entry => converter.toPath(entry.data))
       val run       = (runTest / runner).value
       val log       = streams.value.log
       run.run(mainClass, classpath, Seq.empty, log).get
