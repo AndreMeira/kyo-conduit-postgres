@@ -1,0 +1,29 @@
+# Dependency updates.
+version: 2
+
+updates:
+  - package-ecosystem: sbt
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+    open-pull-requests-limit: 3
+    groups:
+      kyo:
+        patterns:
+          - "dev.kyo:*"
+      # Everything else, minor and patch together. A major changes something and is worth its own read.
+      minor-and-patch:
+        update-types:
+          - minor
+          - patch
+
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+    groups:
+      actions:
+        patterns:
+          - "*"
