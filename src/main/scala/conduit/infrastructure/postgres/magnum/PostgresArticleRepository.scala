@@ -4,7 +4,7 @@ import com.augustnagro.magnum.*
 import conduit.domain.model.Article.Id
 import conduit.domain.model.{ Article, User }
 import conduit.domain.service.persistence.ArticleRepository
-import conduit.infrastructure.codecs.database.DatabaseCodecs.given
+import conduit.infrastructure.codecs.database.MagnumCodecs.given
 import PostgresTransaction.Transactional
 import kyo.{ sql as _, * }
 
@@ -202,7 +202,7 @@ class PostgresArticleRepository extends ArticleRepository[PostgresTransaction] {
            a.created_at, a.updated_at
            FROM articles a
            JOIN profiles p ON a.author_id = p.user_id
-           JOIN followers fol ON p.id = fol.followee_id
+           JOIN followers fol ON p.id = fol.profile_id
            WHERE fol.follower_id = $userId
            ORDER BY a.created_at DESC
            OFFSET $offset LIMIT $limit
@@ -219,7 +219,7 @@ class PostgresArticleRepository extends ArticleRepository[PostgresTransaction] {
       sql"""SELECT count(*)
             FROM articles a
             JOIN profiles p ON a.author_id = p.user_id
-            JOIN followers fol ON p.id = fol.followee_id
+            JOIN followers fol ON p.id = fol.profile_id
             WHERE fol.follower_id = $userId
           """.query[Int].run().headOption.getOrElse(0)
 

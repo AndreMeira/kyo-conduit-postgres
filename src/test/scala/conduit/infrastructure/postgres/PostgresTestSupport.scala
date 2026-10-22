@@ -168,7 +168,18 @@ object PostgresTestSupport:
    * @return the result of the test body
    */
   def withConnectionUrl[A](test: String => A < (Async & Scope)): A < (Async & Scope) =
-    Scope.acquireRelease(startContainer)(stopContainer).map(container => test(connectionUrl(container)))
+    withContainer(container => test(connectionUrl(container)))
+
+  /**
+   * Provides a live PostgreSQL container for the duration of the surrounding Scope. Its
+   * schema is empty; no migration is run.
+   *
+   * @param test the test body that receives the container
+   * @tparam A the result of the test body
+   * @return the result of the test body
+   */
+  def withContainer[A](test: PostgreSQLContainer[?] => A < (Async & Scope)): A < (Async & Scope) =
+    Scope.acquireRelease(startContainer)(stopContainer).map(test)
 
   /**
    * The kyo-sql connection URL of the container, credentials included.
@@ -176,7 +187,7 @@ object PostgresTestSupport:
    * @param container the running container
    * @return the URL, in the form `postgres://user:password@host:port/database`
    */
-  private def connectionUrl(container: PostgreSQLContainer[?]): String =
+  def connectionUrl(container: PostgreSQLContainer[?]): String =
     val port = container.getMappedPort(PostgreSQLContainer.POSTGRESQL_PORT)
     s"postgres://${container.getUsername}:${container.getPassword}@${container.getHost}:$port/${container.getDatabaseName}"
 

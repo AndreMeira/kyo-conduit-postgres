@@ -4,7 +4,7 @@ import com.augustnagro.magnum.*
 import conduit.domain.model.{ Credentials, User }
 import conduit.domain.service.persistence.CredentialsRepository
 import conduit.domain.types.*
-import conduit.infrastructure.codecs.database.DatabaseCodecs.given
+import conduit.infrastructure.codecs.database.MagnumCodecs.given
 import PostgresTransaction.Transactional
 import kyo.{ sql as _, * }
 

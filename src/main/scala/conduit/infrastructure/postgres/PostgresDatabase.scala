@@ -38,7 +38,7 @@ class PostgresDatabase(client: PostgresClient) extends Database[PostgresTransact
 object PostgresDatabase {
 
   /**
-   * Failures raised by the Postgres client, each carrying the underlying `SqlException`.
+   * Failures raised by the Postgres client, and writes that did not affect the rows they targeted.
    */
   enum Error extends ApplicationError.VendorError:
 
@@ -64,6 +64,14 @@ object PostgresDatabase {
     case TransactionError(cause: SqlException)
 
     /**
+     * A write affected a number of rows other than the one it targeted.
+     *
+     * @param table the table written to
+     * @param affected the number of rows the write affected
+     */
+    case UnexpectedRowCount(table: String, affected: Long)
+
+    /**
      * Provides a human-readable error message.
      *
      * @return the error message, including the underlying exception's message
@@ -72,6 +80,7 @@ object PostgresDatabase {
       case PoolInitFailed(cause)   => s"Failed to initialize the connection pool: ${cause.message}"
       case QueryError(cause)       => s"Query failed: ${cause.message}"
       case TransactionError(cause) => s"Transaction failed: ${cause.message}"
+      case UnexpectedRowCount(table, affected) => s"Expected a write to $table to affect one row, it affected $affected"
 
   /**
    * Opens a pooled Postgres client for the configured database, closed when the enclosing Scope ends.

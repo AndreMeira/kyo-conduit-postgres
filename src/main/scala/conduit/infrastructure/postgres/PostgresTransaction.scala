@@ -49,3 +49,16 @@ object PostgresTransaction:
      */
     def withTime[A](action: Instant => A < (DB & Abort[SqlException])): A < Pending =
       Clock.now.map(now => apply(action(now)))
+
+    /**
+     * Runs a write in the current transaction, refusing it unless it affected exactly one row.
+     *
+     * @param table the table written to, named in the failure
+     * @param write the statement, returning the number of rows it affected
+     * @return unit; aborts with `PostgresDatabase.Error.QueryError` when the statement fails, or with
+     *         `PostgresDatabase.Error.UnexpectedRowCount` when it affected no row or several
+     */
+    def single(table: String)(write: Long < (DB & Abort[SqlException])): Unit < Pending =
+      apply(write).map: affected =>
+        if affected == 1 then Kyo.unit
+        else Abort.fail(PostgresDatabase.Error.UnexpectedRowCount(table, affected))

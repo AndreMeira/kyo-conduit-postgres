@@ -10,7 +10,7 @@ import java.time.Instant
 import java.util.UUID
 import scala.reflect.ClassTag
 
-object DatabaseCodecs:
+object MagnumCodecs:
   /** A custom exception type for errors that occur during decoding of database values.
     * This exception is thrown when a value read from the database cannot be properly decoded
     * into the expected Scala type. It includes a message that provides details about the decoding error.

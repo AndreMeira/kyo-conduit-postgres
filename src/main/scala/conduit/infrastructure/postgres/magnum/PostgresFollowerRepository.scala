@@ -3,7 +3,7 @@ package conduit.infrastructure.postgres.magnum
 import com.augustnagro.magnum.*
 import conduit.domain.model.{ User, UserProfile }
 import conduit.domain.service.persistence.FollowerRepository
-import conduit.infrastructure.codecs.database.DatabaseCodecs.given
+import conduit.infrastructure.codecs.database.MagnumCodecs.given
 import PostgresTransaction.Transactional
 import kyo.{ sql as _, * }
 
@@ -14,7 +14,7 @@ class PostgresFollowerRepository extends FollowerRepository[PostgresTransaction]
   /**
    * Checks if a follower relationship exists.
    *
-   * follower_id references users(id), followee_id references profiles(id).
+   * follower_id references users(id), profile_id references profiles(id).
    * Follower.profileId stores the profile ID of the followed user.
    *
    * @param followed the follower relationship to check
@@ -25,7 +25,7 @@ class PostgresFollowerRepository extends FollowerRepository[PostgresTransaction]
       sql"""SELECT EXISTS(
               SELECT 1 FROM followers
               WHERE follower_id = ${followed.followerId}
-                AND followee_id = ${followed.profileId}
+                AND profile_id = ${followed.profileId}
             )"""
         .query[Boolean]
         .run()
@@ -44,9 +44,9 @@ class PostgresFollowerRepository extends FollowerRepository[PostgresTransaction]
     else
       Transactional:
         val ids: List[UUID] = followedIds
-        sql"""SELECT followee_id FROM followers
+        sql"""SELECT profile_id FROM followers
               WHERE follower_id = $followerId
-                AND followee_id = ANY($ids)"""
+                AND profile_id = ANY($ids)"""
           .query[UserProfile.Id]
           .run()
           .toList
@@ -61,9 +61,9 @@ class PostgresFollowerRepository extends FollowerRepository[PostgresTransaction]
    */
   override def add(followed: UserProfile.Follower): Unit < Effect =
     Transactional {
-      sql"""INSERT INTO followers (follower_id, followee_id)
+      sql"""INSERT INTO followers (follower_id, profile_id)
             VALUES (${followed.followerId}, ${followed.profileId})
-            ON CONFLICT (follower_id, followee_id) DO NOTHING""".update
+            ON CONFLICT (follower_id, profile_id) DO NOTHING""".update
         .run()
     }.unit
 
@@ -77,6 +77,6 @@ class PostgresFollowerRepository extends FollowerRepository[PostgresTransaction]
     Transactional {
       sql"""DELETE FROM followers
             WHERE follower_id = ${followed.followerId}
-              AND followee_id = ${followed.profileId}""".update
+              AND profile_id = ${followed.profileId}""".update
         .run()
     }.unit

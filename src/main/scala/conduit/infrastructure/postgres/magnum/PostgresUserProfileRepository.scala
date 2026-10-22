@@ -3,7 +3,7 @@ package conduit.infrastructure.postgres.magnum
 import com.augustnagro.magnum.*
 import conduit.domain.model.{ Article, User, UserProfile }
 import conduit.domain.service.persistence.UserProfileRepository
-import conduit.infrastructure.codecs.database.DatabaseCodecs.given
+import conduit.infrastructure.codecs.database.MagnumCodecs.given
 import PostgresTransaction.Transactional
 import kyo.{ sql as _, * }
 
@@ -20,7 +20,7 @@ class PostgresUserProfileRepository extends UserProfileRepository[PostgresTransa
   override def save(profile: UserProfile): Unit < Effect =
     Transactional:
       val count = sql"""
-          INSERT INTO profiles (id, user_id, name, bio, image, created_at, updated_at)
+          INSERT INTO profiles (id, user_id, name, biography, image, created_at, updated_at)
           VALUES (
             ${profile.id},
             ${profile.userId},
@@ -44,7 +44,7 @@ class PostgresUserProfileRepository extends UserProfileRepository[PostgresTransa
       val count = sql"""
           UPDATE profiles SET
             name       = ${profile.name},
-            bio        = ${profile.biography},
+            biography  = ${profile.biography},
             image      = ${profile.image},
             updated_at = ${profile.updatedAt}
           WHERE id = ${profile.id}""".update
@@ -74,7 +74,7 @@ class PostgresUserProfileRepository extends UserProfileRepository[PostgresTransa
   override def find(id: UserProfile.Id): Maybe[UserProfile] < Effect =
     Transactional:
       Maybe.fromOption:
-        sql"""SELECT p.id, p.user_id, p.name, p.bio, p.image, p.created_at, p.updated_at
+        sql"""SELECT p.id, p.user_id, p.name, p.biography, p.image, p.created_at, p.updated_at
               FROM profiles p
               WHERE p.id = $id"""
           .query[UserProfile]
@@ -90,7 +90,7 @@ class PostgresUserProfileRepository extends UserProfileRepository[PostgresTransa
   override def findByUser(id: User.Id): Maybe[UserProfile] < Effect =
     Transactional:
       Maybe.fromOption:
-        sql"""SELECT p.id, p.user_id, p.name, p.bio, p.image, p.created_at, p.updated_at
+        sql"""SELECT p.id, p.user_id, p.name, p.biography, p.image, p.created_at, p.updated_at
               FROM profiles p
               WHERE p.user_id = $id"""
           .query[UserProfile]
@@ -107,7 +107,7 @@ class PostgresUserProfileRepository extends UserProfileRepository[PostgresTransa
     if ids.isEmpty then List.empty
     else
       Transactional:
-        sql"""SELECT p.id, p.user_id, p.name, p.bio, p.image, p.created_at, p.updated_at
+        sql"""SELECT p.id, p.user_id, p.name, p.biography, p.image, p.created_at, p.updated_at
               FROM profiles p
               WHERE p.user_id = ANY($ids)"""
           .query[UserProfile]
@@ -123,7 +123,7 @@ class PostgresUserProfileRepository extends UserProfileRepository[PostgresTransa
   override def findByUsername(username: String): Maybe[UserProfile] < Effect =
     Transactional:
       Maybe.fromOption:
-        sql"""SELECT p.id, p.user_id, p.name, p.bio, p.image, p.created_at, p.updated_at
+        sql"""SELECT p.id, p.user_id, p.name, p.biography, p.image, p.created_at, p.updated_at
               FROM profiles p
               WHERE p.name = $username"""
           .query[UserProfile]
@@ -153,7 +153,7 @@ class PostgresUserProfileRepository extends UserProfileRepository[PostgresTransa
   override def findByArticle(id: Article.Id): Maybe[UserProfile] < Effect =
     Transactional:
       Maybe.fromOption:
-        sql"""SELECT p.id, p.user_id, p.name, p.bio, p.image, p.created_at, p.updated_at
+        sql"""SELECT p.id, p.user_id, p.name, p.biography, p.image, p.created_at, p.updated_at
               FROM profiles p
               JOIN articles a ON a.author_id = p.user_id
               WHERE a.id = $id"""
@@ -172,7 +172,7 @@ class PostgresUserProfileRepository extends UserProfileRepository[PostgresTransa
     else
       Transactional:
         val idsList: List[UUID] = ids.toList
-        sql"""SELECT a.id, p.id, p.user_id, p.name, p.bio, p.image, p.created_at, p.updated_at
+        sql"""SELECT a.id, p.id, p.user_id, p.name, p.biography, p.image, p.created_at, p.updated_at
               FROM profiles p
               JOIN articles a ON a.author_id = p.user_id
               WHERE a.id = ANY($idsList)"""
