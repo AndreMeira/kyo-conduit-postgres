@@ -1,10 +1,11 @@
-package conduit.infrastructure.postgres
+package conduit.infrastructure.postgres.magnum
 
 import com.andremeira.test.KyoTestSuite
 import com.andremeira.test.KyoTestSuite.SuiteResult
 import conduit.domain.model.UserProfile
-import PostgresTestSupport.withDatabase
 import conduit.infrastructure.TestFixtures
+import conduit.infrastructure.postgres.PostgresTestSupport
+import conduit.infrastructure.postgres.PostgresTestSupport.withDatabase
 import kyo.*
 
 object PostgresFollowerRepositorySpec extends KyoTestSuite:

@@ -1,9 +1,10 @@
-package conduit.infrastructure.postgres
+package conduit.infrastructure.postgres.magnum
 
 import com.andremeira.test.KyoTestSuite
 import com.andremeira.test.KyoTestSuite.SuiteResult
 import conduit.domain.error.ApplicationError
 import conduit.infrastructure.postgres.PostgresTransaction.Transactional
+import conduit.infrastructure.postgres.{ PostgresDatabase, PostgresTestSupport }
 import kyo.*
 
 object PostgresDatabaseSpec extends KyoTestSuite:
