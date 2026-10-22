@@ -1,10 +1,10 @@
-package conduit.infrastructure.postgres
+package conduit.infrastructure.postgres.magnum
 
 import com.augustnagro.magnum.*
 import conduit.domain.model.Article
 import conduit.domain.service.persistence.TagRepository
 import conduit.infrastructure.codecs.database.DatabaseCodecs.given
-import conduit.infrastructure.postgres.PostgresTransaction.Transactional
+import PostgresTransaction.Transactional
 import kyo.*
 
 class PostgresTagRepository extends TagRepository[PostgresTransaction]:

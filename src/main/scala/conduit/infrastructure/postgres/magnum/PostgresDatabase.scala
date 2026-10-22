@@ -1,4 +1,4 @@
-package conduit.infrastructure.postgres
+package conduit.infrastructure.postgres.magnum
 
 import com.zaxxer.hikari.HikariDataSource
 import conduit.domain.error.ApplicationError

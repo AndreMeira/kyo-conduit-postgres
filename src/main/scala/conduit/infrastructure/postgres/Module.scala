@@ -2,10 +2,10 @@ package conduit.infrastructure.postgres
 
 import com.zaxxer.hikari.HikariDataSource
 import conduit.domain.service.persistence.{ Database, Persistence }
-import conduit.infrastructure.configuration.ConfigurationLoader
 import conduit.infrastructure.postgres.configuration.{ DatabaseConfig, DatasourceConfig, MigrationConfig }
+import conduit.infrastructure.postgres.magnum.*
+import conduit.infrastructure.postgres.Migration
 import kyo.*
-import org.flywaydb.core.Flyway
 
 /**
  * Kyo Layer definitions for the Postgres infrastructure.
@@ -23,7 +23,7 @@ object Module:
   lazy val all: Layer[Database[PostgresTransaction] & Persistence[PostgresTransaction] & Migration, Env[DatabaseConfig] & Sync & Scope] =
     datasourceConfig
       .to(dataSource and migrationConfig)
-      .to(database and database.to(persistence) and migration)
+      .to(database and persistence and migration)
 
   /**
    * Extracts the DatasourceConfig from the loaded DatabaseConfig. This allows
@@ -31,7 +31,7 @@ object Module:
    * rather than the entire DatabaseConfig.
    */
   lazy val datasourceConfig: Layer[DatasourceConfig, Env[DatabaseConfig] & Sync] =
-    Layer.from { (dbConfig: DatabaseConfig) => dbConfig.datasource }
+    Layer.from((dbConfig: DatabaseConfig) => dbConfig.datasource)
 
   /**
    * Extracts the MigrationConfig from the loaded DatabaseConfig. This allows
@@ -39,7 +39,7 @@ object Module:
    * rather than the entire DatabaseConfig.
    */
   lazy val migrationConfig: Layer[MigrationConfig, Env[DatabaseConfig] & Sync] =
-    Layer.from { (dbConfig: DatabaseConfig) => dbConfig.migration }
+    Layer.from((dbConfig: DatabaseConfig) => dbConfig.migration)
 
   /**
    * Provides a HikariDataSource connection pool based on the provided DatasourceConfig.

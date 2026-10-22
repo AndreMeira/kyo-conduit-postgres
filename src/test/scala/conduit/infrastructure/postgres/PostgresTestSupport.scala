@@ -1,8 +1,9 @@
 package conduit.infrastructure.postgres
 
-import com.zaxxer.hikari.{ HikariConfig, HikariDataSource }
+import com.zaxxer.hikari.{HikariConfig, HikariDataSource}
 import conduit.domain.error.ApplicationError
 import conduit.domain.service.persistence.Persistence
+import conduit.infrastructure.postgres.magnum.{PostgresArticleRepository, PostgresCommentRepository, PostgresCredentialsRepository, PostgresDatabase, PostgresFavoriteRepository, PostgresFollowerRepository, PostgresTagRepository, PostgresTransaction, PostgresUserProfileRepository}
 import kyo.*
 import org.flywaydb.core.Flyway
 import org.testcontainers.containers.PostgreSQLContainer

@@ -1,13 +1,11 @@
-package conduit.infrastructure.postgres
+package conduit.infrastructure.postgres.magnum
 
 import com.augustnagro.magnum.*
-import com.augustnagro.magnum.MagnumInterop.syntax.*
-import com.augustnagro.magnum.MagnumInterop.syntax.{ when, concat }
-import conduit.domain.model.{ Article, User }
 import conduit.domain.model.Article.Id
+import conduit.domain.model.{ Article, User }
 import conduit.domain.service.persistence.ArticleRepository
 import conduit.infrastructure.codecs.database.DatabaseCodecs.given
-import conduit.infrastructure.postgres.PostgresTransaction.Transactional
+import PostgresTransaction.Transactional
 import kyo.*
 
 class PostgresArticleRepository extends ArticleRepository[PostgresTransaction] {

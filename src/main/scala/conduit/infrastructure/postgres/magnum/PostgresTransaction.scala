@@ -1,6 +1,6 @@
-package conduit.infrastructure.postgres
+package conduit.infrastructure.postgres.magnum
 
-import com.augustnagro.magnum.{ DbTx, MagnumInterop, SqlLogger, transact }
+import com.augustnagro.magnum.{ DbTx, MagnumInterop }
 import conduit.domain.error.ApplicationError
 import conduit.domain.service.persistence.Database
 import kyo.*

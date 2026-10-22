@@ -1,10 +1,10 @@
-package conduit.infrastructure.postgres
+package conduit.infrastructure.postgres.magnum
 
 import com.augustnagro.magnum.*
 import conduit.domain.model.{ Article, Comment }
 import conduit.domain.service.persistence.CommentRepository
 import conduit.infrastructure.codecs.database.DatabaseCodecs.given
-import conduit.infrastructure.postgres.PostgresTransaction.Transactional
+import PostgresTransaction.Transactional
 import kyo.*
 
 class PostgresCommentRepository extends CommentRepository[PostgresTransaction]:
