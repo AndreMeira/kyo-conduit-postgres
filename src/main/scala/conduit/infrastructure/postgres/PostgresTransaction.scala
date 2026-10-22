@@ -7,12 +7,13 @@ import kyo.*
 /**
  * The transaction a repository runs its statements in, provided by [[PostgresDatabase.transaction]].
  *
- * It holds the client rather than a connection: the connection is pinned to the fiber by the
- * client's own transaction, and statements run through this client inside it use that connection.
+ * It holds no connection: the client's transaction pins its connection to the fiber, and a
+ * statement run with this state, whose client is the one the transaction was opened on, uses
+ * that pinned connection.
  *
- * @param client the client the enclosing transaction was opened on
+ * @param state the client the enclosing transaction was opened on, and the config its statements run with
  */
-case class PostgresTransaction(client: PostgresClient) extends Database.Transaction
+case class PostgresTransaction(state: DB.State) extends Database.Transaction
 
 object PostgresTransaction:
 
@@ -36,7 +37,7 @@ object PostgresTransaction:
      */
     def apply[A](action: A < (DB & Abort[SqlException])): A < Pending =
       Env.use[PostgresTransaction] { tx =>
-        DB.run(tx.client)(action.mapAbort(cause => PostgresDatabase.Error.QueryError(cause)))
+        DB.run(tx.state)(action.mapAbort(cause => PostgresDatabase.Error.QueryError(cause)))
       }
 
     /**

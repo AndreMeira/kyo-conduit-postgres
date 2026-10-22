@@ -31,7 +31,7 @@ class PostgresDatabase(client: PostgresClient) extends Database[PostgresTransact
    */
   def transaction[A, Effect <: Pending](effect: A < (Effect & Env[PostgresTransaction])): A < Effect =
     client
-      .transaction(Env.run(PostgresTransaction(client))(effect))
+      .transaction(Env.run(PostgresTransaction(DB.State(client, client.config)))(effect))
       .mapAbort(cause => PostgresDatabase.Error.TransactionError(cause))
 }
 

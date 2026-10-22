@@ -155,9 +155,30 @@ object PostgresTestSupport:
     for
       container  <- Scope.acquireRelease(startContainer)(stopContainer)
       datasource <- Scope.acquireRelease(createDatasource(container))(closeDatasource)
-      database    = PostgresDatabase(datasource)
+      database    = new PostgresDatabase(datasource)
       result     <- test(using new WithDatabaseExtension {})(database)
     yield result
+
+  /**
+   * Provides the connection URL of a live PostgreSQL container for the duration of the
+   * surrounding Scope. The container's schema is empty; no migration is run.
+   *
+   * @param test the test body that receives the URL
+   * @tparam A the result of the test body
+   * @return the result of the test body
+   */
+  def withConnectionUrl[A](test: String => A < (Async & Scope)): A < (Async & Scope) =
+    Scope.acquireRelease(startContainer)(stopContainer).map(container => test(connectionUrl(container)))
+
+  /**
+   * The kyo-sql connection URL of the container, credentials included.
+   *
+   * @param container the running container
+   * @return the URL, in the form `postgres://user:password@host:port/database`
+   */
+  private def connectionUrl(container: PostgreSQLContainer[?]): String =
+    val port = container.getMappedPort(PostgreSQLContainer.POSTGRESQL_PORT)
+    s"postgres://${container.getUsername}:${container.getPassword}@${container.getHost}:$port/${container.getDatabaseName}"
 
   /**
    * Runs `thunk` with the test classpath as the thread's context classloader, then restores it.
