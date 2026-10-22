@@ -22,13 +22,15 @@ lazy val root = project
       "com.typesafe"          % "config"          % "1.4.9",
 
       // database
-      "org.postgresql"         % "postgresql"                 % "42.7.14",
-      "com.zaxxer"             % "HikariCP"                   % "7.1.0",
-      "com.augustnagro"       %% "magnum"                     % "1.3.1",
-      "com.augustnagro"       %% "magnumpg"                   % "1.3.1",
-      "org.flywaydb"           % "flyway-core"                % "13.10.3",
-      "org.flywaydb"           % "flyway-database-postgresql" % "13.10.3",
-      "com.github.pureconfig" %% "pureconfig-core"            % "0.17.11",
+      "org.postgresql"   % "postgresql"                 % "42.7.14",
+      "com.zaxxer"       % "HikariCP"                   % "7.1.0",
+      "com.augustnagro" %% "magnum"                     % "1.3.1",
+      "com.augustnagro" %% "magnumpg"                   % "1.3.1",
+      "org.flywaydb"     % "flyway-core"                % "13.11.1",
+      "org.flywaydb"     % "flyway-database-postgresql" % "13.11.1",
+
+      // config
+      "com.github.pureconfig" %% "pureconfig-core" % "0.17.11",
 
       // json
       "io.circe" %% "circe-generic" % "0.14.17",
