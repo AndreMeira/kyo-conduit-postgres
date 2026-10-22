@@ -5,7 +5,7 @@ import conduit.infrastructure.configuration.ConfigurationLoader
 import kyo.*
 import pureconfig.ConfigReader
 
-import scala.concurrent.duration.Duration
+import scala.concurrent.duration.{ Duration, FiniteDuration }
 
 /**
  * Configuration for the database connection pool.
@@ -61,4 +61,27 @@ case class DatasourceConfig(
     config.setConnectionTimeout(connectionTimeout.toMillis)
     config.setAutoCommit(false)
     config
+
+  /**
+   * The kyo-sql pool settings of this configuration, sized as `toHikariConfig` sizes the Hikari pool:
+   * `poolSize` connections kept open, up to twice as many under load.
+   *
+   * @return the pool settings
+   */
+  def toSqlConfig: SqlConfig =
+    SqlConfig.default
+      .minConnections(poolSize)
+      .maxConnections(poolSize * 2)
+      .acquireTimeout(acquireTimeout)
+      .copy(connectionTestQuery = Maybe(connectionTestQuery))
+
+  /**
+   * How long a caller waits for a pooled connection.
+   *
+   * @return the connection timeout, or no limit when it is configured as infinite
+   */
+  private def acquireTimeout: kyo.Duration =
+    connectionTimeout match
+      case finite: FiniteDuration => kyo.Duration.fromNanos(finite.toNanos)
+      case _                      => kyo.Duration.Infinity
 }

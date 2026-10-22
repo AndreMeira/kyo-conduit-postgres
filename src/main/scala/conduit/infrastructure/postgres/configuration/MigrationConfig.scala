@@ -33,12 +33,13 @@ case class MigrationConfig(
    * Converts this MigrationConfig into a FluentConfiguration for Flyway.
    * This method sets up the Flyway configuration according to the properties of this MigrationConfig,
    * including the initial SQL command, migration locations, parameters, placeholders, and clean settings.
+   * Migrations are scanned through the application's classloader, not the calling thread's.
    *
    * @return A FluentConfiguration instance configured according to the properties of this MigrationConfig.
    */
   def toFlywayConfig: FluentConfiguration =
     Flyway
-      .configure()
+      .configure(getClass.getClassLoader)
       .initSql(initSql)
       .locations(locations*)
       .cleanDisabled(!allowClean)

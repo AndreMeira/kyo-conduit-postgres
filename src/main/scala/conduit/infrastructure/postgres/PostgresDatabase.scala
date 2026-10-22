@@ -85,11 +85,11 @@ object PostgresDatabase {
   /**
    * Opens a pooled Postgres client for the configured database, closed when the enclosing Scope ends.
    *
-   * @param config the host, port, database and credentials to connect with
+   * @param config the host, port, database, credentials and pool settings to connect with
    * @return the open client; aborts with `Error.PoolInitFailed` when the pool cannot be opened
    */
   def client(config: DatasourceConfig): PostgresClient < (Async & Scope & Abort[Error]) = {
     val url = s"postgres://${config.user}:${config.password}@${config.host}:${config.port}/${config.database}"
-    PostgresClient.init(url).mapAbort(cause => Error.PoolInitFailed(cause))
+    PostgresClient.init(url, config.toSqlConfig).mapAbort(cause => Error.PoolInitFailed(cause))
   }
 }
