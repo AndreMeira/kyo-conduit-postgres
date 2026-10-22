@@ -73,14 +73,16 @@ docker compose up
 
 Configuration files live in `src/main/resources/config/`:
 
-- `database.conf` — JDBC URL, credentials, pool settings, Flyway migration config
+- `database.conf` — server address, credentials, pool settings, Flyway migration config
 - `authentication.conf` — password salt, JWT token salt and TTL
 
 Environment variable overrides are supported for deployment:
 
 | Variable      | Default                                        |
 |---------------|------------------------------------------------|
-| `DB_URL`      | `jdbc:postgresql://localhost:5432/conduit`     |
+| `DB_HOST`     | `localhost`                                    |
+| `DB_PORT`     | `5432`                                         |
+| `DB_NAME`     | `conduit`                                      |
 | `DB_USER`     | `conduit`                                      |
 | `DB_PASSWORD` | `conduit`                                      |
 

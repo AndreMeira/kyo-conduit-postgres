@@ -30,9 +30,10 @@ class PostgresDatabase(client: PostgresClient) extends Database[PostgresTransact
    *         `PostgresDatabase.Error.TransactionError` when beginning, committing or rolling back fails
    */
   def transaction[A, Effect <: Pending](effect: A < (Effect & Env[PostgresTransaction])): A < Effect =
-    client
-      .transaction(Env.run(PostgresTransaction(DB.State(client, client.config)))(effect))
-      .mapAbort(cause => PostgresDatabase.Error.TransactionError(cause))
+    Abort.recover[SqlException](PostgresDatabase.unwrap):
+      client.transaction:
+        Abort.recover[ApplicationError](PostgresDatabase.wrap):
+          Env.run(PostgresTransaction(DB.State(client, client.config)))(effect)
 }
 
 object PostgresDatabase {
@@ -81,6 +82,37 @@ object PostgresDatabase {
       case QueryError(cause)       => s"Query failed: ${cause.message}"
       case TransactionError(cause) => s"Transaction failed: ${cause.message}"
       case UnexpectedRowCount(table, affected) => s"Expected a write to $table to affect one row, it affected $affected"
+
+  /**
+   * An application failure carried out of a transaction as a request-level `SqlException`.
+   * kyo-sql returns a connection to its pool after a rollback only when the body failed with a
+   * non-fatal `SqlException`, and closes it after any other failure.
+   *
+   * @param error the application failure the transaction body aborted with
+   */
+  private final class Aborted(val error: ApplicationError)(using Frame)
+      extends SqlRequestBackendException(s"Transaction body aborted: ${error.message}")
+
+  /**
+   * Carries an application failure out of a transaction body.
+   *
+   * @param error the failure the body aborted with
+   * @return never; aborts with `Aborted` holding the failure
+   */
+  private def wrap(error: ApplicationError)(using Frame): Nothing < Abort[SqlException] =
+    Abort.fail(Aborted(error))
+
+  /**
+   * Recovers the failure a transaction ended with.
+   *
+   * @param cause the failure the transaction raised
+   * @return never; aborts with the body's own `ApplicationError` when it carried one, or with
+   *         `Error.TransactionError` for a failure of the transaction itself
+   */
+  private def unwrap(cause: SqlException): Nothing < Abort[ApplicationError] =
+    cause match
+      case aborted: Aborted => Abort.fail(aborted.error)
+      case other            => Abort.fail(Error.TransactionError(other))
 
   /**
    * Opens a pooled Postgres client for the configured database, closed when the enclosing Scope ends.

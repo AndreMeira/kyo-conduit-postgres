@@ -64,7 +64,8 @@ case class DatasourceConfig(
 
   /**
    * The kyo-sql pool settings of this configuration, sized as `toHikariConfig` sizes the Hikari pool:
-   * `poolSize` connections kept open, up to twice as many under load.
+   * `poolSize` connections kept open, up to twice as many under load. `connectionTestQuery` is
+   * not applied: kyo-sql would run it before every lease.
    *
    * @return the pool settings
    */
@@ -73,7 +74,6 @@ case class DatasourceConfig(
       .minConnections(poolSize)
       .maxConnections(poolSize * 2)
       .acquireTimeout(acquireTimeout)
-      .copy(connectionTestQuery = Maybe(connectionTestQuery))
 
   /**
    * How long a caller waits for a pooled connection.

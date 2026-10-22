@@ -44,6 +44,9 @@ lazy val root = project
       "org.testcontainers" % "postgresql" % "1.21.4" % Test,
     ),
     Compile / mainClass := Some("conduit.application.http.HttpApplication"),
+    // sbt 2 nests target per platform and Scala version; the Dockerfile copies the stage from here
+    Universal / sbt.Keys.stagingDirectory :=
+      baseDirectory.value / "target" / "universal" / "stage",
     testFrameworks      := Seq(new TestFramework("com.andremeira.test.KyoFramework")),
     scalacOptions ++= Seq(
       "-Wvalue-discard",
