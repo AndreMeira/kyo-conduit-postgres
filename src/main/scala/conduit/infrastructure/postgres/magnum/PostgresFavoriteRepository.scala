@@ -5,7 +5,7 @@ import conduit.domain.model.{ Article, User }
 import conduit.domain.service.persistence.FavoriteRepository
 import conduit.infrastructure.codecs.database.DatabaseCodecs.given
 import PostgresTransaction.Transactional
-import kyo.*
+import kyo.{ sql as _, * }
 
 import java.util.UUID
 

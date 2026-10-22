@@ -28,6 +28,8 @@ lazy val root = project
       "com.augustnagro" %% "magnumpg"                   % "1.3.1",
       "org.flywaydb"     % "flyway-core"                % "13.11.1",
       "org.flywaydb"     % "flyway-database-postgresql" % "13.11.1",
+      "io.getkyo"       %% "kyo-sql"                    % "1.0.0-RC7",
+      "io.getkyo"       %% "kyo-sql-postgres"           % "1.0.0-RC7",
 
       // config
       "com.github.pureconfig" %% "pureconfig-core" % "0.17.11",

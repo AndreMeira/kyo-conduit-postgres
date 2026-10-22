@@ -5,7 +5,7 @@ import conduit.domain.model.{ Article, Comment }
 import conduit.domain.service.persistence.CommentRepository
 import conduit.infrastructure.codecs.database.DatabaseCodecs.given
 import PostgresTransaction.Transactional
-import kyo.*
+import kyo.{ sql as _, * }
 
 class PostgresCommentRepository extends CommentRepository[PostgresTransaction]:
 

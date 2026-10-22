@@ -5,8 +5,8 @@ import conduit.domain.service.authentication.{ AuthenticationService, Module as 
 import conduit.domain.service.usecase.Module as UseCaseModule
 import conduit.domain.service.validation.Module as ValidationModule
 import conduit.infrastructure.configuration.Module as ConfigurationModule
-import conduit.infrastructure.postgres.magnum.PostgresTransaction
-import conduit.infrastructure.postgres.{Migration, Module as PostgresModule}
+import conduit.infrastructure.postgres.magnum.{PostgresTransaction, Module as PostgresModule}
+import conduit.infrastructure.postgres.{Migration}
 import kyo.*
 
 /** Entry point for the Conduit HTTP application.

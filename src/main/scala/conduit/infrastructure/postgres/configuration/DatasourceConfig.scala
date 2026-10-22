@@ -10,25 +10,37 @@ import scala.concurrent.duration.Duration
 /**
  * Configuration for the database connection pool.
  * This class holds all necessary information to establish a connection to the database,
- * including JDBC URL, credentials, pool settings, and driver information.
+ * including the server address, credentials, pool settings, and driver information.
  *
- * @param jdbcUrl The JDBC URL for the database connection.
  * @param user The username for the database connection.
  * @param password The password for the database connection.
  * @param poolSize The size of the connection pool (default is 10).
+ * @param database The name of the database to connect to (default is "conduit").
+ * @param host The host the database server listens on (default is "localhost").
+ * @param port The port the database server listens on (default is 5432).
  * @param connectionTestQuery The SQL query used to test the connection (default is "SELECT 1").
  * @param driverClass The fully qualified class name of the JDBC driver (default is "org.postgresql.Driver").
  * @param connectionTimeout The maximum time to wait for a connection from the pool (default is 60 seconds).
  */
 case class DatasourceConfig(
-  jdbcUrl: String,
   user: String,
   password: String,
   poolSize: Int = 10,
+  database: String = "conduit",
+  host: String = "localhost",
+  port: Int = 5432,
   connectionTestQuery: String = "SELECT 1",
   driverClass: String = "org.postgresql.Driver",
   connectionTimeout: Duration = Duration.create(60, "seconds"),
 ) derives ConfigReader {
+
+  /**
+   * The JDBC URL of the configured database. It carries no credentials; those are set
+   * separately on the connection pool.
+   *
+   * @return the URL, in the form `jdbc:postgresql://host:port/database`
+   */
+  def jdbcUrl: String = s"jdbc:postgresql://$host:$port/$database"
 
   /** 
    * Converts this DatasourceConfig into a HikariConfig, which can be used to create a Hikari DataSource. 

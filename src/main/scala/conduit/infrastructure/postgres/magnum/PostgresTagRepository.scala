@@ -5,7 +5,7 @@ import conduit.domain.model.Article
 import conduit.domain.service.persistence.TagRepository
 import conduit.infrastructure.codecs.database.DatabaseCodecs.given
 import PostgresTransaction.Transactional
-import kyo.*
+import kyo.{ sql as _, * }
 
 class PostgresTagRepository extends TagRepository[PostgresTransaction]:
 

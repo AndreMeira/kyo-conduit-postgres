@@ -6,7 +6,7 @@ import conduit.domain.service.persistence.CredentialsRepository
 import conduit.domain.types.*
 import conduit.infrastructure.codecs.database.DatabaseCodecs.given
 import PostgresTransaction.Transactional
-import kyo.*
+import kyo.{ sql as _, * }
 
 class PostgresCredentialsRepository extends CredentialsRepository[PostgresTransaction]:
 

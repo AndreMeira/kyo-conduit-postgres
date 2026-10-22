@@ -1,10 +1,10 @@
-package conduit.infrastructure.postgres
+package conduit.infrastructure.postgres.magnum
 
 import com.zaxxer.hikari.HikariDataSource
-import conduit.domain.service.persistence.{ Database, Persistence }
-import conduit.infrastructure.postgres.configuration.{ DatabaseConfig, DatasourceConfig, MigrationConfig }
-import conduit.infrastructure.postgres.magnum.*
+import conduit.domain.service.persistence.{Database, Persistence}
 import conduit.infrastructure.postgres.Migration
+import conduit.infrastructure.postgres.configuration.{DatabaseConfig, DatasourceConfig, MigrationConfig}
+import conduit.infrastructure.postgres.magnum.*
 import kyo.*
 
 /**
