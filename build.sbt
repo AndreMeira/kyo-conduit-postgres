@@ -25,18 +25,18 @@ lazy val root = project
       "io.getkyo"            %% "kyo-net"         % "1.0.0-RC7" classifier "linux-aarch64",
       "io.getkyo"            %% "kyo-net"         % "1.0.0-RC7" classifier "linux-musl-x86_64",
       "io.getkyo"            %% "kyo-net"         % "1.0.0-RC7" classifier "linux-musl-aarch64",
-      "ch.qos.logback"        % "logback-classic" % "1.6.5",
+      "ch.qos.logback"        % "logback-classic" % "1.6.6",
       "commons-codec"         % "commons-codec"   % "1.23.0",
       "com.github.jwt-scala" %% "jwt-circe"       % "12.0.0",
-      "com.typesafe"          % "config"          % "1.4.9",
+      "com.typesafe"          % "config"          % "1.4.10",
 
       // database
       "org.postgresql"   % "postgresql"                 % "42.7.14",
       "com.zaxxer"       % "HikariCP"                   % "7.1.0",
       "com.augustnagro" %% "magnum"                     % "1.3.1",
       "com.augustnagro" %% "magnumpg"                   % "1.3.1",
-      "org.flywaydb"     % "flyway-core"                % "13.11.1",
-      "org.flywaydb"     % "flyway-database-postgresql" % "13.11.1",
+      "org.flywaydb"     % "flyway-core"                % "13.12.1",
+      "org.flywaydb"     % "flyway-database-postgresql" % "13.12.1",
       "io.getkyo"       %% "kyo-sql"                    % "1.0.0-RC7",
       "io.getkyo"       %% "kyo-sql-postgres"           % "1.0.0-RC7",
 
