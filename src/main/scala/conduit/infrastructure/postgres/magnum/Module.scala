@@ -1,9 +1,9 @@
 package conduit.infrastructure.postgres.magnum
 
 import com.zaxxer.hikari.HikariDataSource
-import conduit.domain.service.persistence.{Database, Persistence}
+import conduit.domain.service.persistence.{ Database, Persistence }
 import conduit.infrastructure.postgres.Migration
-import conduit.infrastructure.postgres.configuration.{DatabaseConfig, DatasourceConfig, MigrationConfig}
+import conduit.infrastructure.postgres.configuration.{ DatabaseConfig, DatasourceConfig, MigrationConfig }
 import conduit.infrastructure.postgres.magnum.*
 import kyo.*
 
@@ -55,9 +55,9 @@ object Module:
    * the HikariDataSource. This layer depends on the datasource and provides the
    * database service to the application.
    */
-  lazy val database: Layer[Database[PostgresTransaction], Env[HikariDataSource]] =
+  lazy val database: Layer[Database[PostgresTransaction], Env[HikariDataSource] & Sync & Scope] =
     Layer.from: (ds: HikariDataSource) =>
-      PostgresDatabase(ds): Database[PostgresTransaction]
+      PostgresDatabase.init(ds).map(db => db: Database[PostgresTransaction])
 
   /**
    * Provides a [[Migration]] instance configured with Flyway, using the

@@ -78,9 +78,9 @@ object PostgresDatabase {
      * @return the error message, including the underlying exception's message
      */
     override def message: String = this match
-      case PoolInitFailed(cause)   => s"Failed to initialize the connection pool: ${cause.message}"
-      case QueryError(cause)       => s"Query failed: ${cause.message}"
-      case TransactionError(cause) => s"Transaction failed: ${cause.message}"
+      case PoolInitFailed(cause)               => s"Failed to initialize the connection pool: ${cause.message}"
+      case QueryError(cause)                   => s"Query failed: ${cause.message}"
+      case TransactionError(cause)             => s"Transaction failed: ${cause.message}"
       case UnexpectedRowCount(table, affected) => s"Expected a write to $table to affect one row, it affected $affected"
 
   /**
@@ -90,7 +90,7 @@ object PostgresDatabase {
    *
    * @param error the application failure the transaction body aborted with
    */
-  private final class Aborted(val error: ApplicationError)(using Frame)
+  final private class Aborted(val error: ApplicationError)(using Frame)
       extends SqlRequestBackendException(s"Transaction body aborted: ${error.message}")
 
   /**

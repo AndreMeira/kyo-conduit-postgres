@@ -16,6 +16,15 @@ lazy val root = project
       "io.getkyo"            %% "kyo-http"        % "1.0.0-RC7",
       "io.getkyo"            %% "kyo-actor"       % "1.0.0-RC7",
       "io.getkyo"            %% "kyo-combinators" % "1.0.0-RC7",
+      // kyo-net native I/O shims (kqueue on macOS, io_uring/epoll on Linux). Without them kyo-http
+      // falls back to the slower java.nio backend. The plain artifact must stay alongside the classifiers.
+      "io.getkyo"            %% "kyo-net"         % "1.0.0-RC7",
+      "io.getkyo"            %% "kyo-net"         % "1.0.0-RC7" classifier "darwin-aarch64",
+      "io.getkyo"            %% "kyo-net"         % "1.0.0-RC7" classifier "darwin-x86_64",
+      "io.getkyo"            %% "kyo-net"         % "1.0.0-RC7" classifier "linux-x86_64",
+      "io.getkyo"            %% "kyo-net"         % "1.0.0-RC7" classifier "linux-aarch64",
+      "io.getkyo"            %% "kyo-net"         % "1.0.0-RC7" classifier "linux-musl-x86_64",
+      "io.getkyo"            %% "kyo-net"         % "1.0.0-RC7" classifier "linux-musl-aarch64",
       "ch.qos.logback"        % "logback-classic" % "1.6.5",
       "commons-codec"         % "commons-codec"   % "1.23.0",
       "com.github.jwt-scala" %% "jwt-circe"       % "12.0.0",

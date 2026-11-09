@@ -57,7 +57,8 @@ class PostgresTagRepository extends TagRepository[PostgresTransaction]:
     if tags.isEmpty then Kyo.unit
     else
       Transactional:
-        Sql.delete[TagRow]("tags")
+        Sql
+          .delete[TagRow]("tags")
           .where(row => row.articleId == articleId && row.name.in(tags.map(TagName(_))*))
           .run
           .unit

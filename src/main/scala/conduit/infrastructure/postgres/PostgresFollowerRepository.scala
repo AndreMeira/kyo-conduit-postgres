@@ -19,7 +19,8 @@ class PostgresFollowerRepository extends FollowerRepository[PostgresTransaction]
    */
   override def exists(followed: UserProfile.Follower): Boolean < Effect =
     Transactional:
-      Sql.from[UserProfile.Follower]("f", "followers")
+      Sql
+        .from[UserProfile.Follower]("f", "followers")
         .where(row => row.f.followerId == followed.followerId && row.f.profileId == followed.profileId)
         .limit(1)
         .run
@@ -34,7 +35,8 @@ class PostgresFollowerRepository extends FollowerRepository[PostgresTransaction]
    */
   override def followedBy(followerId: User.Id, followedIds: List[UserProfile.Id]): List[UserProfile.Id] < Effect =
     Transactional:
-      Sql.from[UserProfile.Follower]("f", "followers")
+      Sql
+        .from[UserProfile.Follower]("f", "followers")
         .where(row => row.f.followerId == followerId && row.f.profileId.in(followedIds*))
         .select(_.f.profileId)
         .run
@@ -48,7 +50,8 @@ class PostgresFollowerRepository extends FollowerRepository[PostgresTransaction]
    */
   override def add(followed: UserProfile.Follower): Unit < Effect =
     Transactional:
-      Sql.insert[UserProfile.Follower]("followers")
+      Sql
+        .insert[UserProfile.Follower]("followers")
         .values(followed)
         .onConflictDoNothing(_.followerId, _.profileId)
         .run
@@ -62,7 +65,8 @@ class PostgresFollowerRepository extends FollowerRepository[PostgresTransaction]
    */
   override def delete(followed: UserProfile.Follower): Unit < Effect =
     Transactional:
-      Sql.delete[UserProfile.Follower]("followers")
+      Sql
+        .delete[UserProfile.Follower]("followers")
         .where(row => row.followerId == followed.followerId && row.profileId == followed.profileId)
         .run
         .unit

@@ -19,7 +19,8 @@ class PostgresFavoriteRepository extends FavoriteRepository[PostgresTransaction]
    */
   override def exists(favorite: Article.Favorite): Boolean < Effect =
     Transactional:
-      Sql.from[Article.Favorite]("f", "favorites")
+      Sql
+        .from[Article.Favorite]("f", "favorites")
         .where(row => row.f.userId == favorite.userId && row.f.articleId == favorite.articleId)
         .limit(1)
         .run
@@ -34,7 +35,8 @@ class PostgresFavoriteRepository extends FavoriteRepository[PostgresTransaction]
    */
   override def favoriteOf(userId: User.Id, articleIds: List[Article.Id]): List[Article.Id] < Effect =
     Transactional:
-      Sql.from[Article.Favorite]("f", "favorites")
+      Sql
+        .from[Article.Favorite]("f", "favorites")
         .where(row => row.f.userId == userId && row.f.articleId.in(articleIds*))
         .select(_.f.articleId)
         .run
@@ -48,7 +50,8 @@ class PostgresFavoriteRepository extends FavoriteRepository[PostgresTransaction]
    */
   override def add(favorite: Article.Favorite): Unit < Effect =
     Transactional:
-      Sql.insert[Article.Favorite]("favorites")
+      Sql
+        .insert[Article.Favorite]("favorites")
         .values(favorite)
         .onConflictDoNothing(_.userId, _.articleId)
         .run
@@ -62,7 +65,8 @@ class PostgresFavoriteRepository extends FavoriteRepository[PostgresTransaction]
    */
   override def delete(favorite: Article.Favorite): Unit < Effect =
     Transactional:
-      Sql.delete[Article.Favorite]("favorites")
+      Sql
+        .delete[Article.Favorite]("favorites")
         .where(row => row.userId == favorite.userId && row.articleId == favorite.articleId)
         .run
         .unit

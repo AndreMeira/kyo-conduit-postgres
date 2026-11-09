@@ -1,9 +1,19 @@
 package conduit.infrastructure.postgres
 
-import com.zaxxer.hikari.{HikariConfig, HikariDataSource}
+import com.zaxxer.hikari.{ HikariConfig, HikariDataSource }
 import conduit.domain.error.ApplicationError
 import conduit.domain.service.persistence.Persistence
-import conduit.infrastructure.postgres.magnum.{PostgresArticleRepository, PostgresCommentRepository, PostgresCredentialsRepository, PostgresDatabase, PostgresFavoriteRepository, PostgresFollowerRepository, PostgresTagRepository, PostgresTransaction, PostgresUserProfileRepository}
+import conduit.infrastructure.postgres.magnum.{
+  PostgresArticleRepository,
+  PostgresCommentRepository,
+  PostgresCredentialsRepository,
+  PostgresDatabase,
+  PostgresFavoriteRepository,
+  PostgresFollowerRepository,
+  PostgresTagRepository,
+  PostgresTransaction,
+  PostgresUserProfileRepository,
+}
 import kyo.*
 import org.flywaydb.core.Flyway
 import org.testcontainers.containers.PostgreSQLContainer
@@ -155,7 +165,7 @@ object PostgresTestSupport:
     for
       container  <- Scope.acquireRelease(startContainer)(stopContainer)
       datasource <- Scope.acquireRelease(createDatasource(container))(closeDatasource)
-      database    = new PostgresDatabase(datasource)
+      database   <- PostgresDatabase.init(datasource)
       result     <- test(using new WithDatabaseExtension {})(database)
     yield result
 

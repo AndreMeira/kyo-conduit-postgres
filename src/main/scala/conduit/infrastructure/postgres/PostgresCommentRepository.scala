@@ -52,7 +52,8 @@ class PostgresCommentRepository extends CommentRepository[PostgresTransaction]:
    */
   override def update(comment: Comment): Unit < Effect =
     Transactional.single("comments"):
-      Sql.update[Comment]("comments")
+      Sql
+        .update[Comment]("comments")
         .set(_.body := comment.body, _.updatedAt := comment.updatedAt)
         .where(_.id == comment.id)
         .run
@@ -84,7 +85,8 @@ class PostgresCommentRepository extends CommentRepository[PostgresTransaction]:
    * @return the stored row; aborts with `SqlException` when the insert fails
    */
   private def insert(comment: Comment.Data): Chunk[Comment] < (DB & Abort[SqlException]) =
-    Sql.insert[Comment]("comments")
+    Sql
+      .insert[Comment]("comments")
       .values(Comment(CommentId(0L), comment.articleId, comment.body, comment.authorId, comment.createdAt, comment.updatedAt))
       .overriding(_.id := Sql.default)
       .returning(row => (row.id, row.articleId, row.body, row.authorId, row.createdAt, row.updatedAt))

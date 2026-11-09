@@ -31,7 +31,8 @@ class PostgresUserProfileRepository extends UserProfileRepository[PostgresTransa
    */
   override def update(profile: UserProfile): Unit < Effect =
     Transactional.single("profiles"):
-      Sql.update[UserProfile]("profiles")
+      Sql
+        .update[UserProfile]("profiles")
         .set(
           _.name      := profile.name,
           _.biography := profile.biography,
@@ -109,7 +110,8 @@ class PostgresUserProfileRepository extends UserProfileRepository[PostgresTransa
    */
   override def findByArticle(id: Article.Id): Maybe[UserProfile] < Effect =
     Transactional:
-      Sql.from[UserProfile]("p", "profiles")
+      Sql
+        .from[UserProfile]("p", "profiles")
         .where(_.p.userId.in(Sql.from[Article.Data]("a", "articles").where(_.a.id == id).select(_.a.authorId)))
         .run
         .map(first)
@@ -123,13 +125,18 @@ class PostgresUserProfileRepository extends UserProfileRepository[PostgresTransa
    */
   override def findByArticles(ids: Set[Article.Id]): Map[Article.Id, UserProfile] < Effect =
     Transactional:
-      Sql.from[UserProfile]("p", "profiles")
-        .innerJoin(Sql.from[Article.Data]("a", "articles")).on(row => row.a.authorId == row.p.userId)
+      Sql
+        .from[UserProfile]("p", "profiles")
+        .innerJoin(Sql.from[Article.Data]("a", "articles"))
+        .on(row => row.a.authorId == row.p.userId)
         .where(_.a.id.in(ids.toSeq*))
         .select(row => (row.a.id, row.p.id, row.p.userId, row.p.name, row.p.biography, row.p.image, row.p.createdAt, row.p.updatedAt))
         .run
-        .map(_.map((articleId, id, userId, name, biography, image, createdAt, updatedAt) =>
-          articleId -> UserProfile(id, userId, name, biography, image, createdAt, updatedAt)).toMap)
+        .map(
+          _.map((articleId, id, userId, name, biography, image, createdAt, updatedAt) =>
+            articleId -> UserProfile(id, userId, name, biography, image, createdAt, updatedAt)
+          ).toMap
+        )
 
   /**
    * The profile in the first row, if any.

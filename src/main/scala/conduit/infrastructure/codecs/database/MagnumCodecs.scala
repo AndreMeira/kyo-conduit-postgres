@@ -145,9 +145,9 @@ object MagnumCodecs:
 
   /** A codec for PostgreSQL UUID array columns, used with = ANY(?) queries. */
   given listUUID: DbCodec[List[UUID]] with {
-    val cols: IArray[Int]                                                      = IArray(Types.ARRAY)
-    def queryRepr: String                                                      = "?"
-    def readSingle(rs: ResultSet, pos: Int): List[UUID]                        =
+    val cols: IArray[Int]                               = IArray(Types.ARRAY)
+    def queryRepr: String                               = "?"
+    def readSingle(rs: ResultSet, pos: Int): List[UUID] =
       Option(rs.getArray(pos)).fold(Nil) { arr =>
         arr.getArray
           .asInstanceOf[Array[Object]]

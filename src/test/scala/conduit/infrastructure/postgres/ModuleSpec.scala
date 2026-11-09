@@ -14,7 +14,6 @@ object ModuleSpec extends KyoTestSuite:
 
   def specSuite: SuiteResult < (Async & Scope) =
     "Postgres Module" should PostgresTestSupport.withContainer { container =>
-
       "provide a migratable database whose repositories persist across transactions" in
         Memo.run:
           Env.runLayer(Layer(databaseConfig(container)), Module.all):

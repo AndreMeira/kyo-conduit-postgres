@@ -110,7 +110,7 @@ object ApplicationError:
     * application to prevent further damage.
     */
   trait UnrecoverableError extends ApplicationError
-  
+
   /**
    * Trait for network-related errors.
    *
@@ -120,7 +120,7 @@ object ApplicationError:
    * after a delay.
    */
   trait NetworkError extends ApplicationError
-  
+
   /**
    * Trait for persistence-related errors.
    *

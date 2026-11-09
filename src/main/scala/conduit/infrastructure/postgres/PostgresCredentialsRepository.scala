@@ -19,7 +19,8 @@ class PostgresCredentialsRepository extends CredentialsRepository[PostgresTransa
    */
   override def find(creds: Credentials.Hashed): Maybe[User.Id] < Effect =
     Transactional:
-      Sql.from[UserRow]("u", "users")
+      Sql
+        .from[UserRow]("u", "users")
         .where(row => row.u.email == creds.email && row.u.password == creds.password)
         .select(_.u.id)
         .run
@@ -33,7 +34,8 @@ class PostgresCredentialsRepository extends CredentialsRepository[PostgresTransa
    */
   override def find(userId: User.Id): Maybe[Credentials.Hashed] < Effect =
     Transactional:
-      Sql.from[UserRow]("u", "users")
+      Sql
+        .from[UserRow]("u", "users")
         .where(_.u.id == userId)
         .run
         .map(rows => Maybe.fromOption(rows.headOption).map(row => new Credentials.Hashed(row.email, row.password)))
@@ -57,7 +59,8 @@ class PostgresCredentialsRepository extends CredentialsRepository[PostgresTransa
    */
   override def save(userId: User.Id, credentials: Credentials.Hashed): Unit < Effect =
     Transactional.single("users"):
-      Sql.insert[UserRow]("users")
+      Sql
+        .insert[UserRow]("users")
         .values(UserRow(userId, credentials.email, credentials.password))
         .run
         .map(_.affectedRows)
@@ -72,7 +75,8 @@ class PostgresCredentialsRepository extends CredentialsRepository[PostgresTransa
    */
   override def update(userId: User.Id, credentials: Credentials.Hashed): Unit < Effect =
     Transactional.single("users"):
-      Sql.update[UserRow]("users")
+      Sql
+        .update[UserRow]("users")
         .set(_.email := credentials.email, _.password := credentials.password)
         .where(_.id == userId)
         .run
